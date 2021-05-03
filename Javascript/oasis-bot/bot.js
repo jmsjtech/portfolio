@@ -8839,7 +8839,7 @@ client.on("message", (message) => {
 
 
 try {
-	client.login("NDY5Njk0NzI5MjExMjE1ODcy.DjLj2A.sEtH36hvkyEfkykm86pbIrYqxQ0");
+	client.login("// bot token here //");
 } catch (error) {
 	console.log("Client Login Failed - Exiting Program");
 	return process.exit(1);
