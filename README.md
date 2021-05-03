@@ -2,7 +2,7 @@ Portfolio of coding projects I've made. Most aren't finished to my full vision (
 
 
 C# Projects:
-- NeonBot: A C# conversion of oasis-bot, converting some of the commands and adding new commands. Functional but incomplete.
+- NeonBot: A C# conversion of oasis-bot (see below), converting some of the commands and adding new commands. Functional but incomplete.
 - StardewMods: A collection of the mods I've made for Stardew Valley.
 - TearsInRain: A roguelike intended to put a couple very uncommon twists on the genre (multiplayer and casual farming elements). Multiplayer has been implemented from the start and works using the Discord GameSDK.
 
