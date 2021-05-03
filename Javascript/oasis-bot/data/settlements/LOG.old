@@ -1,0 +1,5 @@
+2018/09/10-13:49:18.774 dbc Recovering log #1091
+2018/09/10-13:49:18.777 dbc Level-0 table #1094: started
+2018/09/10-13:49:18.928 dbc Level-0 table #1094: 73826 bytes OK
+2018/09/10-13:49:19.154 dbc Delete type=0 #1091
+2018/09/10-13:49:19.155 dbc Delete type=3 #1089

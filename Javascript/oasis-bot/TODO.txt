@@ -1,0 +1,18 @@
+TODO:
+Implausible Mats modify weight
+Implausible Mat descriptions
+Implausible Mat actual effects
+Shield generator
+Shield enchant generator
+Armor Quality chance
+Make Armor/Weapons/Shields able to get regular enchantments too
+Add option for multiple loot generations at once
+Replace the last two "Accoutrement" entries with something better; wands/staves/etc? 
+Add in embellishments for anything that makes sense
+(Also Supernatural embellishments)
+Add in Motifs for anything that makes sense
+Add chance for cursed items?
+Add implausible material chance to other items
+Enchanted jewelry?
+
+NPC Generator (add some base creatures, add a random or specific template.

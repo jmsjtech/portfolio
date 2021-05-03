@@ -1,0 +1,44 @@
+- Replace existing character gen system with system based on GURPS instead of based on Pathfinder
+- - Change Attributes
+- - Make skill levels relative to attributes
+- - Universal point buy system
+- - Add basic advantages, disadvantages, perks, and quirks so system is ready
+- - Change worldgen to specify what is and isn't allowed in the world
+- - - Only allow characters that fit the requirements to join the world
+- - - Show requirements to clients when they're making a new character while connecting - enforce requirements
+- - - If clients have characters and choose to load one, show which are or aren't allowed and why
+- - Possibly add a Tech Level stat
+
+
+- More Complex World-Gen Options
+- - Tech Level of World-Gen
+
+
+- Make in-game menu useful
+- - Return to menu (prompt for save)
+- - Quit game (prompt for save)
+- - Options menu? No idea what options there would be
+- - Show world settings
+
+
+
+- Tilling tiles doesn't seem to update them anymore
+- Fix FOV not showing up properly (may be related to above - map doesn't seem to be updating)
+
+
+- Come up with some kind of gameplay with a simple gameplay loop, implement it. 
+- Maybe social deduction/TTT option?
+- - No Char Gen needed
+- - Streamlined world gen, possibly make it single map or use pre-made maps/map pieces
+- - Objectives for innocent players to complete
+
+
+- Server Browser
+- Server settings
+- - Choose whether or not to show up in browser
+- - Allow setting game to public/private with password / off
+
+
+- Begin preparing for Workshop support
+- - Individual skill files
+- - Individual Advantage/Disadvantage/Perk/Quirk files

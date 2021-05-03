@@ -1,0 +1,95 @@
+// Simple Arithmetics Grammar
+// ==========================
+//
+// Accepts expressions like "2 * (3 + 4)" and computes their value.
+{
+	var recentRolled = [ ];
+    
+    function diceCompare(a,b) {
+      if (parseInt(a) > parseInt(b))
+        return 1;
+      if (parseInt(a) < parseInt(b))
+        return -1;
+      return 0;
+    }
+    
+	function rollDice(amount, size) {
+        var rolledAmounts = [ ];
+
+        for (var i = 0; i < amount; i++) {
+            rolledAmounts.push(Math.ceil(Math.random() * size));
+        }
+		
+        recentRolled = rolledAmounts.sort(diceCompare);
+        return rolledAmounts;
+    }
+}
+
+
+Expression
+  = head:Term tail:(_ ("+" / "-" / "kh" / "kl") _ Term)* {
+      return tail.reduce(function(result, element) {
+        if (element[1] === "+") { return result + element[3]; }
+        if (element[1] === "-") { return result - element[3]; }
+        if (element[1] === "kh") {
+        	var total = 0;
+            
+            recentRolled.splice(0, recentRolled.length - element[3]);
+            for (var i = 0; i < recentRolled.length; i++) {
+            	total = total+recentRolled[i];
+            }
+            
+            
+        	return total;
+        }
+        if (element[1] === "kl") {
+        	var total = 0;
+            
+            recentRolled.splice(element[3], recentRolled.length - element[3]);
+            for (var i = 0; i < recentRolled.length; i++) {
+            	total = total+recentRolled[i];
+            }
+            
+            
+        	return recentRolled;
+        }
+      }, head);
+    }
+
+Term
+  = head:Factor tail:(_ ("*" / "/" / "d" / "^") _ Term)* {
+      return tail.reduce(function(result, element) {
+        if (element[1] === "*") { return result * element[3]; }
+        if (element[1] === "/") { return result / element[3]; }
+       
+        if (element[1] === "d") { 
+        	var rolledDice = rollDice(result, element[3]);
+            var total = 0;
+            for (var i = 0; i < rolledDice.length; i++) {
+            	total = total+rolledDice[i];
+            }
+            
+        	return total;
+        }
+        if (element[1] === "^") {
+        	var number = result;
+            var total = number;
+            for (var i = 0; i < element[3]; i++) {
+            	total *= number;
+            }
+        	
+            return total;
+        };
+      }, head);
+    }
+    
+Factor
+  = "(" _ expr:Expression _ ")" { return expr; }
+  / Integer
+
+Integer "integer"
+  = _ [0-9]+ { return parseInt(text(), 10); }
+
+_ "whitespace"
+  = [ \t\n\r]*
+              

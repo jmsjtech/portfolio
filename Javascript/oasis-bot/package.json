@@ -1,0 +1,13 @@
+{
+  "name": "oasis-bot",
+  "version": "1.0.0",
+  "description": "Discord bot for minor OASIS interactions.",
+  "main": "bot.js",
+  "author": "Hootless",
+  "dependencies": {
+    "discord.js": "^11.3.2",
+    "enmap": "^2.6.3",
+    "enmap-level": "^2.1.0",
+    "xml2js": "^0.4.19"
+  }
+}
