@@ -1,5 +1,8 @@
+extern crate serde;
+
 use rltk::{GameState, Rltk, Point};
 use specs::prelude::*;
+use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
 mod components;
 pub use components::*;
@@ -26,6 +29,8 @@ mod spawner;
 mod inventory_system;
 use inventory_system::*;
 
+mod saveload_system;
+
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { Running,
@@ -33,7 +38,8 @@ pub enum RunState { Running,
     ShowInventory,
     ShowDropItem,
     ShowTargeting { range: i32, item: Entity },
-    MainMenu { menu_selection: gui::MainMenuSelection }
+    MainMenu { menu_selection: gui::MainMenuSelection },
+    SaveGame
 }
 
 pub struct State {
@@ -155,11 +161,19 @@ impl GameState for State {
                     gui::MainMenuResult::Selected{ selected } => {
                         match selected {
                             gui::MainMenuSelection::NewGame => newrunstate = RunState::PreRun,
-                            gui::MainMenuSelection::LoadGame => newrunstate = RunState::PreRun,
+                            gui::MainMenuSelection::LoadGame => {
+                                saveload_system::load_game(&mut self.ecs);
+                                newrunstate = RunState::Running;
+                                saveload_system::delete_save();
+                            }
                             gui::MainMenuSelection::Quit => { ::std::process::exit(0); }
                         }
                     }
                 }
+            }
+            RunState::SaveGame => {
+                saveload_system::save_game(&mut self.ecs);
+                newrunstate = RunState::MainMenu{ menu_selection : gui::MainMenuSelection::LoadGame };
             }
         }
 
@@ -188,6 +202,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<LastActed>();
     gs.ecs.register::<Viewshed>();
     gs.ecs.register::<BlocksTile>();
+    gs.ecs.register::<SimpleMarker<SerializeMe>>();
+    gs.ecs.register::<SerializationHelper>();
 
     gs.ecs.register::<Name>();
     gs.ecs.register::<CombatStats>();
@@ -212,6 +228,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<ProvidesHealing>();
     gs.ecs.register::<InflictsDamage>();
     gs.ecs.register::<Confusion>();
+
+    gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     let map : Map = Map::new_map_rooms_and_corridors();
     let (player_x, player_y) = map.rooms[0].center();

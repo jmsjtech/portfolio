@@ -73,6 +73,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState
 
             VirtualKeyCode::I => return RunState::ShowInventory,
             VirtualKeyCode::X => return RunState::ShowDropItem,
+            VirtualKeyCode::Escape => return RunState::SaveGame,
 
             VirtualKeyCode::A |
             VirtualKeyCode::Numpad4 => try_move_player(-1, 0, &mut gs.ecs),
