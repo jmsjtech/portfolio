@@ -65,13 +65,14 @@ fn get_item(ecs: &mut World) {
 }
 
 
-pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
+pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState {
     match ctx.key {
         None => {}
         Some(key) => match key {
             VirtualKeyCode::G => get_item(&mut gs.ecs),
 
             VirtualKeyCode::I => return RunState::ShowInventory,
+            VirtualKeyCode::X => return RunState::ShowDropItem,
 
             VirtualKeyCode::A |
             VirtualKeyCode::Numpad4 => try_move_player(-1, 0, &mut gs.ecs),
@@ -89,8 +90,8 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::Numpad9 => try_move_player(1, -1, &mut gs.ecs),
             VirtualKeyCode::Numpad1 => try_move_player(-1, 1, &mut gs.ecs),
             VirtualKeyCode::Numpad3 => try_move_player(1, 1, &mut gs.ecs),
-            _ => { return RunState::Running }
+            _ => { return state }
         },
     }
-    RunState::Running
+    state
 }

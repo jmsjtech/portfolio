@@ -3,7 +3,7 @@ use super::Rect;
 use std::cmp::{max, min};
 use specs::prelude::*;
 
-pub const MAPWIDTH : i32 = 80;
+pub const MAPWIDTH : i32 = 60;
 pub const MAPHEIGHT : i32 = 43;
 pub const MAPCOUNT : usize = (MAPHEIGHT * MAPWIDTH) as usize;
 
