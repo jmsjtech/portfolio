@@ -64,12 +64,19 @@ fn get_item(ecs: &mut World) {
     }
 }
 
+fn log_entry(ecs: &mut World, log: String) {
+    let mut gamelog = ecs.fetch_mut::<GameLog>();
+    gamelog.entries.push(log);
+}
+
 
 pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState {
     match ctx.key {
         None => {}
         Some(key) => match key {
             VirtualKeyCode::G => get_item(&mut gs.ecs),
+
+            VirtualKeyCode::Grave => log_entry(&mut gs.ecs, "this is a test".to_string()),
 
             VirtualKeyCode::I => return RunState::ShowInventory,
             VirtualKeyCode::X => return RunState::ShowDropItem,

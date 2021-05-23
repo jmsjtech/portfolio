@@ -1,5 +1,10 @@
 extern crate serde;
 
+use steamworks::AppId;
+use steamworks::Client;
+use steamworks::FriendFlags;
+use steamworks::PersonaStateChange;
+
 use rltk::{GameState, Rltk, Point};
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
@@ -197,6 +202,8 @@ fn main() -> rltk::BError {
     let mut gs = State {
         ecs: World::new(),
     };
+
+
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<LastActed>();
@@ -246,6 +253,30 @@ fn main() -> rltk::BError {
     gs.ecs.insert(player_entity);
     gs.ecs.insert(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame });
     gs.ecs.insert(gamelog::GameLog{ entries : vec!["Welcome to Rainfall".to_string()] });
+
+    let (client, single) = Client::init().unwrap();
+
+    let _cb = client.register_callback(|p: PersonaStateChange| {
+        println!("Got callback: {:?}", p);
+    });
+
+    let utils = client.utils();
+
+    let friends = client.friends();
+    println!("Friends");
+    let list = friends.get_friends(FriendFlags::IMMEDIATE);
+    println!("{:?}", list);
+    for f in &list {
+        println!("Friend: {:?} - {}({:?})", f.id(), f.name(), f.state());
+        friends.request_user_information(f.id(), true);
+    }
+
+    for _ in 0..50 {
+        single.run_callbacks();
+        ::std::thread::sleep(::std::time::Duration::from_millis(100));
+    }
+
+
 
     rltk::main_loop(context, gs)
 }
