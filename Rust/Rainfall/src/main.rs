@@ -34,8 +34,6 @@ mod saveload_system;
 
 mod random_table;
 
-mod cron;
-use cron::*;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { Running,
@@ -501,7 +499,20 @@ fn main() -> rltk::BError {
     gs.ecs.insert(gamelog::GameLog{ entries : vec!["Welcome to Rainfall".to_string()] });
 
 
-    let clock : TimeKeeper = cron::new_time();
+    let clock = TimeKeeper {
+        last_second: 0,
+        last_10sec: 0,
+        last_minute: 0,
+        last_10min: 0,
+        last_hour: 0,
+
+        //Friendly Time Text
+        min: 0,
+        hour: 12,
+        day: 1,
+        season: 1,
+        year: 1
+    };
 
     gs.ecs.insert(clock);
 

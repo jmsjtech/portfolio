@@ -6,6 +6,22 @@ use specs::saveload::{Marker, ConvertSaveload};
 use specs::error::NoError;
 
 #[derive(Component, ConvertSaveload, Clone)]
+pub struct TimeKeeper {
+    pub last_second: u128,
+    pub last_10sec: u128,
+    pub last_minute: u128,
+    pub last_10min: u128,
+    pub last_hour: u128,
+
+    pub min: i32,
+    pub hour: i32,
+    pub day: i32,
+    pub season: i32,
+    pub year: i32
+}
+
+
+#[derive(Component, ConvertSaveload, Clone)]
 pub struct Position {
     pub x: i32,
     pub y: i32,

@@ -1,2 +1,0 @@
-cargo:rustc-link-search=D:\steamsdk\redistributable_bin\win64
-cargo:rustc-link-lib=dylib=steam_api64

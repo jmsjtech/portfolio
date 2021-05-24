@@ -1,4 +1,0 @@
-cargo:rerun-if-env-changed=DISCORD_GAME_SDK_PATH
-cargo:rerun-if-changed=D:\discordsdk
-cargo:rustc-link-lib=discord_game_sdk
-cargo:rustc-link-search=D:\discordsdk\lib/x86_64
