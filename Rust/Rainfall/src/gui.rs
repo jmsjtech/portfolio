@@ -1,6 +1,6 @@
 use rltk::{ RGB, Rltk, Point, VirtualKeyCode };
 use specs::prelude::*;
-use super::{CombatStats, Player, Name, Position, Map, InBackpack, GameLog, State, Viewshed, RunState};
+use super::{CombatStats, Player, Name, Position, Map, InBackpack, GameLog, State, Viewshed, RunState, TimeKeeper, Equipped};
 
 pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     ctx.draw_box(0, 43, 59, 6, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
@@ -10,9 +10,9 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     let players = ecs.read_storage::<Player>();
     for (_player, stats) in (&players, &combat_stats).join() {
         let health = format!("HP: {} / {} ", stats.hp, stats.max_hp);
-        ctx.print_color(61, 1, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &health);
+        ctx.print_color(61, 3, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &health);
 
-        ctx.draw_bar_horizontal(61, 2, 18, stats.hp, stats.max_hp, RGB::named(rltk::RED), RGB::named(rltk::BLACK));
+        ctx.draw_bar_horizontal(61, 4, 18, stats.hp, stats.max_hp, RGB::named(rltk::RED), RGB::named(rltk::BLACK));
     }
 
     let log = ecs.fetch::<GameLog>();
@@ -22,6 +22,42 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
         if y < 49 { ctx.print(2, y, s); }
         y += 1;
     }
+
+    let map = ecs.fetch::<Map>();
+    let depth = format!("Depth: {}", map.depth);
+    ctx.print_color(2, 43, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &depth);
+
+
+    let clock = ecs.fetch_mut::<TimeKeeper>();
+    let mut season = "none";
+    if clock.season == 1 { season = "SPR"; }
+    if clock.season == 2 { season = "SUM"; }
+    if clock.season == 3 { season = "AUT"; }
+    if clock.season == 4 { season = "WIN"; }
+
+    let mut days = "".to_string();
+    if clock.day < 10 { days = format!(" {}", clock.day); }
+    else if clock.day >= 10 { days = format!("{}", clock.day); }
+
+    let date = format!("{} {}, Y {}", season, days, clock.year);
+
+    if season == "SPR" { ctx.print_color(61, 1, RGB::named(rltk::SPRINGGREEN), RGB::named(rltk::BLACK), &date); }
+    if season == "SUM" { ctx.print_color(61, 1, RGB::named(rltk::GOLD), RGB::named(rltk::BLACK), &date); }
+    if season == "AUT" { ctx.print_color(61, 1, RGB::named(rltk::ORANGE_RED), RGB::named(rltk::BLACK), &date); }
+    if season == "WIN" { ctx.print_color(61, 1, RGB::named(rltk::CORNFLOWERBLUE), RGB::named(rltk::BLACK), &date); }
+
+    let mut minutes = "".to_string();
+    if clock.min < 10 { minutes = format!("0{}", clock.min); }
+    else if clock.min >= 10 {minutes = format!("{}", clock.min); }
+
+    let mut hours = "".to_string();
+    if clock.hour < 10 { hours = format!(" {}", clock.hour); }
+    else if clock.hour >= 10 { hours = format!("{}", clock.hour); }
+
+    let time = format!("{}:{}", hours, minutes);
+    ctx.print_color(74, 1, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), &time);
+
+
 
     // Draw mouse cursor
     let mouse_pos = ctx.mouse_pos();
@@ -177,6 +213,51 @@ pub fn drop_item_menu(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Opti
 }
 
 
+pub fn remove_item_menu(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
+    let player_entity = gs.ecs.fetch::<Entity>();
+    let names = gs.ecs.read_storage::<Name>();
+    let backpack = gs.ecs.read_storage::<Equipped>();
+    let entities = gs.ecs.entities();
+
+    let inventory = (&backpack, &names).join().filter(|item| item.0.owner == *player_entity );
+    let count = inventory.count();
+
+    let mut y = (25 - (count / 2)) as i32;
+    ctx.draw_box(15, y-2, 31, (count+3) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.print_color(18, y-2, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Remove Which Item?");
+    ctx.print_color(18, y+count as i32+1, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "ESCAPE to cancel");
+
+    let mut equippable : Vec<Entity> = Vec::new();
+    let mut j = 0;
+    for (entity, _pack, name) in (&entities, &backpack, &names).join().filter(|item| item.1.owner == *player_entity ) {
+        ctx.set(17, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437('('));
+        ctx.set(18, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97+j as rltk::FontCharType);
+        ctx.set(19, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437(')'));
+
+        ctx.print(21, y, &name.name.to_string());
+        equippable.push(entity);
+        y += 1;
+        j += 1;
+    }
+
+    match ctx.key {
+        None => (ItemMenuResult::NoResponse, None),
+        Some(key) => {
+            match key {
+                VirtualKeyCode::Escape => { (ItemMenuResult::Cancel, None) }
+                _ => {
+                    let selection = rltk::letter_to_option(key);
+                    if selection > -1 && selection < count as i32 {
+                        return (ItemMenuResult::Selected, Some(equippable[selection as usize]));
+                    }
+                    (ItemMenuResult::NoResponse, None)
+                }
+            }
+        }
+    }
+}
+
+
 pub fn ranged_target(gs : &mut State, ctx : &mut Rltk, range : i32) -> (ItemMenuResult, Option<Point>) {
     let player_entity = gs.ecs.fetch::<Entity>();
     let player_pos = gs.ecs.fetch::<Point>();
@@ -290,4 +371,23 @@ pub fn main_menu(gs : &mut State, ctx : &mut Rltk) -> MainMenuResult {
     }
 
     MainMenuResult::NoSelection { selected: MainMenuSelection::NewGame }
+}
+
+
+
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum GameOverResult { NoSelection, QuitToMenu }
+
+pub fn game_over(ctx : &mut Rltk) -> GameOverResult {
+    ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Your journey has ended!");
+    ctx.print_color_centered(17, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "One day, we'll tell you all about how you did.");
+    ctx.print_color_centered(18, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "That day, sadly, is not in this chapter..");
+
+    ctx.print_color_centered(20, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Press any key to return to the menu.");
+
+    match ctx.key {
+        None => GameOverResult::NoSelection,
+        Some(_) => GameOverResult::QuitToMenu
+    }
 }

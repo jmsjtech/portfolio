@@ -1,7 +1,7 @@
 use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
 use std::cmp::{max, min};
-use super::{Position, Player, Viewshed, State, Map, LastActed};
+use super::{Position, Player, Viewshed, State, Map, LastActed, TileType, TimeKeeper};
 use super::{CombatStats, WantsToMelee, WantsToPickupItem, Item, GameLog, RunState};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -29,6 +29,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
         }
 
         if !map.blocked[destination_idx] && lastaction.lastacted + lastaction.speed_in_ms < SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock may have gone backwards?").as_millis() {
+            lastaction.lastacted = SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock may have gone backwards?").as_millis();
             pos.x = min(79 , max(0, pos.x + delta_x));
             pos.y = min(49, max(0, pos.y + delta_y));
 
@@ -69,6 +70,20 @@ fn log_entry(ecs: &mut World, log: String) {
     gamelog.entries.push(log);
 }
 
+pub fn try_next_level(ecs: &mut World) -> bool {
+    let player_pos = ecs.fetch::<Point>();
+    let map = ecs.fetch::<Map>();
+    let player_idx = map.xy_idx(player_pos.x, player_pos.y);
+
+    if map.tiles[player_idx] == TileType::DownStairs {
+        true
+    } else {
+        let mut gamelog = ecs.fetch_mut::<GameLog>();
+        gamelog.entries.push("There is no way down from here.".to_string());
+        false
+    }
+}
+
 
 pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState {
     match ctx.key {
@@ -76,11 +91,21 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState
         Some(key) => match key {
             VirtualKeyCode::G => get_item(&mut gs.ecs),
 
-            VirtualKeyCode::Grave => log_entry(&mut gs.ecs, "this is a test".to_string()),
+            VirtualKeyCode::Grave => {
+                let mut clock = gs.ecs.fetch_mut::<TimeKeeper>();
+                clock.day += 1;
+            },
 
             VirtualKeyCode::I => return RunState::ShowInventory,
             VirtualKeyCode::X => return RunState::ShowDropItem,
             VirtualKeyCode::Escape => return RunState::SaveGame,
+            VirtualKeyCode::T => return RunState::ShowRemoveItem,
+
+            VirtualKeyCode::Period => {
+                    if try_next_level(&mut gs.ecs) {
+                        return RunState::NextLevel;
+                    }
+            },
 
             VirtualKeyCode::A |
             VirtualKeyCode::Numpad4 => try_move_player(-1, 0, &mut gs.ecs),

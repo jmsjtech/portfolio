@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use specs_derive::*;
-use rltk::{RGB};
+use rltk::RGB;
 use serde::{Serialize, Deserialize};
 use specs::saveload::{Marker, ConvertSaveload};
 use specs::error::NoError;
@@ -122,6 +122,13 @@ pub struct WantsToDropItem {
     pub item : Entity
 }
 
+#[derive(Component, Debug, ConvertSaveload)]
+pub struct WantsToRemoveItem {
+    pub item : Entity
+}
+
+
+
 // Serialization helper code. We need to implement ConvertSaveload for each type that contains an
 // Entity.
 
@@ -138,4 +145,30 @@ pub struct SerializationHelper {
 pub struct LastActed {
     pub lastacted : u128,
     pub speed_in_ms : u128
+}
+
+
+
+#[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
+pub enum EquipmentSlot { Melee, Shield }
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct Equippable {
+    pub slot : EquipmentSlot
+}
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct Equipped {
+    pub owner : Entity,
+    pub slot : EquipmentSlot
+}
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct MeleePowerBonus {
+    pub power : i32
+}
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct DefenseBonus {
+    pub defense : i32
 }
