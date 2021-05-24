@@ -28,36 +28,40 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     ctx.print_color(2, 43, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &depth);
 
 
-    let clock = ecs.fetch_mut::<TimeKeeper>();
-    let mut season = "none";
-    if clock.season == 1 { season = "SPR"; }
-    if clock.season == 2 { season = "SUM"; }
-    if clock.season == 3 { season = "AUT"; }
-    if clock.season == 4 { season = "WIN"; }
+    let mut clocks = ecs.write_storage::<TimeKeeper>();
+    let player_entity = ecs.fetch::<Entity>();
+    let mut clock =  clocks.get_mut(*player_entity);
 
-    let mut days = "".to_string();
-    if clock.day < 10 { days = format!(" {}", clock.day); }
-    else if clock.day >= 10 { days = format!("{}", clock.day); }
+    if let Some(clock) = clock {
+        let mut season = "none";
+        if clock.season == 1 { season = "SPR"; }
+        if clock.season == 2 { season = "SUM"; }
+        if clock.season == 3 { season = "AUT"; }
+        if clock.season == 4 { season = "WIN"; }
 
-    let date = format!("{} {}, Y {}", season, days, clock.year);
+        let mut days = "".to_string();
+        if clock.day < 10 { days = format!(" {}", clock.day); }
+        else if clock.day >= 10 { days = format!("{}", clock.day); }
 
-    if season == "SPR" { ctx.print_color(61, 1, RGB::named(rltk::SPRINGGREEN), RGB::named(rltk::BLACK), &date); }
-    if season == "SUM" { ctx.print_color(61, 1, RGB::named(rltk::GOLD), RGB::named(rltk::BLACK), &date); }
-    if season == "AUT" { ctx.print_color(61, 1, RGB::named(rltk::ORANGE_RED), RGB::named(rltk::BLACK), &date); }
-    if season == "WIN" { ctx.print_color(61, 1, RGB::named(rltk::CORNFLOWERBLUE), RGB::named(rltk::BLACK), &date); }
+        let date = format!("{} {}, Y {}", season, days, clock.year);
 
-    let mut minutes = "".to_string();
-    if clock.min < 10 { minutes = format!("0{}", clock.min); }
-    else if clock.min >= 10 {minutes = format!("{}", clock.min); }
+        if season == "SPR" { ctx.print_color(61, 1, RGB::named(rltk::SPRINGGREEN), RGB::named(rltk::BLACK), &date); }
+        if season == "SUM" { ctx.print_color(61, 1, RGB::named(rltk::GOLD), RGB::named(rltk::BLACK), &date); }
+        if season == "AUT" { ctx.print_color(61, 1, RGB::named(rltk::ORANGE_RED), RGB::named(rltk::BLACK), &date); }
+        if season == "WIN" { ctx.print_color(61, 1, RGB::named(rltk::CORNFLOWERBLUE), RGB::named(rltk::BLACK), &date); }
 
-    let mut hours = "".to_string();
-    if clock.hour < 10 { hours = format!(" {}", clock.hour); }
-    else if clock.hour >= 10 { hours = format!("{}", clock.hour); }
+        let mut minutes = "".to_string();
+        if clock.min < 10 { minutes = format!("0{}", clock.min); }
+        else if clock.min >= 10 {minutes = format!("{}", clock.min); }
 
-    let time = format!("{}:{}", hours, minutes);
-    ctx.print_color(74, 1, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), &time);
+        let mut hours = "".to_string();
+        if clock.hour < 10 { hours = format!(" {}", clock.hour); }
+        else if clock.hour >= 10 { hours = format!("{}", clock.hour); }
 
+        let time = format!("{}:{}", hours, minutes);
+        ctx.print_color(74, 1, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), &time);
 
+    }
 
     // Draw mouse cursor
     let mouse_pos = ctx.mouse_pos();

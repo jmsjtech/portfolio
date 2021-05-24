@@ -357,72 +357,76 @@ impl GameState for State {
         self.ecs.maintain();
         damage_system::delete_the_dead(&mut self.ecs);
 
-        let mut clock = self.ecs.fetch_mut::<TimeKeeper>();
+        //let mut clock = self.ecs.fetch_mut::<TimeKeeper>();
         let time_now = SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock may have gone backwards?").as_millis();
         let player_entity = self.ecs.fetch::<Entity>();
         let mut combat_stats = self.ecs.write_storage::<CombatStats>();
         let mut lastactions = self.ecs.write_storage::<LastActed>();
+        let mut clocks = self.ecs.write_storage::<TimeKeeper>();
 
         let mut gamelog = self.ecs.fetch_mut::<GameLog>();
 
         let stats = combat_stats.get_mut(*player_entity);
         let last_acted = lastactions.get_mut(*player_entity);
+        let mut clock = clocks.get_mut(*player_entity);
 
-        if clock.last_second + 1000 <= time_now {
-            clock.last_second = time_now;
+        if let Some(clock) = clock {
+            if clock.last_second + 1000 <= time_now {
+                clock.last_second = time_now;
 
-            clock.min += 1;
-            if clock.min >= 60 {
-                clock.hour += 1;
-                clock.min = 0;
-            }
+                clock.min += 1;
+                if clock.min >= 60 {
+                    clock.hour += 1;
+                    clock.min = 0;
+                }
 
-            if clock.hour >= 24 {
-                clock.day += 1;
-                clock.hour = 0;
-            }
+                if clock.hour >= 24 {
+                    clock.day += 1;
+                    clock.hour = 0;
+                }
 
-            if clock.day >= 29 {
-                clock.season += 1;
-                clock.day = 1;
+                if clock.day >= 29 {
+                    clock.season += 1;
+                    clock.day = 1;
 
-                if clock.season == 1 { gamelog.entries.push("Spring has sprung!".to_string()); }
-                if clock.season == 2 { gamelog.entries.push("Summer is here!".to_string()); }
-                if clock.season == 3 { gamelog.entries.push("Autumn has arrived!".to_string()); }
-                if clock.season == 4 { gamelog.entries.push("Winter has come.".to_string()); }
-            }
+                    if clock.season == 1 { gamelog.entries.push("Spring has sprung!".to_string()); }
+                    if clock.season == 2 { gamelog.entries.push("Summer is here!".to_string()); }
+                    if clock.season == 3 { gamelog.entries.push("Autumn has arrived!".to_string()); }
+                    if clock.season == 4 { gamelog.entries.push("Winter has come.".to_string()); }
+                }
 
-            if clock.season >= 5 {
-                clock.year += 1;
-                clock.season = 1;
+                if clock.season >= 5 {
+                    clock.year += 1;
+                    clock.season = 1;
 
-                gamelog.entries.push("Spring has sprung, it's a new year!".to_string());
-            }
+                    gamelog.entries.push("Spring has sprung, it's a new year!".to_string());
+                }
 
 
 
-            if let Some(stats) = stats {
-                if let Some(last_acted) = last_acted {
-                    let viewshed_components = self.ecs.read_storage::<Viewshed>();
-                    let monsters = self.ecs.read_storage::<Monster>();
+                if let Some(stats) = stats {
+                    if let Some(last_acted) = last_acted {
+                        let viewshed_components = self.ecs.read_storage::<Viewshed>();
+                        let monsters = self.ecs.read_storage::<Monster>();
 
-                    let worldmap_resource = self.ecs.fetch::<Map>();
+                        let worldmap_resource = self.ecs.fetch::<Map>();
 
-                    let mut can_heal = true;
-                    let viewshed = viewshed_components.get(*player_entity).unwrap();
-                    for tile in viewshed.visible_tiles.iter() {
-                        let idx = worldmap_resource.xy_idx(tile.x, tile.y);
-                        for entity_id in worldmap_resource.tile_content[idx].iter() {
-                            let mob = monsters.get(*entity_id);
-                            match mob {
-                                None => {}
-                                Some(_) => { can_heal = false; }
+                        let mut can_heal = true;
+                        let viewshed = viewshed_components.get(*player_entity).unwrap();
+                        for tile in viewshed.visible_tiles.iter() {
+                            let idx = worldmap_resource.xy_idx(tile.x, tile.y);
+                            for entity_id in worldmap_resource.tile_content[idx].iter() {
+                                let mob = monsters.get(*entity_id);
+                                match mob {
+                                    None => {}
+                                    Some(_) => { can_heal = false; }
+                                }
                             }
                         }
-                    }
 
-                    if last_acted.lastacted + 1000 < time_now && stats.hp > 0 && can_heal {
-                        stats.hp = i32::min(stats.max_hp, stats.hp + 1);
+                        if last_acted.lastacted + 1000 < time_now && stats.hp > 0 && can_heal {
+                            stats.hp = i32::min(stats.max_hp, stats.hp + 1);
+                        }
                     }
                 }
             }
@@ -479,6 +483,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Equipped>();
     gs.ecs.register::<MeleePowerBonus>();
     gs.ecs.register::<DefenseBonus>();
+
+    gs.ecs.register::<TimeKeeper>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 

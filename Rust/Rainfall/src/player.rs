@@ -92,8 +92,13 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState
             VirtualKeyCode::G => get_item(&mut gs.ecs),
 
             VirtualKeyCode::Grave => {
-                let mut clock = gs.ecs.fetch_mut::<TimeKeeper>();
-                clock.day += 1;
+                let player_entity = gs.ecs.fetch::<Entity>();
+                let mut clocks = gs.ecs.write_storage::<TimeKeeper>();
+                let mut clock = clocks.get_mut(*player_entity);
+
+                if let Some(clock) = clock {
+                    clock.day += 1;
+                }
             },
 
             VirtualKeyCode::I => return RunState::ShowInventory,

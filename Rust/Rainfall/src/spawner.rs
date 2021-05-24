@@ -2,7 +2,7 @@ use rltk::{ RGB, RandomNumberGenerator };
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use super::{CombatStats, Player, Renderable, Name, Position, Viewshed, Monster, BlocksTile, LastActed, Rect, SerializeMe, Equippable, EquipmentSlot};
-use super::{map::MAPWIDTH, random_table::RandomTable};
+use super::{map::MAPWIDTH, random_table::RandomTable, TimeKeeper};
 use super::{Item, Consumable, ProvidesHealing, InflictsDamage, Ranged, AreaOfEffect, Confusion, MeleePowerBonus, DefenseBonus};
 use std::collections::HashMap;
 
@@ -23,6 +23,20 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
         .with(Name{name: "Player".to_string() })
         .with(CombatStats{ max_hp: 30, hp: 30, defense: 2, power: 5 })
         .with(LastActed { lastacted: 0, speed_in_ms: 200 })
+        .with(TimeKeeper {
+            last_second: 0,
+            last_10sec: 0,
+            last_minute: 0,
+            last_10min: 0,
+            last_hour: 0,
+
+            //Friendly Time Text
+            min: 0,
+            hour: 12,
+            day: 1,
+            season: 1,
+            year: 1
+        })
         .marked::<SimpleMarker<SerializeMe>>()
         .build()
 }
