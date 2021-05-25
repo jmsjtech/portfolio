@@ -1,7 +1,7 @@
 use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
 use std::cmp::{max, min};
-use super::{Position, Player, Viewshed, State, Map, LastActed, TileType, TimeKeeper};
+use super::{Position, Player, Viewshed, State, Map, LastActed, TileType, TimeKeeper, Name};
 use super::{CombatStats, WantsToMelee, WantsToPickupItem, Item, GameLog, RunState};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -37,6 +37,21 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             let mut ppos = ecs.write_resource::<Point>();
             ppos.x = pos.x;
             ppos.y = pos.y;
+        }
+    }
+
+    let items = ecs.read_storage::<Item>();
+    let mut gamelog = ecs.fetch_mut::<GameLog>();
+    let ppos = ecs.read_resource::<Point>();
+    let names = ecs.read_storage::<Name>();
+
+
+    for (item_entity, _item, position) in (&entities, &items, &mut positions).join() {
+        let name = names.get(item_entity);
+        if let Some(name) = name {
+            if position.x == ppos.x && position.y == ppos.y {
+                gamelog.entries.push(format!("There is a {} here.", name.name));
+            }
         }
     }
 }
@@ -94,7 +109,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState
             VirtualKeyCode::Grave => {
                 let player_entity = gs.ecs.fetch::<Entity>();
                 let mut clocks = gs.ecs.write_storage::<TimeKeeper>();
-                let mut clock = clocks.get_mut(*player_entity);
+                let clock = clocks.get_mut(*player_entity);
 
                 if let Some(clock) = clock {
                     clock.day += 1;

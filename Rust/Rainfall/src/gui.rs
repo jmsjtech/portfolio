@@ -1,6 +1,8 @@
 use rltk::{ RGB, Rltk, Point, VirtualKeyCode };
 use specs::prelude::*;
-use super::{CombatStats, Player, Name, Position, Map, InBackpack, GameLog, State, Viewshed, RunState, TimeKeeper, Equipped};
+use super::{CombatStats, Player, Name, Position, Map, InBackpack, GameLog, State, Viewshed, RunState, TimeKeeper, Equipped, HungerClock, HungerState};
+
+use super::{rex_assets::RexAssets};
 
 pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     ctx.draw_box(0, 43, 59, 6, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
@@ -8,11 +10,18 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
 
     let combat_stats = ecs.read_storage::<CombatStats>();
     let players = ecs.read_storage::<Player>();
-    for (_player, stats) in (&players, &combat_stats).join() {
+    let hunger = ecs.read_storage::<HungerClock>();
+    for (_player, stats, hc) in (&players, &combat_stats, &hunger).join() {
         let health = format!("HP: {} / {} ", stats.hp, stats.max_hp);
         ctx.print_color(61, 3, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &health);
 
         ctx.draw_bar_horizontal(61, 4, 18, stats.hp, stats.max_hp, RGB::named(rltk::RED), RGB::named(rltk::BLACK));
+        match hc.state {
+            HungerState::WellFed => ctx.print_color(51, 42, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "Well Fed"),
+            HungerState::Normal => {}
+            HungerState::Hungry => ctx.print_color(51, 42, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "Hungry"),
+            HungerState::Starving => ctx.print_color(51, 42, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Starving"),
+        }
     }
 
     let log = ecs.fetch::<GameLog>();
@@ -30,7 +39,7 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
 
     let mut clocks = ecs.write_storage::<TimeKeeper>();
     let player_entity = ecs.fetch::<Entity>();
-    let mut clock =  clocks.get_mut(*player_entity);
+    let clock =  clocks.get_mut(*player_entity);
 
     if let Some(clock) = clock {
         let mut season = "none";
@@ -315,27 +324,35 @@ pub fn main_menu(gs : &mut State, ctx : &mut Rltk) -> MainMenuResult {
     let save_exists = super::saveload_system::does_save_exist();
     let runstate = gs.ecs.fetch::<RunState>();
 
-    ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Rainfall");
+    let assets = gs.ecs.fetch::<RexAssets>();
+    ctx.render_xp_sprite(&assets.menu, 0, 0);
 
+    ctx.draw_box_double(24, 18, 31, 10, RGB::named(rltk::WHEAT), RGB::named(rltk::BLACK));
+    ctx.print_color_centered(20, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Rainfall: A Farmer's Tale");
+    ctx.print_color_centered(21, RGB::named(rltk::GRAY), RGB::named(rltk::BLACK), "Use Up/Down Arrows and Enter");
+
+    let mut y = 24;
     if let RunState::MainMenu{ menu_selection : selection } = *runstate {
         if selection == MainMenuSelection::NewGame {
-            ctx.print_color_centered(24, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Begin New Game");
+            ctx.print_color_centered(y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Begin New Game");
         } else {
-            ctx.print_color_centered(24, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Begin New Game");
+            ctx.print_color_centered(y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Begin New Game");
         }
+        y += 1;
 
         if save_exists {
             if selection == MainMenuSelection::LoadGame {
-                ctx.print_color_centered(25, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Load Game");
+                ctx.print_color_centered(y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Load Game");
             } else {
-                ctx.print_color_centered(25, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Load Game");
+                ctx.print_color_centered(y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Load Game");
             }
+            y += 1;
         }
 
         if selection == MainMenuSelection::Quit {
-            ctx.print_color_centered(26, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Quit");
+            ctx.print_color_centered(y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Quit");
         } else {
-            ctx.print_color_centered(26, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Quit");
+            ctx.print_color_centered(y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Quit");
         }
 
         match ctx.key {

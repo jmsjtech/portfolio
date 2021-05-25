@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use super::{Viewshed, Monster, LastActed, Position, Map, WantsToMelee, Confusion};
+use super::{Viewshed, Monster, LastActed, Position, Map, WantsToMelee, Confusion, ParticleBuilder};
 use rltk::Point;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -16,10 +16,11 @@ impl<'a> System<'a> for MonsterAI {
                         WriteStorage<'a, Position>,
                         WriteStorage<'a, WantsToMelee>,
                         WriteStorage<'a, Confusion>,
-                        WriteStorage<'a, LastActed>);
+                        WriteStorage<'a, LastActed>,
+                        WriteExpect<'a, ParticleBuilder>);
 
     fn run(&mut self, data : Self::SystemData) {
-        let (mut map, player_pos, player_entity, entities, mut viewshed, monster, mut position, mut wants_to_melee, mut confused, mut lastacted) = data;
+        let (mut map, player_pos, player_entity, entities, mut viewshed, monster, mut position, mut wants_to_melee, mut confused, mut lastacted, mut particle_builder) = data;
 
         for (entity, mut viewshed, _monster, lastacted, mut pos) in (&entities, &mut viewshed, &monster, &mut lastacted, &mut position).join() {
             if viewshed.visible_tiles.contains(&*player_pos) && lastacted.lastacted + lastacted.speed_in_ms < SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock Error").as_millis() {
@@ -33,6 +34,7 @@ impl<'a> System<'a> for MonsterAI {
                         confused.remove(entity);
                     }
                     can_act = false;
+                    particle_builder.request(pos.x, pos.y, rltk::RGB::named(rltk::MAGENTA), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('?'), 200.0);
                 }
 
                 if can_act {

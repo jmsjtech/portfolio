@@ -34,6 +34,10 @@ mod saveload_system;
 
 mod random_table;
 
+mod particle_system;
+use particle_system::*;
+
+mod rex_assets;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { Running,
@@ -45,7 +49,8 @@ pub enum RunState { Running,
     SaveGame,
     NextLevel,
     ShowRemoveItem,
-    PlayerDied
+    PlayerDied,
+    MagicMapReveal { row: i32 }
 }
 
 pub struct State {
@@ -72,6 +77,8 @@ impl State {
         drop_items.run_now(&self.ecs);
         let mut item_remove = ItemRemoveSystem{};
         item_remove.run_now(&self.ecs);
+        let mut particles = particle_system::ParticleSpawnSystem{};
+        particles.run_now(&self.ecs);
 
         self.ecs.maintain();
     }
@@ -222,6 +229,7 @@ impl GameState for State {
         }
 
         ctx.cls();
+        particle_system::cull_dead_particles(&mut self.ecs, ctx);
 
         match newrunstate {
             RunState::MainMenu{..} => {}
@@ -250,6 +258,13 @@ impl GameState for State {
                 newrunstate = RunState::Running;
             }
             RunState::Running => {
+                self.run_systems();
+                self.ecs.maintain();
+                match *self.ecs.fetch::<RunState>() {
+                    RunState::MagicMapReveal{ .. } => newrunstate = RunState::MagicMapReveal{ row: 0 },
+                    _ => newrunstate = RunState::Running
+
+                }
                 newrunstate = player_input(self, ctx, RunState::Running);
 
             }
@@ -346,6 +361,18 @@ impl GameState for State {
                     }
                 }
             }
+            RunState::MagicMapReveal{row} => {
+                let mut map = self.ecs.fetch_mut::<Map>();
+                for x in 0..MAPWIDTH {
+                    let idx = map.xy_idx(x as i32,row);
+                    map.revealed_tiles[idx] = true;
+                }
+                if row as usize == MAPHEIGHT-1 {
+                    newrunstate = RunState::Running;
+                } else {
+                    newrunstate = RunState::MagicMapReveal{ row: row+1 };
+                }
+            }
         }
 
         {
@@ -368,11 +395,49 @@ impl GameState for State {
 
         let stats = combat_stats.get_mut(*player_entity);
         let last_acted = lastactions.get_mut(*player_entity);
-        let mut clock = clocks.get_mut(*player_entity);
+        let clock = clocks.get_mut(*player_entity);
 
         if let Some(clock) = clock {
             if clock.last_second + 1000 <= time_now {
                 clock.last_second = time_now;
+
+                let mut hunger_clocks = self.ecs.write_storage::<HungerClock>();
+                let hc = hunger_clocks.get_mut(*player_entity);
+                let mut inflict_damage = self.ecs.write_storage::<SufferDamage>();
+
+                let mut hungry_or_starving = false;
+
+
+                if let Some(hc) = hc {
+                    if hc.state == HungerState::Hungry || hc.state == HungerState::Starving { hungry_or_starving = true; }
+
+                    hc.duration -= 1;
+                    if hc.duration < 1 {
+                        match hc.state {
+                            HungerState::WellFed => {
+                                hc.state = HungerState::Normal;
+                                hc.duration = 200;
+                                gamelog.entries.push("You are no longer well fed.".to_string());
+                            }
+                            HungerState::Normal => {
+                                hc.state = HungerState::Hungry;
+                                hc.duration = 200;
+                                gamelog.entries.push("You are hungry.".to_string());
+                            }
+                            HungerState::Hungry => {
+                                hc.state = HungerState::Starving;
+                                hc.duration = 200;
+                                gamelog.entries.push("You are starving!".to_string());
+                                hungry_or_starving = true;
+                            }
+                            HungerState::Starving => {
+                                gamelog.entries.push("You're so hungry it hurts!".to_string());
+                                SufferDamage::new_damage(&mut inflict_damage, *player_entity, 1);
+                            }
+                        }
+                    }
+                }
+
 
                 clock.min += 1;
                 if clock.min >= 60 {
@@ -424,7 +489,7 @@ impl GameState for State {
                             }
                         }
 
-                        if last_acted.lastacted + 1000 < time_now && stats.hp > 0 && can_heal {
+                        if last_acted.lastacted + 1000 < time_now && stats.hp > 0 && can_heal && !hungry_or_starving {
                             stats.hp = i32::min(stats.max_hp, stats.hp + 1);
                         }
                     }
@@ -478,6 +543,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<ProvidesHealing>();
     gs.ecs.register::<InflictsDamage>();
     gs.ecs.register::<Confusion>();
+    gs.ecs.register::<ProvidesFood>();
+    gs.ecs.register::<MagicMapper>();
 
     gs.ecs.register::<Equippable>();
     gs.ecs.register::<Equipped>();
@@ -485,6 +552,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<DefenseBonus>();
 
     gs.ecs.register::<TimeKeeper>();
+    gs.ecs.register::<ParticleLifetime>();
+    gs.ecs.register::<HungerClock>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
@@ -504,23 +573,8 @@ fn main() -> rltk::BError {
     gs.ecs.insert(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame });
     gs.ecs.insert(gamelog::GameLog{ entries : vec!["Welcome to Rainfall".to_string()] });
 
-
-    let clock = TimeKeeper {
-        last_second: 0,
-        last_10sec: 0,
-        last_minute: 0,
-        last_10min: 0,
-        last_hour: 0,
-
-        //Friendly Time Text
-        min: 0,
-        hour: 12,
-        day: 1,
-        season: 1,
-        year: 1
-    };
-
-    gs.ecs.insert(clock);
+    gs.ecs.insert(particle_system::ParticleBuilder::new());
+    gs.ecs.insert(rex_assets::RexAssets::new());
 
 
     rltk::main_loop(context, gs)
