@@ -2,11 +2,13 @@ use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
 use std::cmp::{max, min};
 use super::{Position, Player, Viewshed, State, Map, LastActed, TileType, TimeKeeper, Name};
-use super::{CombatStats, WantsToMelee, WantsToPickupItem, Item, GameLog, RunState};
+use super::{CombatStats, WantsToMelee, WantsToPickupItem, Item, GameLog, RunState, EntityMoved};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
+    let mut entity_moved = ecs.write_storage::<EntityMoved>();
+
     let mut positions = ecs.write_storage::<Position>();
     let players = ecs.read_storage::<Player>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
@@ -37,6 +39,8 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             let mut ppos = ecs.write_resource::<Point>();
             ppos.x = pos.x;
             ppos.y = pos.y;
+
+            entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
         }
     }
 
@@ -80,10 +84,10 @@ fn get_item(ecs: &mut World) {
     }
 }
 
-fn log_entry(ecs: &mut World, log: String) {
-    let mut gamelog = ecs.fetch_mut::<GameLog>();
-    gamelog.entries.push(log);
-}
+//fn log_entry(ecs: &mut World, log: String) {
+//    let mut gamelog = ecs.fetch_mut::<GameLog>();
+//    gamelog.entries.push(log);
+//}
 
 pub fn try_next_level(ecs: &mut World) -> bool {
     let player_pos = ecs.fetch::<Point>();

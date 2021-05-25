@@ -1,4 +1,4 @@
-use rltk::{rex::XpFile};
+use rltk::rex::XpFile;
 
 rltk::embedded_resource!(TREES, "../resources/trees.xp");
 

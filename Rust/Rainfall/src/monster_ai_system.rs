@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use super::{Viewshed, Monster, LastActed, Position, Map, WantsToMelee, Confusion, ParticleBuilder};
+use super::{Viewshed, Monster, LastActed, Position, Map, WantsToMelee, Confusion, ParticleBuilder, EntityMoved};
 use rltk::Point;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -17,10 +17,13 @@ impl<'a> System<'a> for MonsterAI {
                         WriteStorage<'a, WantsToMelee>,
                         WriteStorage<'a, Confusion>,
                         WriteStorage<'a, LastActed>,
-                        WriteExpect<'a, ParticleBuilder>);
+                        WriteExpect<'a, ParticleBuilder>,
+                        WriteStorage<'a, EntityMoved>
+                    );
 
     fn run(&mut self, data : Self::SystemData) {
-        let (mut map, player_pos, player_entity, entities, mut viewshed, monster, mut position, mut wants_to_melee, mut confused, mut lastacted, mut particle_builder) = data;
+        let (mut map, player_pos, player_entity, entities, mut viewshed, monster, mut position, mut wants_to_melee, mut confused,
+            mut lastacted, mut particle_builder, mut entity_moved) = data;
 
         for (entity, mut viewshed, _monster, lastacted, mut pos) in (&entities, &mut viewshed, &monster, &mut lastacted, &mut position).join() {
             if viewshed.visible_tiles.contains(&*player_pos) && lastacted.lastacted + lastacted.speed_in_ms < SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock Error").as_millis() {
@@ -51,8 +54,13 @@ impl<'a> System<'a> for MonsterAI {
                     );
 
                     if path.success && path.steps.len()>1 {
+                        let mut idx = map.xy_idx(pos.x, pos.y);
+                        map.blocked[idx] = false;
                         pos.x = path.steps[1] as i32 % map.width;
                         pos.y = path.steps[1] as i32 / map.width;
+                        entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
+                        idx = map.xy_idx(pos.x, pos.y);
+                        map.blocked[idx] = true;
                         viewshed.dirty = true;
                     }
                 }

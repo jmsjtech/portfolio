@@ -2,7 +2,7 @@ use rltk::{ RGB, RandomNumberGenerator };
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use super::{CombatStats, Player, Renderable, Name, Position, Viewshed, Monster, BlocksTile, LastActed, Rect, SerializeMe, Equippable, EquipmentSlot};
-use super::{map::MAPWIDTH, random_table::RandomTable, TimeKeeper, HungerState, HungerClock, ProvidesFood, MagicMapper};
+use super::{map::MAPWIDTH, random_table::RandomTable, TimeKeeper, HungerState, HungerClock, ProvidesFood, MagicMapper, Hidden, EntryTrigger, SingleActivation};
 use super::{Item, Consumable, ProvidesHealing, InflictsDamage, Ranged, AreaOfEffect, Confusion, MeleePowerBonus, DefenseBonus};
 use std::collections::HashMap;
 
@@ -110,6 +110,7 @@ pub fn spawn_room(ecs: &mut World, room : &Rect, map_depth: i32) {
             "Tower Shield" => tower_shield(ecs, x, y),
             "Rations" => rations(ecs, x, y),
             "Magic Mapping Scroll" => magic_mapping_scroll(ecs, x, y),
+            "Bear Trap" => bear_trap(ecs, x, y),
             _ => {}
         }
     }
@@ -129,6 +130,7 @@ fn room_table(map_depth: i32) -> RandomTable {
         .add("Tower Shield", map_depth - 1)
         .add("Rations", 10)
         .add("Magic Mapping Scroll", 2)
+        .add("Bear Trap", 100)
 }
 
 
@@ -316,6 +318,10 @@ fn bear_trap(ecs: &mut World, x: i32, y: i32) {
             render_order: 2
         })
         .with(Name{ name : "Bear Trap".to_string() })
+        .with(Hidden{})
+        .with(EntryTrigger{})
+        .with(InflictsDamage{ damage: 6 })
+        .with(SingleActivation{})
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
