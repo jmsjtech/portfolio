@@ -5,6 +5,9 @@ use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+#[macro_use]
+extern crate lazy_static;
+
 mod components;
 pub use components::*;
 mod map;
@@ -31,6 +34,7 @@ mod inventory_system;
 use inventory_system::*;
 
 pub mod camera;
+pub mod raws;
 
 mod saveload_system;
 mod random_table;
@@ -43,7 +47,7 @@ mod rex_assets;
 
 mod map_builders;
 
-const SHOW_MAPGEN_VISUALIZER : bool = true;
+const SHOW_MAPGEN_VISUALIZER : bool = false;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { Running,
@@ -589,6 +593,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<BlocksVisibility>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
+    
+    raws::load_raws();
 
     gs.ecs.insert(Map::new(1, 64, 64));
     gs.ecs.insert(Point::new(0, 0));
