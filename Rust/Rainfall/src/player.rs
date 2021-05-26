@@ -1,7 +1,7 @@
 use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
 use std::cmp::{max, min};
-use super::{Position, Player, Viewshed, State, Map, LastActed, TileType, TimeKeeper, Name};
+use super::{Position, Player, Viewshed, State, Map, LastActed, TileType, TimeKeeper, Name, Renderable, BlocksTile, BlocksVisibility, Door};
 use super::{CombatStats, WantsToMelee, WantsToPickupItem, Item, GameLog, RunState, EntityMoved};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -17,23 +17,35 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let map = ecs.fetch::<Map>();
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
     let mut lastactions = ecs.write_storage::<LastActed>();
-
+    let mut doors = ecs.write_storage::<Door>();
+    let mut blocks_visibility = ecs.write_storage::<BlocksVisibility>();
+    let mut blocks_movement = ecs.write_storage::<BlocksTile>();
+    let mut renderables = ecs.write_storage::<Renderable>();
+    
     for (entity, _player, pos, viewshed, lastaction) in (&entities, &players, &mut positions, &mut viewsheds, &mut lastactions).join() {
         if pos.x + delta_x < 1 || pos.x + delta_x > map.width-1 || pos.y + delta_y < 1 || pos.y + delta_y > map.height-1 { return; }
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
-
+    
         for potential_target in map.tile_content[destination_idx].iter() {
             let target = combat_stats.get(*potential_target);
             if let Some(_target) = target {
                 wants_to_melee.insert(entity, WantsToMelee{ target: *potential_target }).expect("Add target failed");
                 return;
             }
+            let door = doors.get_mut(*potential_target);
+            if let Some(door) = door {
+                door.open = true;
+                blocks_visibility.remove(*potential_target);
+                blocks_movement.remove(*potential_target);
+                let glyph = renderables.get_mut(*potential_target).unwrap();
+                glyph.glyph = rltk::to_cp437('/');
+                viewshed.dirty = true;
+            }
         }
-
         if !map.blocked[destination_idx] && lastaction.lastacted + lastaction.speed_in_ms < SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock may have gone backwards?").as_millis() {
             lastaction.lastacted = SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock may have gone backwards?").as_millis();
-            pos.x = min(79 , max(0, pos.x + delta_x));
-            pos.y = min(49, max(0, pos.y + delta_y));
+            pos.x = min(map.width-1 , max(0, pos.x + delta_x));
+            pos.y = min(map.height-1, max(0, pos.y + delta_y));
 
             viewshed.dirty = true;
             let mut ppos = ecs.write_resource::<Point>();
@@ -119,6 +131,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState
                     clock.day += 1;
                 }
             },
+
 
             VirtualKeyCode::I => return RunState::ShowInventory,
             VirtualKeyCode::X => return RunState::ShowDropItem,

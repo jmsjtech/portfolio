@@ -62,7 +62,7 @@ impl<'a> System<'a> for ItemUseSystem {
                      );
 
     fn run(&mut self, data : Self::SystemData) {
-        let (player_entity, mut gamelog, mut map, entities, mut wants_use, names,
+        let (player_entity, mut gamelog, map, entities, mut wants_use, names,
             consumables, healing, inflict_damage, mut combat_stats, mut suffer_damage,
             aoe, mut confused, equippable, mut equipped, mut backpack, mut particle_builder, positions,
             provides_food, mut hunger_clocks, magic_mapper, mut runstate) = data;
@@ -234,6 +234,7 @@ impl<'a> System<'a> for ItemUseSystem {
                                 if let Some(pos) = pos {
                                     particle_builder.request(pos.x, pos.y, rltk::RGB::named(rltk::MAGENTA), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('?'), 200.0);
                                 }
+                                used_item = true;
                             }
                         }
                     }

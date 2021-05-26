@@ -1,11 +1,11 @@
 use rltk::{ RGB, Rltk, Point, VirtualKeyCode };
 use specs::prelude::*;
-use super::{CombatStats, Player, Name, Position, Map, InBackpack, GameLog, State, Viewshed, RunState, TimeKeeper, Equipped, HungerClock, HungerState, Hidden};
+use super::{CombatStats, Player, Name, Position, Map, InBackpack, GameLog, State, Viewshed, RunState, TimeKeeper, Equipped, HungerClock, HungerState, Hidden, Monster, camera};
 
 use super::rex_assets::RexAssets;
 
 pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
-    ctx.draw_box(0, 43, 59, 6, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+    ctx.draw_box(0, 40, 59, 9, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
     ctx.draw_box(60, 0, 19, 49, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
 
     let combat_stats = ecs.read_storage::<CombatStats>();
@@ -17,16 +17,16 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
 
         ctx.draw_bar_horizontal(61, 4, 18, stats.hp, stats.max_hp, RGB::named(rltk::RED), RGB::named(rltk::BLACK));
         match hc.state {
-            HungerState::WellFed => ctx.print_color(51, 42, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "Well Fed"),
+            HungerState::WellFed => ctx.print_color(51, 40, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "Well Fed"),
             HungerState::Normal => {}
-            HungerState::Hungry => ctx.print_color(51, 42, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "Hungry"),
-            HungerState::Starving => ctx.print_color(51, 42, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Starving"),
+            HungerState::Hungry => ctx.print_color(51, 40, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "Hungry"),
+            HungerState::Starving => ctx.print_color(51, 40, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Starving"),
         }
     }
 
     let log = ecs.fetch::<GameLog>();
 
-    let mut y = 44;
+    let mut y = 41;
     for s in log.entries.iter().rev() {
         if y < 49 { ctx.print(2, y, s); }
         y += 1;
@@ -34,7 +34,7 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
 
     let map = ecs.fetch::<Map>();
     let depth = format!("Depth: {}", map.depth);
-    ctx.print_color(2, 43, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &depth);
+    ctx.print_color(2, 40, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &depth);
 
 
     let mut clocks = ecs.write_storage::<TimeKeeper>();
@@ -81,17 +81,24 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
 
 
 fn draw_tooltips(ecs: &World, ctx : &mut Rltk) {
+    let (min_x, _max_x, min_y, _max_y) = camera::get_screen_bounds(ecs, ctx);
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
     let positions = ecs.read_storage::<Position>();
     let hidden = ecs.read_storage::<Hidden>();
 
     let mouse_pos = ctx.mouse_pos();
-    if mouse_pos.0 >= map.width || mouse_pos.1 >= map.height { return; }
+    let mut mouse_map_pos = mouse_pos;
+    mouse_map_pos.0 += min_x;
+    mouse_map_pos.1 += min_y;
+    if mouse_map_pos.0 >= map.width-1 || mouse_map_pos.1 >= map.height-1 || mouse_map_pos.0 < 1 || mouse_map_pos.1 < 1 
+    { 
+        return; 
+    }
+    if !map.visible_tiles[map.xy_idx(mouse_map_pos.0, mouse_map_pos.1)] { return; }
     let mut tooltip : Vec<String> = Vec::new();
     for (name, position, _hidden) in (&names, &positions, !&hidden).join() {
-        let idx = map.xy_idx(position.x, position.y);
-        if position.x == mouse_pos.0 && position.y == mouse_pos.1 && map.visible_tiles[idx] {
+        if position.x == mouse_map_pos.0 && position.y == mouse_map_pos.1 {
             tooltip.push(name.name.to_string());
         }
     }
@@ -273,6 +280,7 @@ pub fn remove_item_menu(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Op
 
 
 pub fn ranged_target(gs : &mut State, ctx : &mut Rltk, range : i32) -> (ItemMenuResult, Option<Point>) {
+    let (min_x, max_x, min_y, max_y) = camera::get_screen_bounds(&gs.ecs, ctx);
     let player_entity = gs.ecs.fetch::<Entity>();
     let player_pos = gs.ecs.fetch::<Point>();
     let viewsheds = gs.ecs.read_storage::<Viewshed>();
@@ -287,8 +295,12 @@ pub fn ranged_target(gs : &mut State, ctx : &mut Rltk, range : i32) -> (ItemMenu
         for idx in visible.visible_tiles.iter() {
             let distance = rltk::DistanceAlg::Pythagoras.distance2d(*player_pos, *idx);
             if distance <= range as f32 {
-                ctx.set_bg(idx.x, idx.y, RGB::named(rltk::BLUE));
-                available_cells.push(idx);
+                let screen_x = idx.x - min_x;
+                let screen_y = idx.y - min_y;
+                if screen_x > 1 && screen_x < (max_x - min_x)-1 && screen_y > 1 && screen_y < (max_y - min_y)-1 {
+                    ctx.set_bg(screen_x, screen_y, RGB::named(rltk::BLUE));
+                    available_cells.push(idx);
+                }
             }
         }
     } else {
@@ -297,17 +309,67 @@ pub fn ranged_target(gs : &mut State, ctx : &mut Rltk, range : i32) -> (ItemMenu
 
     // Draw mouse cursor
     let mouse_pos = ctx.mouse_pos();
+    let mut mouse_map_pos = mouse_pos;
+    mouse_map_pos.0 += min_x;
+    mouse_map_pos.1 += min_y;
     let mut valid_target = false;
-    for idx in available_cells.iter() { if idx.x == mouse_pos.0 && idx.y == mouse_pos.1 { valid_target = true; } }
+    for idx in available_cells.iter() { if idx.x == mouse_map_pos.0 && idx.y == mouse_map_pos.1 { valid_target = true; } }
     if valid_target {
         ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::CYAN));
         if ctx.left_click {
-            return (ItemMenuResult::Selected, Some(Point::new(mouse_pos.0, mouse_pos.1)));
+            return (ItemMenuResult::Selected, Some(Point::new(mouse_map_pos.0, mouse_map_pos.1)));
         }
     } else {
         ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::RED));
         if ctx.left_click {
             return (ItemMenuResult::Cancel, None);
+        }
+    }
+
+    match ctx.key {
+        None => {}
+        Some(key) => match key {
+            VirtualKeyCode::F => {
+                let player_entity = gs.ecs.fetch::<Entity>();
+                let monsters = gs.ecs.read_storage::<Monster>();
+                let positions = gs.ecs.read_storage::<Position>();
+                let worldmap_resource = gs.ecs.fetch::<Map>();
+                let viewshed = viewsheds.get(*player_entity).unwrap();
+
+                let mut dist_to_closest : f32 = 69 as f32;
+                let mut closest_position = Point::new(0, 0);
+
+                for tile in viewshed.visible_tiles.iter() {
+                    let idx = worldmap_resource.xy_idx(tile.x, tile.y);
+                    for entity_id in worldmap_resource.tile_content[idx].iter() {
+                        let mob = monsters.get(*entity_id);
+                        match mob {
+                            None => {}
+                            Some(_) => {
+                                let pos = positions.get(*entity_id);
+                                if let Some(pos) = pos {
+                                    let enemy_pos = Point::new(pos.x, pos.y);
+                                    //enemy_pos.x += min_x;
+                                    //enemy_pos.y += min_y;
+                                    
+                                    let distance = rltk::DistanceAlg::Pythagoras.distance2d(Point::new(enemy_pos.x, enemy_pos.y), *player_pos);
+                                    if distance < dist_to_closest {
+                                        dist_to_closest = distance;
+                                        closest_position = Point::new(enemy_pos.x, enemy_pos.y);
+                                    }
+                                    
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if dist_to_closest != 69 as f32 {
+                    return (ItemMenuResult::Selected, Some(Point::new(closest_position.x, closest_position.y)));
+                }
+            },
+
+            _ => { }
         }
     }
 
