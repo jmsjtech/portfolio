@@ -47,6 +47,8 @@ mod trigger_system;
 mod particle_system;
 use particle_system::*;
 
+mod animal_ai_system;
+
 mod rex_assets;
 
 mod map_builders;
@@ -78,7 +80,7 @@ pub struct State {
 
 impl State {
     fn run_systems(&mut self) {
-        let mut is_paused;
+        let is_paused;
         {
             let paused = self.ecs.fetch::<bool>();
             is_paused = *paused;
@@ -98,6 +100,8 @@ impl State {
             bystander.run_now(&self.ecs);
             let mut melee = MeleeCombatSystem{};
             melee.run_now(&self.ecs);
+            let mut animals = animal_ai_system::AnimalAI{};
+            animals.run_now(&self.ecs);
             
         }
         
@@ -232,7 +236,6 @@ impl State {
         }
         self.generate_world_map(current_depth + 1);
 
-        let player_entity = self.ecs.fetch::<Entity>();
         let mut gamelog = self.ecs.fetch_mut::<gamelog::GameLog>();
         gamelog.entries.push("You descend to the next level.".to_string());
     }
@@ -421,7 +424,7 @@ impl GameState for State {
         self.ecs.maintain();
         damage_system::delete_the_dead(&mut self.ecs);
         
-        let mut is_paused;
+        let is_paused;
         {
             let paused = self.ecs.fetch::<bool>();
             is_paused = *paused;
@@ -479,7 +482,7 @@ impl GameState for State {
                             }
                             HungerState::Starving => {
                                 gamelog.entries.push("You're so hungry it hurts!".to_string());
-                                SufferDamage::new_damage(&mut inflict_damage, *player_entity, 1);
+                                SufferDamage::new_damage(&mut inflict_damage, *player_entity, 1, false);
                             }
                         }
                     }
@@ -619,6 +622,9 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Bystander>();
     gs.ecs.register::<Vendor>();
     gs.ecs.register::<Quips>();
+    gs.ecs.register::<LootTable>();
+    gs.ecs.register::<Carnivore>();
+    gs.ecs.register::<Herbivore>();
     
     gs.ecs.register::<Attributes>();
     gs.ecs.register::<Skills>();

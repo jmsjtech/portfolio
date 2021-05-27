@@ -42,7 +42,7 @@ pub fn save_game(ecs : &mut World) {
             WantsToDropItem, SerializationHelper, Equippable, Equipped, MeleeWeapon, Wearable,
             WantsToRemoveItem, TimeKeeper, ParticleLifetime, HungerClock, ProvidesFood, MagicMapper,
             Hidden, EntryTrigger, EntityMoved, Door, BlocksVisibility, Bystander, Vendor, Quips, Attributes, Skills,
-            Pools, NaturalAttackDefense
+            Pools, NaturalAttackDefense, LootTable, Carnivore, Herbivore
         );
     }
 
@@ -94,7 +94,7 @@ pub fn load_game(ecs: &mut World) {
             WantsToDropItem, SerializationHelper, Equippable, Equipped, MeleeWeapon, Wearable,
             WantsToRemoveItem, TimeKeeper, ParticleLifetime, HungerClock, ProvidesFood, MagicMapper,
             Hidden, EntryTrigger, EntityMoved, Door, BlocksVisibility, Bystander, Vendor, Quips, Attributes, Skills,
-            Pools, NaturalAttackDefense
+            Pools, NaturalAttackDefense, LootTable, Carnivore, Herbivore
         );
     }
 

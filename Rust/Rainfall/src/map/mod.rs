@@ -3,6 +3,8 @@ use specs::prelude::*;
 use serde::{Serialize, Deserialize};
 use std::collections::HashSet;
 mod tiletype;
+mod themes;
+pub use themes::*;
 pub use tiletype::{TileType, tile_walkable, tile_opaque, tile_cost};
 
 #[derive(Default, Serialize, Deserialize, Clone)]
