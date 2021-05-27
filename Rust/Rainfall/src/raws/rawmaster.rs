@@ -151,10 +151,22 @@ pub fn spawn_named_mob(raws: &RawMaster, new_entity : EntityBuilder, key : &str,
 
         eb = eb.with(Name{ name : mob_template.name.clone() });
 
-        eb = eb.with(Monster{});
+        match mob_template.ai.as_ref() {
+            "melee" => eb = eb.with(Monster{}),
+            "bystander" => eb = eb.with(Bystander{}),
+            "vendor" => eb = eb.with(Vendor{}),
+            _ => {}
+        }
         if mob_template.blocks_tile {
             eb = eb.with(BlocksTile{});
         }
+        
+        if let Some(quips) = &mob_template.quips {
+            eb = eb.with(Quips{
+                available: quips.clone()
+            });
+        }
+        
         eb = eb.with(CombatStats{
             max_hp : mob_template.stats.max_hp,
             hp : mob_template.stats.hp,

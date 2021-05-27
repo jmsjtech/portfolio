@@ -46,6 +46,7 @@
             }
         }
     },
+
     {
         "name" : "Fireball Scroll",
         "renderable": {
@@ -109,6 +110,7 @@
             }
         }
     },
+
     {
         "name" : "Dagger",
         "renderable": {
@@ -138,6 +140,20 @@
     },
 
     {
+        "name" : "Battleaxe",
+        "renderable": {
+            "glyph" : "¶",
+            "fg" : "#FF55FF",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "weapon" : {
+            "range" : "melee",
+            "power_bonus" : 5
+        }
+    },
+
+    {
         "name" : "Shield",
         "renderable": {
             "glyph" : "[",
@@ -161,23 +177,315 @@
         "shield" : {
             "defense_bonus" : 3
         }
-    },
-    
-    {
-      "name" : "Battleaxe",
-      "renderable": {
-          "glyph" : "¶",
-          "fg" : "#FF55FF",
-          "bg" : "#000000",
-          "order" : 2
-      },
-      "weapon" : {
-          "range" : "melee",
-          "power_bonus" : 5
-      }
-  }
+    }
 ],
+
 "mobs" : [
+      {
+        "name" : "Dock Worker",
+        "renderable": {
+            "glyph" : "☺",
+            "fg" : "#999999",
+            "bg" : "#000000",
+            "order" : 1,
+            "speed" : 500
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 16,
+            "hp" : 16,
+            "defense" : 1,
+            "power" : 4,
+            "speed" : 500
+        },
+        "vision_range" : 4,
+        "ai" : "bystander",
+        "quips" : [ "Lovely day, eh?", "Nice weather", "Hello" ]
+    },
+
+    {
+        "name" : "Fisher",
+        "renderable": {
+            "glyph" : "☺",
+            "fg" : "#999999",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 16,
+            "hp" : 16,
+            "defense" : 1,
+            "power" : 4,
+            "speed" : 500
+        },
+        "vision_range" : 4,
+        "ai" : "bystander",
+        "quips" : [ "They're biting today!", "I caught something, but it wasn't a fish!", "Looks like rain" ]
+    },
+
+    {
+        "name" : "Wannabe Pirate",
+        "renderable": {
+            "glyph" : "☺",
+            "fg" : "#aa9999",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 16,
+            "hp" : 16,
+            "defense" : 1,
+            "power" : 4,
+            "speed" : 500
+        },
+        "vision_range" : 4,
+        "ai" : "bystander",
+        "quips" : [ "Arrr", "Grog!", "Booze!" ]
+    },
+
+    {
+        "name" : "Drunk",
+        "renderable": {
+            "glyph" : "☺",
+            "fg" : "#aa9999",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 16,
+            "hp" : 16,
+            "defense" : 1,
+            "power" : 4,
+            "speed" : 500
+        },
+        "vision_range" : 4,
+        "ai" : "bystander",
+        "quips" : [ "Hic", "Need... more... booze!", "Spare a copper?" ]
+    },
+    {
+        "name" : "Barkeep",
+        "renderable": {
+            "glyph" : "☺",
+            "fg" : "#EE82EE",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 16,
+            "hp" : 16,
+            "defense" : 1,
+            "power" : 4,
+            "speed" : 500
+        },
+        "vision_range" : 4,
+        "ai" : "bystander"
+    },
+
+    {
+        "name" : "Shady Salesman",
+        "renderable": {
+            "glyph" : "h",
+            "fg" : "#EE82EE",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 16,
+            "hp" : 16,
+            "defense" : 1,
+            "power" : 4,
+            "speed" : 500
+        },
+        "vision_range" : 4,
+        "ai" : "bystander"
+    },
+
+    {
+        "name" : "Patron",
+        "renderable": {
+            "glyph" : "☺",
+            "fg" : "#AAAAAA",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 16,
+            "hp" : 16,
+            "defense" : 1,
+            "power" : 4,
+            "speed" : 500
+        },
+        "vision_range" : 4,
+        "ai" : "bystander",
+        "quips" : [ "Quiet down, it's too early!", "Oh my, I drank too much.", "Still saving the world, eh?" ]
+    },
+
+    {
+        "name" : "Priest",
+        "renderable": {
+            "glyph" : "☺",
+            "fg" : "#EE82EE",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 16,
+            "hp" : 16,
+            "defense" : 1,
+            "power" : 4,
+            "speed" : 500
+        },
+        "vision_range" : 4,
+        "ai" : "bystander"
+    },
+
+    {
+        "name" : "Parishioner",
+        "renderable": {
+            "glyph" : "☺",
+            "fg" : "#AAAAAA",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 16,
+            "hp" : 16,
+            "defense" : 1,
+            "power" : 4,
+            "speed" : 500
+        },
+        "vision_range" : 4,
+        "ai" : "bystander"
+    },
+
+    {
+        "name" : "Blacksmith",
+        "renderable": {
+            "glyph" : "☺",
+            "fg" : "#EE82EE",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 16,
+            "hp" : 16,
+            "defense" : 1,
+            "power" : 4,
+            "speed" : 500
+        },
+        "vision_range" : 4,
+        "ai" : "bystander"
+    },
+
+    {
+        "name" : "Clothier",
+        "renderable": {
+            "glyph" : "☺",
+            "fg" : "#EE82EE",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 16,
+            "hp" : 16,
+            "defense" : 1,
+            "power" : 4,
+            "speed" : 500
+        },
+        "vision_range" : 4,
+        "ai" : "bystander"
+    },
+
+    {
+        "name" : "Alchemist",
+        "renderable": {
+            "glyph" : "☺",
+            "fg" : "#EE82EE",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 16,
+            "hp" : 16,
+            "defense" : 1,
+            "power" : 4,
+            "speed" : 500
+        },
+        "vision_range" : 4,
+        "ai" : "bystander"
+    },
+
+    {
+        "name" : "Mom",
+        "renderable": {
+            "glyph" : "☺",
+            "fg" : "#FFAAAA",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 16,
+            "hp" : 16,
+            "defense" : 1,
+            "power" : 4,
+            "speed" : 500
+        },
+        "vision_range" : 4,
+        "ai" : "bystander"
+    },
+
+    {
+        "name" : "Peasant",
+        "renderable": {
+            "glyph" : "☺",
+            "fg" : "#999999",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 16,
+            "hp" : 16,
+            "defense" : 1,
+            "power" : 4,
+            "speed" : 500
+        },
+        "vision_range" : 4,
+        "ai" : "bystander"
+    },
+
+    {
+        "name" : "Rat",
+        "renderable": {
+            "glyph" : "r",
+            "fg" : "#FF0000",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 2,
+            "hp" : 2,
+            "defense" : 1,
+            "power" : 3,
+            "speed" : 200
+        },
+        "vision_range" : 8,
+        "ai" : "melee"
+    },
+
     {
         "name" : "Orc",
         "renderable": {
@@ -192,9 +500,10 @@
             "hp" : 16,
             "defense" : 1,
             "power" : 4,
-            "speed" : 150
+            "speed" : 200
         },
-        "vision_range" : 8
+        "vision_range" : 8,
+        "ai" : "melee"
     },
 
     {
@@ -213,27 +522,31 @@
             "power" : 3,
             "speed" : 200
         },
-        "vision_range" : 8
+        "vision_range" : 8,
+        "ai" : "melee"
     },
-    
+
     {
-      "name" : "Kobold",
-      "renderable": {
-          "glyph" : "k",
-          "fg" : "#FF0000",
-          "bg" : "#000000",
-          "order" : 1
-      },
-      "blocks_tile" : true,
-      "stats" : {
-          "max_hp" : 4,
-          "hp" : 4,
-          "defense" : 0,
-          "power" : 2
-      },
-      "vision_range" : 4
-  }
+        "name" : "Kobold",
+        "renderable": {
+            "glyph" : "k",
+            "fg" : "#FF0000",
+            "bg" : "#000000",
+            "order" : 1
+        },
+        "blocks_tile" : true,
+        "stats" : {
+            "max_hp" : 4,
+            "hp" : 4,
+            "defense" : 0,
+            "power" : 2,
+            "speed" : 200
+        },
+        "vision_range" : 4,
+        "ai" : "melee"
+    }
 ],
+
 "props" : [
     {
         "name" : "Bear Trap",
@@ -251,6 +564,7 @@
             }
         }
     },
+
     {
         "name" : "Door",
         "renderable": {
@@ -263,6 +577,160 @@
         "blocks_tile" : true,
         "blocks_visibility" : true,
         "door_open" : true
+    },
+
+    {
+        "name" : "Keg",
+        "renderable": {
+            "glyph" : "φ",
+            "fg" : "#AAAAAA",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "hidden" : false
+    },
+
+    {
+        "name" : "Table",
+        "renderable": {
+            "glyph" : "╦",
+            "fg" : "#AAAAAA",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "hidden" : false
+    },
+
+    {
+        "name" : "Chair",
+        "renderable": {
+            "glyph" : "└",
+            "fg" : "#AAAAAA",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "hidden" : false
+    },
+
+    {
+        "name" : "Candle",
+        "renderable": {
+            "glyph" : "Ä",
+            "fg" : "#FFA500",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "hidden" : false
+    },
+
+    {
+        "name" : "Anvil",
+        "renderable": {
+            "glyph" : "╔",
+            "fg" : "#AAAAAA",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "hidden" : false
+    },
+
+    {
+        "name" : "Water Trough",
+        "renderable": {
+            "glyph" : "•",
+            "fg" : "#5555FF",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "hidden" : false
+    },
+
+    {
+        "name" : "Weapon Rack",
+        "renderable": {
+            "glyph" : "π",
+            "fg" : "#FFD700",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "hidden" : false
+    },
+
+    {
+        "name" : "Armor Stand",
+        "renderable": {
+            "glyph" : "⌠",
+            "fg" : "#FFFFFF",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "hidden" : false
+    },
+
+    {
+        "name" : "Chemistry Set",
+        "renderable": {
+            "glyph" : "δ",
+            "fg" : "#00FFFF",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "hidden" : false
+    },
+
+    {
+        "name" : "Dead Thing",
+        "renderable": {
+            "glyph" : "☻",
+            "fg" : "#AA0000",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "hidden" : false
+    },
+
+    {
+        "name" : "Cabinet",
+        "renderable": {
+            "glyph" : "∩",
+            "fg" : "#805A46",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "hidden" : false
+    },
+
+    {
+        "name" : "Bed",
+        "renderable": {
+            "glyph" : "8",
+            "fg" : "#805A46",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "hidden" : false
+    },
+
+    {
+        "name" : "Loom",
+        "renderable": {
+            "glyph" : "≡",
+            "fg" : "#805A46",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "hidden" : false
+    },
+
+    {
+        "name" : "Hide Rack",
+        "renderable": {
+            "glyph" : "π",
+            "fg" : "#805A46",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "hidden" : false
     }
 ]
 }
