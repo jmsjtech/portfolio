@@ -1,36 +1,36 @@
 use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
 use std::cmp::{max, min};
-use super::{Position, Player, Viewshed, State, Map, LastActed, TileType, TimeKeeper, Name, Renderable, BlocksTile, BlocksVisibility, Door};
-use super::{WantsToMelee, WantsToPickupItem, Item, GameLog, RunState, EntityMoved, Bystander, Vendor, Pools};
+use super::{Position, Player, Viewshed, State, Map, LastActed, TileType, Renderable, BlocksTile, BlocksVisibility, Door};
+use super::{WantsToMelee, WantsToPickupItem, Item, GameLog, RunState, EntityMoved, Bystander, Vendor, Attributes};
+// use super::{TimeKeeper, Name}
 use std::time::{SystemTime, UNIX_EPOCH};
 
 
-pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
-    let mut entity_moved = ecs.write_storage::<EntityMoved>();
-
+pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut positions = ecs.write_storage::<Position>();
     let players = ecs.read_storage::<Player>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
     let entities = ecs.entities();
-    let combat_stats = ecs.write_storage::<Pools>();
+    let combat_stats = ecs.read_storage::<Attributes>();
     let map = ecs.fetch::<Map>();
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
-    let mut lastactions = ecs.write_storage::<LastActed>();
+    let mut entity_moved = ecs.write_storage::<EntityMoved>();
     let mut doors = ecs.write_storage::<Door>();
     let mut blocks_visibility = ecs.write_storage::<BlocksVisibility>();
     let mut blocks_movement = ecs.write_storage::<BlocksTile>();
     let mut renderables = ecs.write_storage::<Renderable>();
-    
-    
     let bystanders = ecs.read_storage::<Bystander>();
     let vendors = ecs.read_storage::<Vendor>();
+    let mut result = RunState::Running;
+    
+    let mut lastactions = ecs.write_storage::<LastActed>();
 
     let mut swap_entities : Vec<(Entity, i32, i32)> = Vec::new();
     
     
     for (entity, _player, pos, viewshed, lastaction) in (&entities, &players, &mut positions, &mut viewsheds, &mut lastactions).join() {
-        if pos.x + delta_x < 1 || pos.x + delta_x > map.width-1 || pos.y + delta_y < 1 || pos.y + delta_y > map.height-1 { return; }
+        if pos.x + delta_x < 1 || pos.x + delta_x > map.width-1 || pos.y + delta_y < 1 || pos.y + delta_y > map.height-1 { return RunState::Running; }
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
     
         for potential_target in map.tile_content[destination_idx].iter() {
@@ -49,11 +49,12 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
                 let mut ppos = ecs.write_resource::<Point>();
                 ppos.x = pos.x;
                 ppos.y = pos.y;
+                result = RunState::Running;
             } else {
                 let target = combat_stats.get(*potential_target);
                 if let Some(_target) = target {
                     wants_to_melee.insert(entity, WantsToMelee{ target: *potential_target }).expect("Add target failed");
-                    return;
+                    return RunState::Running;
                 }
             }
             let door = doors.get_mut(*potential_target);
@@ -72,28 +73,18 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
                 lastaction.lastacted = SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock may have gone backwards?").as_millis();
                 pos.x = min(map.width-1 , max(0, pos.x + delta_x));
                 pos.y = min(map.height-1, max(0, pos.y + delta_y));
+                entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
 
                 viewshed.dirty = true;
                 let mut ppos = ecs.write_resource::<Point>();
                 ppos.x = pos.x;
                 ppos.y = pos.y;
-
-                entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
-            }
-        }
-    }
-
-    let items = ecs.read_storage::<Item>();
-    let mut gamelog = ecs.fetch_mut::<GameLog>();
-    let ppos = ecs.read_resource::<Point>();
-    let names = ecs.read_storage::<Name>();
-
-
-    for (item_entity, _item, position) in (&entities, &items, &mut positions).join() {
-        let name = names.get(item_entity);
-        if let Some(name) = name {
-            if position.x == ppos.x && position.y == ppos.y {
-                gamelog.entries.push(format!("There is a {} here.", name.name));
+                result = RunState::Running;
+                match map.tiles[destination_idx] {
+                    TileType::DownStairs => result = RunState::NextLevel,
+                    TileType::UpStairs => result = RunState::PreviousLevel,
+                    _ => {}
+                } 
             }
         }
     }
@@ -105,6 +96,8 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             their_pos.y = m.2;
         }
     }
+
+    result
 }
 
 fn get_item(ecs: &mut World) {
@@ -145,6 +138,19 @@ pub fn try_next_level(ecs: &mut World) -> bool {
     } else {
         let mut gamelog = ecs.fetch_mut::<GameLog>();
         gamelog.entries.push("There is no way down from here.".to_string());
+        false
+    }
+}
+
+pub fn try_previous_level(ecs: &mut World) -> bool {
+    let player_pos = ecs.fetch::<Point>();
+    let map = ecs.fetch::<Map>();
+    let player_idx = map.xy_idx(player_pos.x, player_pos.y);
+    if map.tiles[player_idx] == TileType::UpStairs {
+        true
+    } else {
+        let mut gamelog = ecs.fetch_mut::<GameLog>();
+        gamelog.entries.push("There is no way up from here.".to_string());
         false
     }
 }
@@ -200,6 +206,15 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState
                         return RunState::Running;
                     }
                 },
+                
+                VirtualKeyCode::Comma => {
+                    if try_previous_level(&mut gs.ecs) {
+                        return RunState::PreviousLevel;
+                    } else {
+                        return RunState::Running;
+                    }
+                },
+                
                 VirtualKeyCode::T => return RunState::ShowRemoveItem,
                 _ => None
             };
@@ -212,18 +227,8 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState
         None => {}
         Some(key) => match key {
             VirtualKeyCode::G => get_item(&mut gs.ecs),
-
-            VirtualKeyCode::Grave => {
-                let player_entity = gs.ecs.fetch::<Entity>();
-                let mut clocks = gs.ecs.write_storage::<TimeKeeper>();
-                let clock = clocks.get_mut(*player_entity);
-
-                if let Some(clock) = clock {
-                    clock.day += 1;
-                }
-                
-            },
             
+            // Toggle the game pause
             VirtualKeyCode::Space => {
                 let mut is_paused = gs.ecs.fetch_mut::<bool>();
                 let mut gamelog = gs.ecs.fetch_mut::<GameLog>();
@@ -238,26 +243,23 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState
                 }
             }
             
-
+            // Show the inventory
             VirtualKeyCode::I => return RunState::ShowInventory,
+            
+            // Save and go back to the menu
             VirtualKeyCode::Escape => return RunState::SaveGame,
+            
+            // Cheating!
+            VirtualKeyCode::Backslash => return RunState::ShowCheatMenu,
 
-            VirtualKeyCode::A |
-            VirtualKeyCode::Numpad4 => try_move_player(-1, 0, &mut gs.ecs),
-
-            VirtualKeyCode::D |
-            VirtualKeyCode::Numpad6 => try_move_player(1, 0, &mut gs.ecs),
-
-            VirtualKeyCode::W |
-            VirtualKeyCode::Numpad8 => try_move_player(0, -1, &mut gs.ecs),
-
-            VirtualKeyCode::S |
-            VirtualKeyCode::Numpad2 => try_move_player(0, 1, &mut gs.ecs),
-
-            VirtualKeyCode::Numpad7 => try_move_player(-1, -1, &mut gs.ecs),
-            VirtualKeyCode::Numpad9 => try_move_player(1, -1, &mut gs.ecs),
-            VirtualKeyCode::Numpad1 => try_move_player(-1, 1, &mut gs.ecs),
-            VirtualKeyCode::Numpad3 => try_move_player(1, 1, &mut gs.ecs),
+            VirtualKeyCode::Numpad4 => return try_move_player(-1, 0, &mut gs.ecs), // Left
+            VirtualKeyCode::Numpad6 => return try_move_player(1, 0, &mut gs.ecs), // Right
+            VirtualKeyCode::Numpad8 => return try_move_player(0, -1, &mut gs.ecs), // Up
+            VirtualKeyCode::Numpad2 => return try_move_player(0, 1, &mut gs.ecs), // Down
+            VirtualKeyCode::Numpad7 => return try_move_player(-1, -1, &mut gs.ecs), // Up-Left
+            VirtualKeyCode::Numpad9 => return try_move_player(1, -1, &mut gs.ecs), // Up-Right
+            VirtualKeyCode::Numpad1 => return try_move_player(-1, 1, &mut gs.ecs), // Down-Left
+            VirtualKeyCode::Numpad3 => return try_move_player(1, 1, &mut gs.ecs), // Down-Right
             _ => { return state }
         },
         

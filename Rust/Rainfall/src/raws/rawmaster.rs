@@ -274,6 +274,11 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs : &mut World, key : &str, pos : Spa
             mob_int = intelligence;
         }
         eb = eb.with(attr);
+        
+        
+        if let Some(light) = &mob_template.light {
+            eb = eb.with(LightSource{ range: light.range, color : rltk::RGB::from_hex(&light.color).expect("Bad color") });
+        }
 
         let mob_level = if mob_template.level.is_some() { mob_template.level.unwrap() } else { 1 };
         let mob_hp = npc_hp(mob_fitness, mob_level);

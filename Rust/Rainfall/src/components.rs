@@ -149,6 +149,13 @@ pub struct SerializationHelper {
     pub map : super::map::Map
 }
 
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct DMSerializationHelper {
+    pub map : super::map::MasterDungeonMap
+}
+
+
+
 
 #[derive(Component, Debug, ConvertSaveload)]
 pub struct LastActed {
@@ -311,3 +318,16 @@ pub struct Carnivore {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Herbivore {}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct OtherLevelPosition {
+    pub x: i32,
+    pub y: i32,
+    pub depth: i32
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct LightSource {
+    pub color : RGB,
+    pub range: i32
+}

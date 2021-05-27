@@ -4,6 +4,8 @@ use serde::{Serialize, Deserialize};
 use std::collections::HashSet;
 mod tiletype;
 mod themes;
+mod dungeon;
+pub use dungeon::{MasterDungeonMap, level_transition, freeze_level_entities, thaw_level_entities};
 pub use themes::*;
 pub use tiletype::{TileType, tile_walkable, tile_opaque, tile_cost};
 
@@ -19,6 +21,8 @@ pub struct Map {
     pub bloodstains : HashSet<usize>,
     pub view_blocked : HashSet<usize>,
     pub name : String,
+    pub outdoors : bool,
+    pub light : Vec<rltk::RGB>,
 
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
@@ -48,7 +52,6 @@ impl Map {
         }
     }
 
-    /// Generates an empty map, consisting entirely of solid walls
     pub fn new<S : ToString>(new_depth : i32, width: i32, height: i32, name: S) -> Map {
         let map_tile_count = (width*height) as usize;
         Map{
@@ -62,7 +65,9 @@ impl Map {
             depth: new_depth,
             bloodstains: HashSet::new(),
             view_blocked : HashSet::new(),
-            name : name.to_string()
+            name : name.to_string(),
+            outdoors : true,
+            light: vec![rltk::RGB::from_f32(0.0, 0.0, 0.0); map_tile_count]
         }
     }
 }
