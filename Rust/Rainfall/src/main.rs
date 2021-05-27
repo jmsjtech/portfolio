@@ -33,6 +33,9 @@ mod spawner;
 mod inventory_system;
 use inventory_system::*;
 
+mod gamesystem;
+pub use gamesystem::*;
+
 pub mod camera;
 pub mod raws;
 pub mod bystander_ai_system;
@@ -218,15 +221,9 @@ impl State {
         }
         self.generate_world_map(current_depth + 1);
 
-        // Notify the player and give them some health
         let player_entity = self.ecs.fetch::<Entity>();
         let mut gamelog = self.ecs.fetch_mut::<gamelog::GameLog>();
-        gamelog.entries.push("You descend to the next level, and take a moment to heal.".to_string());
-        let mut player_health_store = self.ecs.write_storage::<CombatStats>();
-        let player_health = player_health_store.get_mut(*player_entity);
-        if let Some(player_health) = player_health {
-            player_health.hp = i32::max(player_health.hp, player_health.max_hp / 2);
-        }
+        gamelog.entries.push("You descend to the next level.".to_string());
     }
 }
 
@@ -415,15 +412,15 @@ impl GameState for State {
         //let mut clock = self.ecs.fetch_mut::<TimeKeeper>();
         let time_now = SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock may have gone backwards?").as_millis();
         let player_entity = self.ecs.fetch::<Entity>();
-        let mut combat_stats = self.ecs.write_storage::<CombatStats>();
         let mut lastactions = self.ecs.write_storage::<LastActed>();
         let mut clocks = self.ecs.write_storage::<TimeKeeper>();
 
         let mut gamelog = self.ecs.fetch_mut::<GameLog>();
+        let mut all_pools = self.ecs.write_storage::<Pools>();
 
-        let stats = combat_stats.get_mut(*player_entity);
         let last_acted = lastactions.get_mut(*player_entity);
         let clock = clocks.get_mut(*player_entity);
+        let stats = all_pools.get_mut(*player_entity);
 
         if let Some(clock) = clock {
             if clock.last_second + 1000 <= time_now {
@@ -517,8 +514,9 @@ impl GameState for State {
                             }
                         }
 
-                        if last_acted.lastacted + 1000 < time_now && stats.hp > 0 && can_heal && !hungry_or_starving {
-                            stats.hp = i32::min(stats.max_hp, stats.hp + 1);
+                        if last_acted.lastacted + 1000 < time_now && stats.hit_points.current > 0 && can_heal && !hungry_or_starving {
+                            let pools = all_pools.get_mut(*player_entity).unwrap();
+                            pools.hit_points.current = i32::min(pools.hit_points.current + 1, pools.hit_points.max);
                         }
                     }
                 }
@@ -553,7 +551,6 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SerializationHelper>();
 
     gs.ecs.register::<Name>();
-    gs.ecs.register::<CombatStats>();
 
     gs.ecs.register::<Player>();
     gs.ecs.register::<Monster>();
@@ -598,6 +595,10 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Bystander>();
     gs.ecs.register::<Vendor>();
     gs.ecs.register::<Quips>();
+    
+    gs.ecs.register::<Attributes>();
+    gs.ecs.register::<Skills>();
+    gs.ecs.register::<Pools>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     

@@ -1,6 +1,6 @@
 use rltk::{ RGB, Rltk, Point, VirtualKeyCode };
 use specs::prelude::*;
-use super::{CombatStats, Player, Name, Position, Map, InBackpack, GameLog, State, Viewshed, RunState, TimeKeeper, Equipped, HungerClock, HungerState, Hidden, Monster, camera};
+use super::{Pools, Player, Name, Position, Map, InBackpack, GameLog, State, Viewshed, RunState, TimeKeeper, Equipped, HungerClock, HungerState, Hidden, Monster, camera};
 
 use super::rex_assets::RexAssets;
 
@@ -8,14 +8,23 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     ctx.draw_box(0, 40, 59, 9, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
     ctx.draw_box(60, 0, 19, 49, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
 
-    let combat_stats = ecs.read_storage::<CombatStats>();
+    let combat_stats = ecs.read_storage::<Pools>();
     let players = ecs.read_storage::<Player>();
     let hunger = ecs.read_storage::<HungerClock>();
     for (_player, stats, hc) in (&players, &combat_stats, &hunger).join() {
-        let health = format!("HP: {} / {} ", stats.hp, stats.max_hp);
-        ctx.print_color(61, 3, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &health);
-
-        ctx.draw_bar_horizontal(61, 4, 18, stats.hp, stats.max_hp, RGB::named(rltk::RED), RGB::named(rltk::BLACK));
+        let health = format!("HP: {} / {} ", stats.hit_points.current, stats.hit_points.max);
+        ctx.print_color(61, 3, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &health); 
+        ctx.draw_bar_horizontal(61, 4, 18, stats.hit_points.current, stats.hit_points.max, RGB::named(rltk::RED), RGB::named(rltk::BLACK));
+        
+        let mana = format!("MP: {} / {} ", stats.mana.current, stats.mana.max);
+        ctx.print_color(61, 6, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &mana); 
+        ctx.draw_bar_horizontal(61, 7, 18, stats.mana.current, stats.mana.max, RGB::named(rltk::BLUE), RGB::named(rltk::BLACK));
+        
+        let level = format!("Level: {} / XP: {}", stats.level, stats.xp);
+        ctx.print_color(61, 9, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &level); 
+        
+        
+        
         match hc.state {
             HungerState::WellFed => ctx.print_color(51, 40, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "Well Fed"),
             HungerState::Normal => {}

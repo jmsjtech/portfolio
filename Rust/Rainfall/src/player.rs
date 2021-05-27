@@ -2,7 +2,7 @@ use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
 use std::cmp::{max, min};
 use super::{Position, Player, Viewshed, State, Map, LastActed, TileType, TimeKeeper, Name, Renderable, BlocksTile, BlocksVisibility, Door};
-use super::{CombatStats, WantsToMelee, WantsToPickupItem, Item, GameLog, RunState, EntityMoved, Bystander, Vendor};
+use super::{WantsToMelee, WantsToPickupItem, Item, GameLog, RunState, EntityMoved, Bystander, Vendor, Pools};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 
@@ -13,7 +13,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let players = ecs.read_storage::<Player>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
     let entities = ecs.entities();
-    let combat_stats = ecs.read_storage::<CombatStats>();
+    let combat_stats = ecs.write_storage::<Pools>();
     let map = ecs.fetch::<Map>();
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
     let mut lastactions = ecs.write_storage::<LastActed>();
@@ -149,51 +149,65 @@ pub fn try_next_level(ecs: &mut World) -> bool {
 
 
 pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState {
-    match ctx.key {
-        None => {}
-        Some(key) => match key {
-            VirtualKeyCode::G => get_item(&mut gs.ecs),
-
-            VirtualKeyCode::Grave => {
-                let player_entity = gs.ecs.fetch::<Entity>();
-                let mut clocks = gs.ecs.write_storage::<TimeKeeper>();
-                let clock = clocks.get_mut(*player_entity);
-
-                if let Some(clock) = clock {
-                    clock.day += 1;
-                }
-            },
-
-
-            VirtualKeyCode::I => return RunState::ShowInventory,
-            VirtualKeyCode::X => return RunState::ShowDropItem,
-            VirtualKeyCode::Escape => return RunState::SaveGame,
-            VirtualKeyCode::T => return RunState::ShowRemoveItem,
-
-            VirtualKeyCode::Period => {
+    if ctx.shift {
+        match ctx.key {
+            None => {}
+            
+            Some(key) => match key {
+                VirtualKeyCode::D =>  return RunState::ShowDropItem,
+                VirtualKeyCode::Period => {
                     if try_next_level(&mut gs.ecs) {
                         return RunState::NextLevel;
                     }
+                },
+                VirtualKeyCode::T => return RunState::ShowRemoveItem,
+
+                    
+                _ => { }
             },
+        }
+    }
+    
+    else {
+        match ctx.key {
+            None => {}
+            Some(key) => match key {
+                VirtualKeyCode::G => get_item(&mut gs.ecs),
 
-            VirtualKeyCode::A |
-            VirtualKeyCode::Numpad4 => try_move_player(-1, 0, &mut gs.ecs),
+                VirtualKeyCode::Grave => {
+                    let player_entity = gs.ecs.fetch::<Entity>();
+                    let mut clocks = gs.ecs.write_storage::<TimeKeeper>();
+                    let clock = clocks.get_mut(*player_entity);
 
-            VirtualKeyCode::D |
-            VirtualKeyCode::Numpad6 => try_move_player(1, 0, &mut gs.ecs),
+                    if let Some(clock) = clock {
+                        clock.day += 1;
+                    }
+                    
+                },
+                
 
-            VirtualKeyCode::W |
-            VirtualKeyCode::Numpad8 => try_move_player(0, -1, &mut gs.ecs),
+                VirtualKeyCode::I => return RunState::ShowInventory,
+                VirtualKeyCode::Escape => return RunState::SaveGame,
 
-            VirtualKeyCode::S |
-            VirtualKeyCode::Numpad2 => try_move_player(0, 1, &mut gs.ecs),
+                VirtualKeyCode::A |
+                VirtualKeyCode::Numpad4 => try_move_player(-1, 0, &mut gs.ecs),
 
-            VirtualKeyCode::Numpad7 => try_move_player(-1, -1, &mut gs.ecs),
-            VirtualKeyCode::Numpad9 => try_move_player(1, -1, &mut gs.ecs),
-            VirtualKeyCode::Numpad1 => try_move_player(-1, 1, &mut gs.ecs),
-            VirtualKeyCode::Numpad3 => try_move_player(1, 1, &mut gs.ecs),
-            _ => { return state }
-        },
+                VirtualKeyCode::D |
+                VirtualKeyCode::Numpad6 => try_move_player(1, 0, &mut gs.ecs),
+
+                VirtualKeyCode::W |
+                VirtualKeyCode::Numpad8 => try_move_player(0, -1, &mut gs.ecs),
+
+                VirtualKeyCode::S |
+                VirtualKeyCode::Numpad2 => try_move_player(0, 1, &mut gs.ecs),
+
+                VirtualKeyCode::Numpad7 => try_move_player(-1, -1, &mut gs.ecs),
+                VirtualKeyCode::Numpad9 => try_move_player(1, -1, &mut gs.ecs),
+                VirtualKeyCode::Numpad1 => try_move_player(-1, 1, &mut gs.ecs),
+                VirtualKeyCode::Numpad3 => try_move_player(1, 1, &mut gs.ecs),
+                _ => { return state }
+            },
+        }
     }
     state
 }

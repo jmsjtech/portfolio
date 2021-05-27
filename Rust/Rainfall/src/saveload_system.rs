@@ -37,11 +37,12 @@ pub fn save_game(ecs : &mut World) {
         let writer = File::create("./savegame.json").unwrap();
         let mut serializer = serde_json::Serializer::new(writer);
         serialize_individually!(ecs, serializer, data, Position, Renderable, Player, Viewshed, Monster,
-            Name, BlocksTile, CombatStats, SufferDamage, WantsToMelee, Item, Consumable, Ranged, InflictsDamage,
+            Name, BlocksTile, SufferDamage, WantsToMelee, Item, Consumable, Ranged, InflictsDamage,
             AreaOfEffect, Confusion, ProvidesHealing, InBackpack, WantsToPickupItem, WantsToUseItem, LastActed,
             WantsToDropItem, SerializationHelper, Equippable, Equipped, MeleePowerBonus, DefenseBonus,
             WantsToRemoveItem, TimeKeeper, ParticleLifetime, HungerClock, ProvidesFood, MagicMapper,
-            Hidden, EntryTrigger, EntityMoved, Door, BlocksVisibility, Bystander, Vendor, Quips
+            Hidden, EntryTrigger, EntityMoved, Door, BlocksVisibility, Bystander, Vendor, Quips, Attributes, Skills,
+            Pools
         );
     }
 
@@ -88,11 +89,12 @@ pub fn load_game(ecs: &mut World) {
         let mut d = (&mut ecs.entities(), &mut ecs.write_storage::<SimpleMarker<SerializeMe>>(), &mut ecs.write_resource::<SimpleMarkerAllocator<SerializeMe>>());
 
         deserialize_individually!(ecs, de, d, Position, Renderable, Player, Viewshed, Monster,
-            Name, BlocksTile, CombatStats, SufferDamage, WantsToMelee, Item, Consumable, Ranged, InflictsDamage,
+            Name, BlocksTile, SufferDamage, WantsToMelee, Item, Consumable, Ranged, InflictsDamage,
             AreaOfEffect, Confusion, ProvidesHealing, InBackpack, WantsToPickupItem, WantsToUseItem, LastActed,
             WantsToDropItem, SerializationHelper, Equippable, Equipped, MeleePowerBonus, DefenseBonus,
             WantsToRemoveItem, TimeKeeper, ParticleLifetime, HungerClock, ProvidesFood, MagicMapper,
-            Hidden, EntryTrigger, EntityMoved, Door, BlocksVisibility, Bystander, Vendor, Quips
+            Hidden, EntryTrigger, EntityMoved, Door, BlocksVisibility, Bystander, Vendor, Quips, Attributes, Skills,
+            Pools
         );
     }
 

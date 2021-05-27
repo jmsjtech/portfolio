@@ -191,16 +191,12 @@
             "speed" : 500
         },
         "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
-            "speed" : 500
-        },
         "vision_range" : 4,
         "ai" : "bystander",
-        "quips" : [ "Lovely day, eh?", "Nice weather", "Hello" ]
+        "quips" : [ "Lovely day, eh?", "Nice weather", "Hello" ],
+        "attributes" : {
+          "speed" : 500
+        }
     },
 
     {
@@ -212,16 +208,12 @@
             "order" : 1
         },
         "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
-            "speed" : 500
-        },
         "vision_range" : 4,
         "ai" : "bystander",
-        "quips" : [ "They're biting today!", "I caught something, but it wasn't a fish!", "Looks like rain" ]
+        "quips" : [ "They're biting today!", "I caught something, but it wasn't a fish!", "Looks like rain" ],
+        "attributes" : {
+          "speed" : 500
+        }
     },
 
     {
@@ -233,16 +225,12 @@
             "order" : 1
         },
         "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
-            "speed" : 500
-        },
         "vision_range" : 4,
         "ai" : "bystander",
-        "quips" : [ "Arrr", "Grog!", "Booze!" ]
+        "quips" : [ "Arrr", "Grog!", "Booze!" ],
+        "attributes" : {
+          "speed" : 500
+        }
     },
 
     {
@@ -254,16 +242,12 @@
             "order" : 1
         },
         "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
-            "speed" : 500
-        },
         "vision_range" : 4,
         "ai" : "bystander",
-        "quips" : [ "Hic", "Need... more... booze!", "Spare a copper?" ]
+        "quips" : [ "Hic", "Need... more... booze!", "Spare a copper?" ],
+        "attributes" : {
+          "speed" : 500
+        }
     },
     {
         "name" : "Barkeep",
@@ -274,15 +258,15 @@
             "order" : 1
         },
         "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
+        "vision_range" : 4,
+        "ai" : "bystander",
+        "attributes" : {
+            "intelligence" : 13,
             "speed" : 500
         },
-        "vision_range" : 4,
-        "ai" : "bystander"
+        "skills" : {
+            "Melee" : 2
+        }
     },
 
     {
@@ -293,16 +277,12 @@
             "bg" : "#000000",
             "order" : 1
         },
-        "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
-            "speed" : 500
-        },
+        "blocks_tile" : true, 
         "vision_range" : 4,
-        "ai" : "bystander"
+        "ai" : "bystander",
+        "attributes" : {
+          "speed" : 500
+        }
     },
 
     {
@@ -313,17 +293,13 @@
             "bg" : "#000000",
             "order" : 1
         },
-        "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
-            "speed" : 500
-        },
+        "blocks_tile" : true, 
         "vision_range" : 4,
         "ai" : "bystander",
-        "quips" : [ "Quiet down, it's too early!", "Oh my, I drank too much.", "Still saving the world, eh?" ]
+        "quips" : [ "Quiet down, it's too early!", "Oh my, I drank too much.", "Still saving the world, eh?" ],
+        "attributes" : {
+          "speed" : 500
+        }
     },
 
     {
@@ -334,16 +310,12 @@
             "bg" : "#000000",
             "order" : 1
         },
-        "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
-            "speed" : 500
-        },
+        "blocks_tile" : true, 
         "vision_range" : 4,
-        "ai" : "bystander"
+        "ai" : "bystander",
+        "attributes" : {
+          "speed" : 500
+        }
     },
 
     {
@@ -355,15 +327,11 @@
             "order" : 1
         },
         "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
-            "speed" : 500
-        },
         "vision_range" : 4,
-        "ai" : "bystander"
+        "ai" : "bystander",
+        "attributes" : {
+            "speed" : 500
+        }
     },
 
     {
@@ -374,16 +342,12 @@
             "bg" : "#000000",
             "order" : 1
         },
-        "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
-            "speed" : 500
-        },
+        "blocks_tile" : true, 
         "vision_range" : 4,
-        "ai" : "bystander"
+        "ai" : "bystander",
+        "attributes" : {
+          "speed" : 500
+        }
     },
 
     {
@@ -394,16 +358,12 @@
             "bg" : "#000000",
             "order" : 1
         },
-        "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
-            "speed" : 500
-        },
+        "blocks_tile" : true, 
         "vision_range" : 4,
-        "ai" : "bystander"
+        "ai" : "bystander",
+        "attributes" : {
+          "speed" : 500
+        }
     },
 
     {
@@ -414,16 +374,12 @@
             "bg" : "#000000",
             "order" : 1
         },
-        "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
-            "speed" : 500
-        },
+        "blocks_tile" : true, 
         "vision_range" : 4,
-        "ai" : "bystander"
+        "ai" : "bystander",
+        "attributes" : {
+          "speed" : 500
+        }
     },
 
     {
@@ -434,16 +390,12 @@
             "bg" : "#000000",
             "order" : 1
         },
-        "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
-            "speed" : 500
-        },
+        "blocks_tile" : true, 
         "vision_range" : 4,
-        "ai" : "bystander"
+        "ai" : "bystander",
+        "attributes" : {
+          "speed" : 500
+        }
     },
 
     {
@@ -454,16 +406,12 @@
             "bg" : "#000000",
             "order" : 1
         },
-        "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
-            "speed" : 500
-        },
+        "blocks_tile" : true, 
         "vision_range" : 4,
-        "ai" : "bystander"
+        "ai" : "bystander",
+        "attributes" : {
+          "speed" : 500
+        }
     },
 
     {
@@ -474,16 +422,18 @@
             "bg" : "#000000",
             "order" : 1
         },
-        "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 2,
-            "hp" : 2,
-            "defense" : 1,
-            "power" : 3,
-            "speed" : 200
-        },
+        "blocks_tile" : true, 
         "vision_range" : 8,
-        "ai" : "melee"
+        "ai" : "melee",
+        "attributes" : {
+             "Might" : 3,
+             "Fitness" : 3,
+             "speed" : 200
+         },
+         "skills" : {
+             "Melee" : -1,
+             "Defense" : -1
+         }
     },
 
     {
@@ -494,16 +444,12 @@
             "bg" : "#000000",
             "order" : 1
         },
-        "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 16,
-            "hp" : 16,
-            "defense" : 1,
-            "power" : 4,
-            "speed" : 200
-        },
+        "blocks_tile" : true, 
         "vision_range" : 8,
-        "ai" : "melee"
+        "ai" : "melee",
+        "attributes" : {
+          "speed" : 200
+        }
     },
 
     {
@@ -514,16 +460,12 @@
             "bg" : "#000000",
             "order" : 1
         },
-        "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 8,
-            "hp" : 8,
-            "defense" : 1,
-            "power" : 3,
-            "speed" : 200
-        },
+        "blocks_tile" : true, 
         "vision_range" : 8,
-        "ai" : "melee"
+        "ai" : "melee",
+        "attributes" : {
+          "speed" : 200
+        }
     },
 
     {
@@ -535,15 +477,11 @@
             "order" : 1
         },
         "blocks_tile" : true,
-        "stats" : {
-            "max_hp" : 4,
-            "hp" : 4,
-            "defense" : 0,
-            "power" : 2,
-            "speed" : 200
-        },
         "vision_range" : 4,
-        "ai" : "melee"
+        "ai" : "melee",
+        "attributes" : {
+          "speed" : 200
+        }
     }
 ],
 
