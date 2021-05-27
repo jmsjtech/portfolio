@@ -1363,6 +1363,7 @@ name = "rainfall"
 version = "0.1.0"
 dependencies = [
  "lazy_static",
+ "regex",
  "rltk",
  "serde",
  "serde_json",

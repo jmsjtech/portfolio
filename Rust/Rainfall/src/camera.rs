@@ -6,12 +6,13 @@ use rltk::{Point, Rltk, RGB};
 const SHOW_BOUNDARIES : bool = true;
 
 
-pub fn get_screen_bounds(ecs: &World, ctx : &mut Rltk) -> (i32, i32, i32, i32) {
+pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32) {
     let player_pos = ecs.fetch::<Point>();
-    let (x_chars, y_chars) = ctx.get_char_size();
+    //let (x_chars, y_chars) = ctx.get_char_size();
+    let (x_chars, y_chars) = (49, 45);
 
-    let center_x = ((x_chars - 20) / 2) as i32;
-    let center_y = ((y_chars - 10) / 2) as i32;
+    let center_x = (x_chars / 2) as i32;
+    let center_y = (y_chars / 2) as i32;
 
     let min_x = player_pos.x - center_x;
     let max_x = min_x + x_chars as i32;

@@ -12,8 +12,8 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
     skills.skills.insert(Skill::Melee, 1);
     skills.skills.insert(Skill::Defense, 1);
     skills.skills.insert(Skill::Magic, 1);
-    
-    ecs
+
+    let player = ecs
         .create_entity()
         .with(Position { x: player_x, y: player_y })
         .with(Renderable {
@@ -46,6 +46,7 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
             quickness: Attribute{ base: 11, modifiers: 0, bonus: attr_bonus(11) },
             intelligence: Attribute{ base: 11, modifiers: 0, bonus: attr_bonus(11) },
         })
+        .with(skills)
         .with(Pools{
             hit_points : Pool{ 
                 current: player_hp_at_level(11, 1), 
@@ -58,9 +59,18 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
             xp: 0,
             level: 1
         })
-        .with(skills)
         .marked::<SimpleMarker<SerializeMe>>()
-        .build()
+        .build();
+
+    // Starting equipment
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Rusty Longsword", SpawnType::Equipped{by : player});
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Dried Sausage", SpawnType::Carried{by : player} );
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Beer", SpawnType::Carried{by : player});
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Stained Tunic", SpawnType::Equipped{by : player});
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Torn Trousers", SpawnType::Equipped{by : player});
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Old Boots", SpawnType::Equipped{by : player});
+
+    player
 }
 
 const MAX_MONSTERS : i32 = 4;
@@ -122,7 +132,7 @@ pub fn spawn_entity(ecs: &mut World, spawn : &(&usize, &String)) {
     let y = (*spawn.0 / width) as i32;
     std::mem::drop(map);
 
-    let spawn_result = spawn_named_entity(&RAWS.lock().unwrap(), ecs.create_entity(), &spawn.1, SpawnType::AtPosition{ x, y});
+    let spawn_result = spawn_named_entity(&RAWS.lock().unwrap(), ecs, &spawn.1, SpawnType::AtPosition{ x, y});
     if spawn_result.is_some() {
         return;
     }

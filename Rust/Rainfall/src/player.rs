@@ -67,16 +67,19 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             }
         }
         if !map.blocked[destination_idx] && lastaction.lastacted + lastaction.speed_in_ms < SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock may have gone backwards?").as_millis() {
-            lastaction.lastacted = SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock may have gone backwards?").as_millis();
-            pos.x = min(map.width-1 , max(0, pos.x + delta_x));
-            pos.y = min(map.height-1, max(0, pos.y + delta_y));
+            let is_paused = ecs.fetch_mut::<bool>();
+            if  !*is_paused {
+                lastaction.lastacted = SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock may have gone backwards?").as_millis();
+                pos.x = min(map.width-1 , max(0, pos.x + delta_x));
+                pos.y = min(map.height-1, max(0, pos.y + delta_y));
 
-            viewshed.dirty = true;
-            let mut ppos = ecs.write_resource::<Point>();
-            ppos.x = pos.x;
-            ppos.y = pos.y;
+                viewshed.dirty = true;
+                let mut ppos = ecs.write_resource::<Point>();
+                ppos.x = pos.x;
+                ppos.y = pos.y;
 
-            entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
+                entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
+            }
         }
     }
 
@@ -128,10 +131,9 @@ fn get_item(ecs: &mut World) {
     }
 }
 
-//fn log_entry(ecs: &mut World, log: String) {
-//    let mut gamelog = ecs.fetch_mut::<GameLog>();
-//    gamelog.entries.push(log);
-//}
+fn log_entry(gamelog: &mut GameLog, log: String) {
+    gamelog.entries.push(log);
+}
 
 pub fn try_next_level(ecs: &mut World) -> bool {
     let player_pos = ecs.fetch::<Point>();
@@ -147,67 +149,118 @@ pub fn try_next_level(ecs: &mut World) -> bool {
     }
 }
 
+fn use_consumable_hotkey(gs: &mut State, key: i32) -> RunState {
+    use super::{Consumable, InBackpack, WantsToUseItem};
+
+    let consumables = gs.ecs.read_storage::<Consumable>();
+    let backpack = gs.ecs.read_storage::<InBackpack>();
+    let player_entity = gs.ecs.fetch::<Entity>();
+    let entities = gs.ecs.entities();
+    let mut carried_consumables = Vec::new();
+    for (entity, carried_by, _consumable) in (&entities, &backpack, &consumables).join() {
+        if carried_by.owner == *player_entity {
+            carried_consumables.push(entity);
+        }
+    }
+
+    if (key as usize) < carried_consumables.len() {
+        use crate::components::Ranged;
+        if let Some(ranged) = gs.ecs.read_storage::<Ranged>().get(carried_consumables[key as usize]) {
+            return RunState::ShowTargeting{ range: ranged.range, item: carried_consumables[key as usize] };
+        }
+        let mut intent = gs.ecs.write_storage::<WantsToUseItem>();
+        intent.insert(
+            *player_entity,
+            WantsToUseItem{ item: carried_consumables[key as usize], target: None }
+        ).expect("Unable to insert intent");
+        return RunState::Running;
+    }
+    RunState::Running
+}
+
 
 pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState {
-    if ctx.shift {
-        match ctx.key {
-            None => {}
-            
-            Some(key) => match key {
+    if ctx.shift && ctx.key.is_some() {
+        let key : Option<i32> =
+            match ctx.key.unwrap() {
+                VirtualKeyCode::Key1 => Some(1),
+                VirtualKeyCode::Key2 => Some(2),
+                VirtualKeyCode::Key3 => Some(3),
+                VirtualKeyCode::Key4 => Some(4),
+                VirtualKeyCode::Key5 => Some(5),
+                VirtualKeyCode::Key6 => Some(6),
+                VirtualKeyCode::Key7 => Some(7),
+                VirtualKeyCode::Key8 => Some(8),
+                VirtualKeyCode::Key9 => Some(9),
                 VirtualKeyCode::D =>  return RunState::ShowDropItem,
                 VirtualKeyCode::Period => {
                     if try_next_level(&mut gs.ecs) {
                         return RunState::NextLevel;
+                    } else {
+                        return RunState::Running;
                     }
                 },
                 VirtualKeyCode::T => return RunState::ShowRemoveItem,
-
-                    
-                _ => { }
-            },
+                _ => None
+            };
+        if let Some(key) = key {
+            return use_consumable_hotkey(gs, key-1);
         }
     }
     
-    else {
-        match ctx.key {
-            None => {}
-            Some(key) => match key {
-                VirtualKeyCode::G => get_item(&mut gs.ecs),
+    match ctx.key {
+        None => {}
+        Some(key) => match key {
+            VirtualKeyCode::G => get_item(&mut gs.ecs),
 
-                VirtualKeyCode::Grave => {
-                    let player_entity = gs.ecs.fetch::<Entity>();
-                    let mut clocks = gs.ecs.write_storage::<TimeKeeper>();
-                    let clock = clocks.get_mut(*player_entity);
+            VirtualKeyCode::Grave => {
+                let player_entity = gs.ecs.fetch::<Entity>();
+                let mut clocks = gs.ecs.write_storage::<TimeKeeper>();
+                let clock = clocks.get_mut(*player_entity);
 
-                    if let Some(clock) = clock {
-                        clock.day += 1;
-                    }
-                    
-                },
+                if let Some(clock) = clock {
+                    clock.day += 1;
+                }
                 
-
-                VirtualKeyCode::I => return RunState::ShowInventory,
-                VirtualKeyCode::Escape => return RunState::SaveGame,
-
-                VirtualKeyCode::A |
-                VirtualKeyCode::Numpad4 => try_move_player(-1, 0, &mut gs.ecs),
-
-                VirtualKeyCode::D |
-                VirtualKeyCode::Numpad6 => try_move_player(1, 0, &mut gs.ecs),
-
-                VirtualKeyCode::W |
-                VirtualKeyCode::Numpad8 => try_move_player(0, -1, &mut gs.ecs),
-
-                VirtualKeyCode::S |
-                VirtualKeyCode::Numpad2 => try_move_player(0, 1, &mut gs.ecs),
-
-                VirtualKeyCode::Numpad7 => try_move_player(-1, -1, &mut gs.ecs),
-                VirtualKeyCode::Numpad9 => try_move_player(1, -1, &mut gs.ecs),
-                VirtualKeyCode::Numpad1 => try_move_player(-1, 1, &mut gs.ecs),
-                VirtualKeyCode::Numpad3 => try_move_player(1, 1, &mut gs.ecs),
-                _ => { return state }
             },
-        }
+            
+            VirtualKeyCode::Space => {
+                let mut is_paused = gs.ecs.fetch_mut::<bool>();
+                let mut gamelog = gs.ecs.fetch_mut::<GameLog>();
+                
+                if !*is_paused { 
+                    log_entry(&mut gamelog, "Paused the game.".to_string());
+                    *is_paused = true;
+                }
+                else { 
+                    log_entry(&mut gamelog, "Unpaused the game.".to_string());
+                    *is_paused = false;
+                }
+            }
+            
+
+            VirtualKeyCode::I => return RunState::ShowInventory,
+            VirtualKeyCode::Escape => return RunState::SaveGame,
+
+            VirtualKeyCode::A |
+            VirtualKeyCode::Numpad4 => try_move_player(-1, 0, &mut gs.ecs),
+
+            VirtualKeyCode::D |
+            VirtualKeyCode::Numpad6 => try_move_player(1, 0, &mut gs.ecs),
+
+            VirtualKeyCode::W |
+            VirtualKeyCode::Numpad8 => try_move_player(0, -1, &mut gs.ecs),
+
+            VirtualKeyCode::S |
+            VirtualKeyCode::Numpad2 => try_move_player(0, 1, &mut gs.ecs),
+
+            VirtualKeyCode::Numpad7 => try_move_player(-1, -1, &mut gs.ecs),
+            VirtualKeyCode::Numpad9 => try_move_player(1, -1, &mut gs.ecs),
+            VirtualKeyCode::Numpad1 => try_move_player(-1, 1, &mut gs.ecs),
+            VirtualKeyCode::Numpad3 => try_move_player(1, 1, &mut gs.ecs),
+            _ => { return state }
+        },
+        
     }
     state
 }

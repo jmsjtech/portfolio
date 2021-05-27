@@ -78,20 +78,33 @@ pub struct State {
 
 impl State {
     fn run_systems(&mut self) {
+        let mut is_paused;
+        {
+            let paused = self.ecs.fetch::<bool>();
+            is_paused = *paused;
+        }
+        
         let mut vis = VisibilitySystem{};
         vis.run_now(&self.ecs);
-        let mut mob = MonsterAI{};
-        mob.run_now(&self.ecs);
-        let mut triggers = trigger_system::TriggerSystem{};
-        triggers.run_now(&self.ecs);
         let mut mapindex = MapIndexingSystem{};
         mapindex.run_now(&self.ecs);
-        let mut bystander = bystander_ai_system::BystanderAI{};
-        bystander.run_now(&self.ecs);
-        let mut melee = MeleeCombatSystem{};
-        melee.run_now(&self.ecs);
+        
+        if !is_paused { 
+            let mut mob = MonsterAI{};
+            mob.run_now(&self.ecs);
+            let mut triggers = trigger_system::TriggerSystem{};
+            triggers.run_now(&self.ecs);
+            let mut bystander = bystander_ai_system::BystanderAI{};
+            bystander.run_now(&self.ecs);
+            let mut melee = MeleeCombatSystem{};
+            melee.run_now(&self.ecs);
+            
+        }
+        
         let mut damage = DamageSystem{};
         damage.run_now(&self.ecs);
+        let mut particles = particle_system::ParticleSpawnSystem{};
+        particles.run_now(&self.ecs);
         let mut pickup = ItemCollectionSystem{};
         pickup.run_now(&self.ecs);
         let mut items = ItemUseSystem{};
@@ -100,8 +113,6 @@ impl State {
         drop_items.run_now(&self.ecs);
         let mut item_remove = ItemRemoveSystem{};
         item_remove.run_now(&self.ecs);
-        let mut particles = particle_system::ParticleSpawnSystem{};
-        particles.run_now(&self.ecs);
 
         self.ecs.maintain();
     }
@@ -237,6 +248,7 @@ impl GameState for State {
 
         ctx.cls();
         particle_system::cull_dead_particles(&mut self.ecs, ctx);
+        
 
         match newrunstate {
             RunState::MainMenu{..} => {}
@@ -269,8 +281,9 @@ impl GameState for State {
                 newrunstate = RunState::Running;
             }
             RunState::Running => {
-                self.run_systems();
-                self.ecs.maintain();
+                
+                //self.run_systems();
+                //self.ecs.maintain();
                 match *self.ecs.fetch::<RunState>() {
                     #[allow(unused_assignments)]
                     RunState::MagicMapReveal{ .. } => newrunstate = RunState::MagicMapReveal{ row: 0 },
@@ -403,11 +416,20 @@ impl GameState for State {
 
             _ => { }
         }
-
-
+        
         self.run_systems();
         self.ecs.maintain();
         damage_system::delete_the_dead(&mut self.ecs);
+        
+        let mut is_paused;
+        {
+            let paused = self.ecs.fetch::<bool>();
+            is_paused = *paused;
+        }
+        
+        if is_paused { return; }
+        
+
 
         //let mut clock = self.ecs.fetch_mut::<TimeKeeper>();
         let time_now = SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock may have gone backwards?").as_millis();
@@ -528,7 +550,8 @@ impl GameState for State {
 
 fn main() -> rltk::BError {
     use rltk::RltkBuilder;
-    let mut context = RltkBuilder::simple80x50()
+    let mut context = RltkBuilder::simple(80, 60)
+        .unwrap()
         .with_title("Rainfall")
         .build()?;
     context.with_post_scanlines(true);
@@ -578,8 +601,9 @@ fn main() -> rltk::BError {
 
     gs.ecs.register::<Equippable>();
     gs.ecs.register::<Equipped>();
-    gs.ecs.register::<MeleePowerBonus>();
-    gs.ecs.register::<DefenseBonus>();
+    gs.ecs.register::<MeleeWeapon>();
+    gs.ecs.register::<Wearable>();
+    gs.ecs.register::<NaturalAttackDefense>();
 
     gs.ecs.register::<TimeKeeper>();
     gs.ecs.register::<ParticleLifetime>();
@@ -604,7 +628,7 @@ fn main() -> rltk::BError {
     
     raws::load_raws();
 
-    gs.ecs.insert(Map::new(1, 64, 64));
+    gs.ecs.insert(Map::new(1, 64, 64, "New Map"));
     gs.ecs.insert(Point::new(0, 0));
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
@@ -615,6 +639,9 @@ fn main() -> rltk::BError {
     gs.ecs.insert(rex_assets::RexAssets::new());
 
     gs.generate_world_map(1);
+    
+    let is_paused = false;
+    gs.ecs.insert(is_paused);
 
     rltk::main_loop(context, gs)
 }
