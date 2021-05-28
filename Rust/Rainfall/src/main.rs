@@ -33,6 +33,7 @@ pub mod particle_system;
 pub mod hunger_system;
 pub mod rex_assets;
 pub mod trigger_system;
+pub mod movement_system;
 pub mod map_builders;
 pub mod camera;
 pub mod raws;
@@ -60,12 +61,14 @@ pub enum RunState {
     SaveGame,
     NextLevel,
     PreviousLevel,
+    TownPortal,
     ShowRemoveItem,
     GameOver,
     MagicMapReveal { row : i32 },
     MapGeneration,
     ShowCheatMenu,
-    ShowVendor { vendor: Entity, mode : VendorMode }
+    ShowVendor { vendor: Entity, mode : VendorMode },
+    TeleportingToOtherLevel { x: i32, y: i32, depth: i32 }
 }
 
 pub struct State {
@@ -102,6 +105,8 @@ impl State {
         chase.run_now(&self.ecs);
         let mut defaultmove = ai::DefaultMoveAI{};
         defaultmove.run_now(&self.ecs);
+        let mut moving = movement_system::MovementSystem{};
+        moving.run_now(&self.ecs);
         let mut triggers = trigger_system::TriggerSystem{};
         triggers.run_now(&self.ecs);
         let mut melee = MeleeCombatSystem{};
@@ -116,6 +121,8 @@ impl State {
         drop_items.run_now(&self.ecs);
         let mut item_remove = ItemRemoveSystem{};
         item_remove.run_now(&self.ecs);
+        let mut item_id = inventory_system::ItemIdentificationSystem{};
+        item_id.run_now(&self.ecs);
         let mut hunger = hunger_system::HungerSystem{};
         hunger.run_now(&self.ecs);
         let mut particles = particle_system::ParticleSpawnSystem{};
@@ -219,8 +226,10 @@ impl GameState for State {
                     match *self.ecs.fetch::<RunState>() {
                         RunState::AwaitingInput => newrunstate = RunState::AwaitingInput,
                         RunState::MagicMapReveal{ .. } => newrunstate = RunState::MagicMapReveal{ row: 0 },
+                        RunState::TownPortal => newrunstate = RunState::TownPortal,
+                        RunState::TeleportingToOtherLevel{ x, y, depth } => newrunstate = RunState::TeleportingToOtherLevel{ x, y, depth },
                         _ => newrunstate = RunState::Ticking
-                    }
+                    }                
                 }
             }
             RunState::ShowInventory => {
@@ -355,6 +364,17 @@ impl GameState for State {
                 self.mapgen_next_state = Some(RunState::PreRun);
                 newrunstate = RunState::MapGeneration;
             }
+            RunState::TownPortal => {
+                // Spawn the portal
+                spawner::spawn_town_portal(&mut self.ecs);
+
+                // Transition
+                let map_depth = self.ecs.fetch::<Map>().depth;
+                let destination_offset = 0 - (map_depth-1);
+                self.goto_level(destination_offset);
+                self.mapgen_next_state = Some(RunState::PreRun);
+                newrunstate = RunState::MapGeneration;
+            }
             RunState::MagicMapReveal{row} => {
                 let mut map = self.ecs.fetch_mut::<Map>();
                 for x in 0..map.width {
@@ -382,7 +402,12 @@ impl GameState for State {
                         let tag = result.2.unwrap();
                         let price = result.3.unwrap();
                         let mut pools = self.ecs.write_storage::<Pools>();
-                        let player_pools = pools.get_mut(*self.ecs.fetch::<Entity>()).unwrap();
+                        let player_entity = self.ecs.fetch::<Entity>();
+                        let mut identified = self.ecs.write_storage::<IdentifiedItem>();
+                        identified.insert(*player_entity, IdentifiedItem{ name : tag.clone() }).expect("Unable to insert");
+                        std::mem::drop(identified);
+                        let player_pools = pools.get_mut(*player_entity).unwrap();
+                        std::mem::drop(player_entity);
                         if player_pools.gold >= price {
                             player_pools.gold -= price;
                             std::mem::drop(pools);
@@ -393,6 +418,19 @@ impl GameState for State {
                     gui::VendorResult::BuyMode => newrunstate = RunState::ShowVendor{ vendor, mode: VendorMode::Buy },
                     gui::VendorResult::SellMode => newrunstate = RunState::ShowVendor{ vendor, mode: VendorMode::Sell }
                 }
+            }
+            RunState::TeleportingToOtherLevel{x, y, depth} => {
+                self.goto_level(depth-1);
+                let player_entity = self.ecs.fetch::<Entity>();
+                if let Some(pos) = self.ecs.write_storage::<Position>().get_mut(*player_entity) {
+                    pos.x = x;
+                    pos.y = y;
+                }
+                let mut ppos = self.ecs.fetch_mut::<rltk::Point>();
+                ppos.x = x;
+                ppos.y = y;
+                self.mapgen_next_state = Some(RunState::PreRun);
+                newrunstate = RunState::MapGeneration;
             }
         }
 
@@ -523,6 +561,13 @@ fn main() -> rltk::BError {
     gs.ecs.register::<TimeKeeper>();
     gs.ecs.register::<EquipmentChanged>();
     gs.ecs.register::<Vendor>();
+    gs.ecs.register::<TownPortal>();
+    gs.ecs.register::<TeleportTo>();
+    gs.ecs.register::<ApplyMove>();
+    gs.ecs.register::<ApplyTeleport>();
+    gs.ecs.register::<MagicItem>();
+    gs.ecs.register::<ObfuscatedName>();
+    gs.ecs.register::<IdentifiedItem>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();
