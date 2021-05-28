@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use specs::prelude::*;
 use crate::components::*;
-use super::Raws;
+use super::{Raws, faction_structs::Reaction};
 use crate::random_table::RandomTable;
 use crate::{attr_bonus, npc_hp, mana_at_level};
 use regex::Regex;
@@ -35,13 +35,14 @@ pub enum SpawnType {
     Equipped { by: Entity },
     Carried { by: Entity }
 }
-
+ 
 pub struct RawMaster {
     raws : Raws,
     item_index : HashMap<String, usize>,
     mob_index : HashMap<String, usize>,
     prop_index : HashMap<String, usize>,
-    loot_index : HashMap<String, usize>
+    loot_index : HashMap<String, usize>,
+    faction_index : HashMap<String, HashMap<String, Reaction>>
 }
 
 impl RawMaster {
@@ -52,12 +53,14 @@ impl RawMaster {
                 mobs: Vec::new(), 
                 props: Vec::new(), 
                 spawn_table: Vec::new(),
-                loot_tables: Vec::new()
+                loot_tables: Vec::new(),
+                faction_table : Vec::new(),
             },
             item_index : HashMap::new(),
             mob_index : HashMap::new(),
             prop_index : HashMap::new(),
-            loot_index : HashMap::new()
+            loot_index : HashMap::new(),
+            faction_index : HashMap::new()
         }
     }
 
@@ -95,6 +98,21 @@ impl RawMaster {
             if !used_names.contains(&spawn.name) {
                 rltk::console::log(format!("WARNING - Spawn tables references unspecified entity {}", spawn.name));
             }
+        }
+        
+        for faction in self.raws.faction_table.iter() {
+            let mut reactions : HashMap<String, Reaction> = HashMap::new();
+            for other in faction.responses.iter() {
+                reactions.insert(
+                    other.0.clone(),
+                    match other.1.as_str() {
+                        "ignore" => Reaction::Ignore,
+                        "flee" => Reaction::Flee,
+                        _ => Reaction::Attack
+                    }
+                );
+            }
+            self.faction_index.insert(faction.name.clone(), reactions);
         }
     }
 }
@@ -232,15 +250,13 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs : &mut World, key : &str, pos : Spa
 
         eb = eb.with(Name{ name : mob_template.name.clone() });
 
-        match mob_template.ai.as_ref() {
-            "melee" => eb = eb.with(Monster{}),
-            "bystander" => eb = eb.with(Bystander{}),
-            "vendor" => eb = eb.with(Vendor{}),
-            "carnivore" => eb = eb.with(Carnivore{}),
-            "herbivore" => eb = eb.with(Herbivore{}),
-            _ => {}
+        
+        match mob_template.movement.as_ref() {
+            "random" => eb = eb.with(MoveMode{ mode: Movement::Random }),
+            "random_waypoint" => eb = eb.with(MoveMode{ mode: Movement::RandomWaypoint{ path: None } }),
+            _ => eb = eb.with(MoveMode{ mode: Movement::Static })
         }
-
+        
         if let Some(quips) = &mob_template.quips {
             eb = eb.with(Quips{
                 available: quips.clone()
@@ -279,6 +295,14 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs : &mut World, key : &str, pos : Spa
         if let Some(light) = &mob_template.light {
             eb = eb.with(LightSource{ range: light.range, color : rltk::RGB::from_hex(&light.color).expect("Bad color") });
         }
+        
+        
+        if let Some(faction) = &mob_template.faction {
+            eb = eb.with(Faction{ name: faction.clone() });
+        } else {
+            eb = eb.with(Faction{ name : "Mindless".to_string() })
+        }
+        
 
         let mob_level = if mob_template.level.is_some() { mob_template.level.unwrap() } else { 1 };
         let mob_hp = npc_hp(mob_fitness, mob_level);
@@ -316,7 +340,7 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs : &mut World, key : &str, pos : Spa
         }
         
         
-        let mut actual_speed = 500;
+        let mut actual_speed = 300;
         
         if let Some(speed) = mob_template.attributes.speed {
             actual_speed = speed;
@@ -449,4 +473,18 @@ pub fn get_item_drop(raws: &RawMaster, rng : &mut rltk::RandomNumberGenerator, t
     }
 
     None
+}
+
+pub fn faction_reaction(my_faction : &str, their_faction : &str, raws : &RawMaster) -> Reaction {
+    if raws.faction_index.contains_key(my_faction) {
+        let mf = &raws.faction_index[my_faction];
+        if mf.contains_key(their_faction) {
+            return mf[their_faction];
+        } else if mf.contains_key("Default") {
+            return mf["Default"];
+        } else {
+            return Reaction::Ignore;
+        }
+    }
+    Reaction::Ignore
 }

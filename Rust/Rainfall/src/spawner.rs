@@ -2,7 +2,7 @@ use rltk::{ RGB, RandomNumberGenerator };
 use specs::prelude::*;
 use super::{ Player, Renderable, Name, Position, Viewshed, Rect,
     SerializeMe, random_table::RandomTable, HungerClock, HungerState, Map, TileType, raws::*, LastActed, TimeKeeper, Attribute, Attributes, Skill, 
-    Skills, Pool, Pools, LightSource };
+    Skills, Pool, Pools, LightSource, Faction };
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
 use crate::{attr_bonus, player_hp_at_level, mana_at_level};
@@ -28,6 +28,7 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
         .with(Name{name: "Player".to_string() })
         .with(HungerClock{ state: HungerState::WellFed, duration: 20 })
         .with(LightSource{ color: rltk::RGB::from_f32(1.0, 1.0, 0.5), range: 8 })
+        .with(Faction{name : "Player".to_string() })
         .with(LastActed{ lastacted: 0, speed_in_ms: 100 })
         .with(TimeKeeper {
             last_second: 0,

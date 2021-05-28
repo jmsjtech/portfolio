@@ -18,8 +18,6 @@ mod rect;
 pub use rect::Rect;
 mod visibility_system;
 use visibility_system::VisibilitySystem;
-mod monster_ai_system;
-use monster_ai_system::MonsterAI;
 mod map_indexing_system;
 use map_indexing_system::MapIndexingSystem;
 mod melee_combat_system;
@@ -38,7 +36,6 @@ pub use gamesystem::*;
 
 pub mod camera;
 pub mod raws;
-pub mod bystander_ai_system;
 
 mod saveload_system;
 mod random_table;
@@ -48,10 +45,9 @@ mod particle_system;
 use particle_system::*;
 
 mod lighting_system;
-
-mod animal_ai_system;
-
 mod rex_assets;
+
+mod ai;
 
 mod map_builders;
 
@@ -96,16 +92,25 @@ impl State {
         mapindex.run_now(&self.ecs);
         
         if !is_paused { 
-            let mut mob = MonsterAI{};
-            mob.run_now(&self.ecs);
+            let mut turnstatus = ai::TurnStatusSystem{};
+            turnstatus.run_now(&self.ecs);
+            let mut quipper = ai::QuipSystem{};
+            quipper.run_now(&self.ecs);
+            let mut adjacent = ai::AdjacentAI{};
+            adjacent.run_now(&self.ecs);
+            let mut visible = ai::VisibleAI{};
+            visible.run_now(&self.ecs); 
+            let mut approach = ai::ApproachAI{};
+            approach.run_now(&self.ecs);
+            let mut flee = ai::FleeAI{};
+            flee.run_now(&self.ecs);
+            let mut defaultmove = ai::DefaultMoveAI{};
+            defaultmove.run_now(&self.ecs);
+            
             let mut triggers = trigger_system::TriggerSystem{};
             triggers.run_now(&self.ecs);
-            let mut bystander = bystander_ai_system::BystanderAI{};
-            bystander.run_now(&self.ecs);
             let mut melee = MeleeCombatSystem{};
             melee.run_now(&self.ecs);
-            let mut animals = animal_ai_system::AnimalAI{};
-            animals.run_now(&self.ecs);
             
         }
         
@@ -545,6 +550,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToDropItem>();
     gs.ecs.register::<WantsToPickupItem>();
     gs.ecs.register::<WantsToRemoveItem>();
+    gs.ecs.register::<WantsToApproach>();
+    gs.ecs.register::<WantsToFlee>();
 
     gs.ecs.register::<Item>();
     gs.ecs.register::<Ranged>();
@@ -588,6 +595,9 @@ fn main() -> rltk::BError {
     gs.ecs.register::<DMSerializationHelper>();
     
     gs.ecs.register::<LightSource>();
+    gs.ecs.register::<Faction>();
+    gs.ecs.register::<MoveMode>();
+    gs.ecs.register::<Chasing>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     

@@ -88,6 +88,8 @@ fn get_tile_glyph_default(idx: usize, map : &Map) -> (rltk::FontCharType, RGB, R
         TileType::Gravel => { glyph = rltk::to_cp437(';'); fg = RGB::from_f32(0.5, 0.5, 0.5); }
         TileType::Stalactite => { glyph = rltk::to_cp437('╨'); fg = RGB::from_f32(0.5, 0.5, 0.5); }
         TileType::Stalagmite => { glyph = rltk::to_cp437('╥'); fg = RGB::from_f32(0.5, 0.5, 0.5); }
+        
+        #[allow(unreachable_patterns)]
         _ => { glyph = rltk::to_cp437('\''); fg = RGB::from_f32(0.4, 0.4, 0.4); }
     }
 

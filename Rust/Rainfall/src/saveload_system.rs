@@ -49,7 +49,7 @@ pub fn save_game(ecs : &mut World) {
             WantsToRemoveItem, TimeKeeper, ParticleLifetime, HungerClock, ProvidesFood, MagicMapper,
             Hidden, EntryTrigger, EntityMoved, Door, BlocksVisibility, Bystander, Vendor, Quips, Attributes, Skills,
             Pools, NaturalAttackDefense, LootTable, Carnivore, Herbivore, OtherLevelPosition, DMSerializationHelper,
-            LightSource
+            LightSource, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing
         );
     }
 
@@ -103,7 +103,7 @@ pub fn load_game(ecs: &mut World) {
             WantsToRemoveItem, TimeKeeper, ParticleLifetime, HungerClock, ProvidesFood, MagicMapper,
             Hidden, EntryTrigger, EntityMoved, Door, BlocksVisibility, Bystander, Vendor, Quips, Attributes, Skills,
             Pools, NaturalAttackDefense, LootTable, Carnivore, Herbivore, OtherLevelPosition, DMSerializationHelper,
-            LightSource
+            LightSource, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing
         );
     }
 
