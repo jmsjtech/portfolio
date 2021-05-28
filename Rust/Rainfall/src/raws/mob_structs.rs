@@ -2,6 +2,7 @@ use serde::Deserialize;
 use super::Renderable;
 use std::collections::HashMap;
 
+
 #[derive(Deserialize, Debug)]
 pub struct Mob {
     pub name : String,
@@ -22,7 +23,8 @@ pub struct Mob {
     pub faction : Option<String>,
     pub gold : Option<String>,
     pub vendor : Option<Vec<String>>,
-    pub abilities : Option<Vec<MobAbility>>
+    pub abilities : Option<Vec<MobAbility>>,
+    pub on_death : Option<Vec<MobAbility>>
 }
 
 #[derive(Deserialize, Debug)]

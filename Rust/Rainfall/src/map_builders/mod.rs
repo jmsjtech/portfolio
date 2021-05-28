@@ -33,6 +33,8 @@ mod forest;
 mod limestone_cavern;
 mod dwarf_fort_builder;
 mod area_ending_point;
+mod mushroom_forest;
+use mushroom_forest::*;
 use forest::forest_builder;
 use limestone_cavern::*;
 use dwarf_fort_builder::*;
@@ -311,6 +313,7 @@ pub fn level_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, widt
         4 => limestone_deep_cavern_builder(new_depth, rng, width, height),
         5 => limestone_transition_builder(new_depth, rng, width, height),
         6 => dwarf_fort_builder(new_depth, rng, width, height),
+        7 => mushroom_entrance(new_depth, rng, width, height),
         _ => random_builder(new_depth, rng, width, height)
     }
 }
