@@ -1,6 +1,5 @@
-
-use serde::{Deserialize};
-use super::{Renderable};
+use serde::Deserialize;
+use super::Renderable;
 use std::collections::HashMap;
 
 #[derive(Deserialize, Debug)]

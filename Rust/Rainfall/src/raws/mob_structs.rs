@@ -27,8 +27,7 @@ pub struct MobAttributes {
     pub might : Option<i32>,
     pub fitness : Option<i32>,
     pub quickness : Option<i32>,
-    pub intelligence : Option<i32>,
-    pub speed : Option<u128>
+    pub intelligence : Option<i32>
 }
 
 #[derive(Deserialize, Debug)]
@@ -43,6 +42,7 @@ pub struct NaturalAttack {
     pub hit_bonus : i32,
     pub damage : String
 }
+
 
 #[derive(Deserialize, Debug)]
 pub struct MobLight {

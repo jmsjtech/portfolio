@@ -1,6 +1,5 @@
-
 use specs::prelude::*;
-use super::{ Rltk, ParticleLifetime, Renderable, Position};
+use super::{ Rltk, ParticleLifetime, Position, Renderable };
 use rltk::RGB;
 
 pub fn cull_dead_particles(ecs : &mut World, ctx : &Rltk) {

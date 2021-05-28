@@ -35,7 +35,7 @@ pub enum SpawnType {
     Equipped { by: Entity },
     Carried { by: Entity }
 }
- 
+
 pub struct RawMaster {
     raws : Raws,
     item_index : HashMap<String, usize>,
@@ -48,10 +48,10 @@ pub struct RawMaster {
 impl RawMaster {
     pub fn empty() -> RawMaster {
         RawMaster {
-            raws : Raws{ 
-                items: Vec::new(), 
-                mobs: Vec::new(), 
-                props: Vec::new(), 
+            raws : Raws{
+                items: Vec::new(),
+                mobs: Vec::new(),
+                props: Vec::new(),
                 spawn_table: Vec::new(),
                 loot_tables: Vec::new(),
                 faction_table : Vec::new(),
@@ -89,17 +89,17 @@ impl RawMaster {
             self.prop_index.insert(prop.name.clone(), i);
             used_names.insert(prop.name.clone());
         }
-        
-        for (i,loot) in self.raws.loot_tables.iter().enumerate() {
-            self.loot_index.insert(loot.name.clone(), i);
-        }
 
         for spawn in self.raws.spawn_table.iter() {
             if !used_names.contains(&spawn.name) {
                 rltk::console::log(format!("WARNING - Spawn tables references unspecified entity {}", spawn.name));
             }
         }
-        
+
+        for (i,loot) in self.raws.loot_tables.iter().enumerate() {
+            self.loot_index.insert(loot.name.clone(), i);
+        }
+
         for faction in self.raws.faction_table.iter() {
             let mut reactions : HashMap<String, Reaction> = HashMap::new();
             for other in faction.responses.iter() {
@@ -115,6 +115,26 @@ impl RawMaster {
             self.faction_index.insert(faction.name.clone(), reactions);
         }
     }
+}
+
+#[inline(always)]
+pub fn faction_reaction(my_faction : &str, their_faction : &str, raws : &RawMaster) -> Reaction {
+    //println!("Looking for reaction to [{}] by [{}]", my_faction, their_faction);
+    if raws.faction_index.contains_key(my_faction) {
+        let mf = &raws.faction_index[my_faction];
+        if mf.contains_key(their_faction) {
+            //println!("  :  {:?}", mf[their_faction]);
+            return mf[their_faction];
+        } else if mf.contains_key("Default") {
+            //println!("  :  {:?}", mf["Default"]);
+            return mf["Default"];
+        } else {
+            //println!("   : IGNORE");
+            return Reaction::Ignore;
+        }
+    }
+    //println!("   : IGNORE");
+    Reaction::Ignore
 }
 
 fn find_slot_for_equippable_item(tag : &str, raws: &RawMaster) -> EquipmentSlot {
@@ -243,6 +263,9 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs : &mut World, key : &str, pos : Spa
         // Spawn in the specified location
         eb = spawn_position(pos, eb, key, raws);
 
+        // Initiative of 2
+        eb = eb.with(Initiative{current: 2});
+
         // Renderable
         if let Some(renderable) = &mob_template.renderable {
             eb = eb.with(get_renderable_component(renderable));
@@ -250,13 +273,12 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs : &mut World, key : &str, pos : Spa
 
         eb = eb.with(Name{ name : mob_template.name.clone() });
 
-        
         match mob_template.movement.as_ref() {
             "random" => eb = eb.with(MoveMode{ mode: Movement::Random }),
             "random_waypoint" => eb = eb.with(MoveMode{ mode: Movement::RandomWaypoint{ path: None } }),
             _ => eb = eb.with(MoveMode{ mode: Movement::Static })
         }
-        
+
         if let Some(quips) = &mob_template.quips {
             eb = eb.with(Quips{
                 available: quips.clone()
@@ -290,19 +312,6 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs : &mut World, key : &str, pos : Spa
             mob_int = intelligence;
         }
         eb = eb.with(attr);
-        
-        
-        if let Some(light) = &mob_template.light {
-            eb = eb.with(LightSource{ range: light.range, color : rltk::RGB::from_hex(&light.color).expect("Bad color") });
-        }
-        
-        
-        if let Some(faction) = &mob_template.faction {
-            eb = eb.with(Faction{ name: faction.clone() });
-        } else {
-            eb = eb.with(Faction{ name : "Mindless".to_string() })
-        }
-        
 
         let mob_level = if mob_template.level.is_some() { mob_template.level.unwrap() } else { 1 };
         let mob_hp = npc_hp(mob_fitness, mob_level);
@@ -333,20 +342,6 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs : &mut World, key : &str, pos : Spa
         eb = eb.with(skills);
 
         eb = eb.with(Viewshed{ visible_tiles : Vec::new(), range: mob_template.vision_range, dirty: true });
-        
-        
-        if let Some(loot) = &mob_template.loot_table {
-            eb = eb.with(LootTable{table: loot.clone()});
-        }
-        
-        
-        let mut actual_speed = 300;
-        
-        if let Some(speed) = mob_template.attributes.speed {
-            actual_speed = speed;
-        }
-        
-        eb = eb.with(LastActed { lastacted: 0 , speed_in_ms: actual_speed });
 
         if let Some(na) = &mob_template.natural {
             let mut nature = NaturalAttackDefense{
@@ -367,6 +362,20 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs : &mut World, key : &str, pos : Spa
                 }
             }
             eb = eb.with(nature);
+        }
+
+        if let Some(loot) = &mob_template.loot_table {
+            eb = eb.with(LootTable{table: loot.clone()});
+        }
+
+        if let Some(light) = &mob_template.light {
+            eb = eb.with(LightSource{ range: light.range, color : rltk::RGB::from_hex(&light.color).expect("Bad color") });
+        }
+
+        if let Some(faction) = &mob_template.faction {
+            eb = eb.with(Faction{ name: faction.clone() });
+        } else {
+            eb = eb.with(Faction{ name : "Mindless".to_string() })
         }
 
         let new_mob = eb.build();
@@ -460,8 +469,6 @@ pub fn get_spawn_table_for_depth(raws: &RawMaster, depth: i32) -> RandomTable {
     rt
 }
 
-
-
 pub fn get_item_drop(raws: &RawMaster, rng : &mut rltk::RandomNumberGenerator, table: &str) -> Option<String> {
     if raws.loot_index.contains_key(table) {
         let mut rt = RandomTable::new();
@@ -469,22 +476,9 @@ pub fn get_item_drop(raws: &RawMaster, rng : &mut rltk::RandomNumberGenerator, t
         for item in available_options.drops.iter() {
             rt = rt.add(item.name.clone(), item.weight);
         }
-        return Some(rt.roll(rng));
+        let result =rt.roll(rng);
+        return Some(result);
     }
 
     None
-}
-
-pub fn faction_reaction(my_faction : &str, their_faction : &str, raws : &RawMaster) -> Reaction {
-    if raws.faction_index.contains_key(my_faction) {
-        let mf = &raws.faction_index[my_faction];
-        if mf.contains_key(their_faction) {
-            return mf[their_faction];
-        } else if mf.contains_key("Default") {
-            return mf["Default"];
-        } else {
-            return Reaction::Ignore;
-        }
-    }
-    Reaction::Ignore
 }

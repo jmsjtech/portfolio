@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use specs_derive::*;
-use rltk::RGB;
+use rltk::{RGB};
 use serde::{Serialize, Deserialize};
 use specs::saveload::{Marker, ConvertSaveload};
 use specs::error::NoError;
@@ -21,11 +21,17 @@ pub struct TimeKeeper {
     pub year: i32
 }
 
-
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct OtherLevelPosition {
+    pub x: i32,
+    pub y: i32,
+    pub depth: i32
 }
 
 #[derive(Component, ConvertSaveload, Clone)]
@@ -36,7 +42,7 @@ pub struct Renderable {
     pub render_order : i32
 }
 
-#[derive(Component, Serialize, Deserialize, Clone)]
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Player {}
 
 #[derive(Component, ConvertSaveload, Clone)]
@@ -46,8 +52,46 @@ pub struct Viewshed {
     pub dirty : bool
 }
 
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct LightSource {
+    pub color : RGB,
+    pub range: i32
+}
+
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Monster {}
+pub struct Initiative {
+    pub current : i32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct MyTurn {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Faction {
+    pub name : String
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct WantsToApproach {
+    pub idx : i32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct WantsToFlee {
+    pub indices : Vec<usize>
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
+pub enum Movement {
+    Static,
+    Random,
+    RandomWaypoint{ path : Option<Vec<usize>> }
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct MoveMode {
+    pub mode : Movement
+}
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct Name {
@@ -57,8 +101,50 @@ pub struct Name {
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct BlocksTile {}
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Pool {
+    pub max: i32,
+    pub current: i32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Pools {
+    pub hit_points : Pool,
+    pub mana : Pool,
+    pub xp : i32,
+    pub level : i32
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Attribute {
+    pub base : i32,
+    pub modifiers : i32,
+    pub bonus : i32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Attributes {
+    pub might : Attribute,
+    pub fitness : Attribute,
+    pub quickness : Attribute,
+    pub intelligence : Attribute
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
+pub enum Skill { Melee, Defense, Magic }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Skills {
+    pub skills : HashMap<Skill, i32>
+}
+
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct WantsToMelee {
+    pub target : Entity
+}
+
+#[derive(Component, Debug, ConvertSaveload, Clone)]
+pub struct Chasing {
     pub target : Entity
 }
 
@@ -76,6 +162,11 @@ impl SufferDamage {
             store.insert(victim, dmg).expect("Unable to insert damage");
         }
     }
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct LootTable {
+    pub table : String
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
@@ -109,61 +200,40 @@ pub struct ProvidesHealing {
     pub heal_amount : i32
 }
 
-#[derive(Component, Debug, ConvertSaveload)]
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct BlocksVisibility {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Door {
+    pub open: bool
+}
+
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct InBackpack {
     pub owner : Entity
 }
 
-#[derive(Component, Debug, ConvertSaveload)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct WantsToPickupItem {
     pub collected_by : Entity,
     pub item : Entity
 }
 
-#[derive(Component, Debug, ConvertSaveload)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct WantsToUseItem {
     pub item : Entity,
     pub target : Option<rltk::Point>
 }
 
-#[derive(Component, Debug, ConvertSaveload)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct WantsToDropItem {
     pub item : Entity
 }
 
-#[derive(Component, Debug, ConvertSaveload)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct WantsToRemoveItem {
     pub item : Entity
 }
-
-
-
-// Serialization helper code. We need to implement ConvertSaveload for each type that contains an
-// Entity.
-
-pub struct SerializeMe;
-
-// Special component that exists to help serialize the game data
-#[derive(Component, Serialize, Deserialize, Clone)]
-pub struct SerializationHelper {
-    pub map : super::map::Map
-}
-
-#[derive(Component, Serialize, Deserialize, Clone)]
-pub struct DMSerializationHelper {
-    pub map : super::map::MasterDungeonMap
-}
-
-
-
-
-#[derive(Component, Debug, ConvertSaveload)]
-pub struct LastActed {
-    pub lastacted : u128,
-    pub speed_in_ms : u128
-}
-
-
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum EquipmentSlot { Melee, Shield, Head, Torso, Legs, Feet, Hands }
@@ -197,101 +267,6 @@ pub struct Wearable {
     pub slot : EquipmentSlot
 }
 
-#[derive(Component, Serialize, Deserialize, Clone)]
-pub struct ParticleLifetime {
-    pub lifetime_ms : f32
-}
-
-
-#[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
-pub enum HungerState { WellFed, Normal, Hungry, Starving }
-
-#[derive(Component, Serialize, Deserialize, Clone)]
-pub struct HungerClock {
-    pub state : HungerState,
-    pub duration : i32
-}
-
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct ProvidesFood {}
-
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct MagicMapper {}
-
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Hidden {}
-
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct EntryTrigger {}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct EntityMoved {}
-
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct SingleActivation {}
-
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct BlocksVisibility {}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Door { 
-    pub open: bool 
-}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Bystander {}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Vendor {}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Quips {
-    pub available : Vec<String>
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Attribute {
-    pub base : i32,
-    pub modifiers : i32,
-    pub bonus : i32
-}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Attributes {
-    pub might : Attribute,
-    pub fitness : Attribute,
-    pub quickness : Attribute,
-    pub intelligence : Attribute
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
-pub enum Skill { Melee, Defense, Magic }
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Skills {
-    pub skills : HashMap<Skill, i32>
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Pool {
-    pub max: i32,
-    pub current: i32
-}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Pools {
-    pub hit_points : Pool,
-    pub mana : Pool,
-    pub xp : i32,
-    pub level : i32
-}
-
 #[derive(Serialize, Deserialize, Clone)]
 pub struct NaturalAttack {
     pub name : String,
@@ -307,60 +282,54 @@ pub struct NaturalAttackDefense {
     pub attacks : Vec<NaturalAttack>
 }
 
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct LootTable {
-    pub table : String
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct ParticleLifetime {
+    pub lifetime_ms : f32
 }
 
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Carnivore {}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Herbivore {}
+#[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
+pub enum HungerState { WellFed, Normal, Hungry, Starving }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
-pub struct OtherLevelPosition {
-    pub x: i32,
-    pub y: i32,
-    pub depth: i32
+pub struct HungerClock {
+    pub state : HungerState,
+    pub duration : i32
 }
 
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct ProvidesFood {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct MagicMapper {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Hidden {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct EntryTrigger {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct EntityMoved {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct SingleActivation {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Quips {
+    pub available : Vec<String>
+}
+
+// Serialization helper code. We need to implement ConvertSaveLoad for each type that contains an
+// Entity.
+
+pub struct SerializeMe;
+
+// Special component that exists to help serialize the game data
 #[derive(Component, Serialize, Deserialize, Clone)]
-pub struct LightSource {
-    pub color : RGB,
-    pub range: i32
+pub struct SerializationHelper {
+    pub map : super::map::Map
 }
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Faction {
-    pub name : String
-}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct WantsToApproach {
-    pub idx : i32
-}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct WantsToFlee {
-    pub indices : Vec<usize>
-}
-
-
-#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
-pub enum Movement { 
-    Static, 
-    Random,
-    RandomWaypoint{ path : Option<Vec<usize>> }
-}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct MoveMode {
-    pub mode : Movement
-}
-
-#[derive(Component, Debug, ConvertSaveload, Clone)]
-pub struct Chasing {
-    pub target : Entity
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct DMSerializationHelper {
+    pub map : super::map::MasterDungeonMap
 }

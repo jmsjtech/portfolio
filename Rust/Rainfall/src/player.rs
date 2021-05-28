@@ -1,11 +1,10 @@
 use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
 use std::cmp::{max, min};
-use super::{Position, Player, Viewshed, State, Map, LastActed, TileType, Renderable, BlocksTile, BlocksVisibility, Door};
-use super::{WantsToMelee, WantsToPickupItem, Item, GameLog, RunState, EntityMoved, Bystander, Vendor, Attributes};
-// use super::{TimeKeeper, Name}
-use std::time::{SystemTime, UNIX_EPOCH};
-
+use super::{Position, Player, Viewshed, State, Map, RunState, Attributes, WantsToMelee, Item,
+    gamelog::GameLog, WantsToPickupItem, TileType, HungerClock, HungerState,
+    EntityMoved, Door, BlocksTile, BlocksVisibility, Renderable, Pools, Faction,
+    raws::Reaction};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut positions = ecs.write_storage::<Position>();
@@ -20,23 +19,28 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
     let mut blocks_visibility = ecs.write_storage::<BlocksVisibility>();
     let mut blocks_movement = ecs.write_storage::<BlocksTile>();
     let mut renderables = ecs.write_storage::<Renderable>();
-    let bystanders = ecs.read_storage::<Bystander>();
-    let vendors = ecs.read_storage::<Vendor>();
-    let mut result = RunState::Running;
-    
-    let mut lastactions = ecs.write_storage::<LastActed>();
+    let factions = ecs.read_storage::<Faction>();
+    let mut result = RunState::AwaitingInput;
 
     let mut swap_entities : Vec<(Entity, i32, i32)> = Vec::new();
-    
-    
-    for (entity, _player, pos, viewshed, lastaction) in (&entities, &players, &mut positions, &mut viewsheds, &mut lastactions).join() {
-        if pos.x + delta_x < 1 || pos.x + delta_x > map.width-1 || pos.y + delta_y < 1 || pos.y + delta_y > map.height-1 { return RunState::Running; }
+
+    for (entity, _player, pos, viewshed) in (&entities, &players, &mut positions, &mut viewsheds).join() {
+        if pos.x + delta_x < 1 || pos.x + delta_x > map.width-1 || pos.y + delta_y < 1 || pos.y + delta_y > map.height-1 { return RunState::AwaitingInput; }
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
-    
+
         for potential_target in map.tile_content[destination_idx].iter() {
-            let bystander = bystanders.get(*potential_target);
-            let vendor = vendors.get(*potential_target);
-            if bystander.is_some() || vendor.is_some() {
+            let mut hostile = true;
+            if combat_stats.get(*potential_target).is_some() {
+                if let Some(faction) = factions.get(*potential_target) {
+                    let reaction = crate::raws::faction_reaction(
+                        &faction.name,
+                        "Player",
+                        &crate::raws::RAWS.lock().unwrap()
+                    );
+                    if reaction != Reaction::Attack { hostile = false; }
+                }
+            }
+            if !hostile {
                 // Note that we want to move the bystander
                 swap_entities.push((*potential_target, pos.x, pos.y));
 
@@ -49,12 +53,11 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
                 let mut ppos = ecs.write_resource::<Point>();
                 ppos.x = pos.x;
                 ppos.y = pos.y;
-                result = RunState::Running;
             } else {
                 let target = combat_stats.get(*potential_target);
                 if let Some(_target) = target {
                     wants_to_melee.insert(entity, WantsToMelee{ target: *potential_target }).expect("Add target failed");
-                    return RunState::Running;
+                    return RunState::Ticking;
                 }
             }
             let door = doors.get_mut(*potential_target);
@@ -65,30 +68,28 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
                 let glyph = renderables.get_mut(*potential_target).unwrap();
                 glyph.glyph = rltk::to_cp437('/');
                 viewshed.dirty = true;
+                result = RunState::Ticking;
             }
         }
-        if !map.blocked[destination_idx] && lastaction.lastacted + lastaction.speed_in_ms < SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock may have gone backwards?").as_millis() {
-            let is_paused = ecs.fetch_mut::<bool>();
-            if  !*is_paused {
-                lastaction.lastacted = SystemTime::now().duration_since(UNIX_EPOCH).expect("Clock may have gone backwards?").as_millis();
-                pos.x = min(map.width-1 , max(0, pos.x + delta_x));
-                pos.y = min(map.height-1, max(0, pos.y + delta_y));
-                entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
 
-                viewshed.dirty = true;
-                let mut ppos = ecs.write_resource::<Point>();
-                ppos.x = pos.x;
-                ppos.y = pos.y;
-                result = RunState::Running;
-                match map.tiles[destination_idx] {
-                    TileType::DownStairs => result = RunState::NextLevel,
-                    TileType::UpStairs => result = RunState::PreviousLevel,
-                    _ => {}
-                } 
+        if !map.blocked[destination_idx] {
+            pos.x = min(map.width-1 , max(0, pos.x + delta_x));
+            pos.y = min(map.height-1, max(0, pos.y + delta_y));
+            entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
+
+            viewshed.dirty = true;
+            let mut ppos = ecs.write_resource::<Point>();
+            ppos.x = pos.x;
+            ppos.y = pos.y;
+            result = RunState::Ticking;
+            match map.tiles[destination_idx] {
+                TileType::DownStairs => result = RunState::NextLevel,
+                TileType::UpStairs => result = RunState::PreviousLevel,
+                _ => {}
             }
         }
     }
-    
+
     for m in swap_entities.iter() {
         let their_pos = positions.get_mut(m.0);
         if let Some(their_pos) = their_pos {
@@ -98,6 +99,32 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
     }
 
     result
+}
+
+pub fn try_next_level(ecs: &mut World) -> bool {
+    let player_pos = ecs.fetch::<Point>();
+    let map = ecs.fetch::<Map>();
+    let player_idx = map.xy_idx(player_pos.x, player_pos.y);
+    if map.tiles[player_idx] == TileType::DownStairs {
+        true
+    } else {
+        let mut gamelog = ecs.fetch_mut::<GameLog>();
+        gamelog.entries.push("There is no way down from here.".to_string());
+        false
+    }
+}
+
+pub fn try_previous_level(ecs: &mut World) -> bool {
+    let player_pos = ecs.fetch::<Point>();
+    let map = ecs.fetch::<Map>();
+    let player_idx = map.xy_idx(player_pos.x, player_pos.y);
+    if map.tiles[player_idx] == TileType::UpStairs {
+        true
+    } else {
+        let mut gamelog = ecs.fetch_mut::<GameLog>();
+        gamelog.entries.push("There is no way up from here.".to_string());
+        false
+    }
 }
 
 fn get_item(ecs: &mut World) {
@@ -124,35 +151,52 @@ fn get_item(ecs: &mut World) {
     }
 }
 
-fn log_entry(gamelog: &mut GameLog, log: String) {
-    gamelog.entries.push(log);
-}
+fn skip_turn(ecs: &mut World) -> RunState {
+    let player_entity = ecs.fetch::<Entity>();
+    let viewshed_components = ecs.read_storage::<Viewshed>();
+    let factions = ecs.read_storage::<Faction>();
 
-pub fn try_next_level(ecs: &mut World) -> bool {
-    let player_pos = ecs.fetch::<Point>();
-    let map = ecs.fetch::<Map>();
-    let player_idx = map.xy_idx(player_pos.x, player_pos.y);
+    let worldmap_resource = ecs.fetch::<Map>();
 
-    if map.tiles[player_idx] == TileType::DownStairs {
-        true
-    } else {
-        let mut gamelog = ecs.fetch_mut::<GameLog>();
-        gamelog.entries.push("There is no way down from here.".to_string());
-        false
+    let mut can_heal = true;
+    let viewshed = viewshed_components.get(*player_entity).unwrap();
+    for tile in viewshed.visible_tiles.iter() {
+        let idx = worldmap_resource.xy_idx(tile.x, tile.y);
+        for entity_id in worldmap_resource.tile_content[idx].iter() {
+            let faction = factions.get(*entity_id);
+            match faction {
+                None => {}
+                Some(faction) => {
+                    let reaction = crate::raws::faction_reaction(
+                        &faction.name,
+                        "Player",
+                        &crate::raws::RAWS.lock().unwrap()
+                    );
+                    if reaction == Reaction::Attack {
+                        can_heal = false;
+                    }
+                }
+            }
+        }
     }
-}
 
-pub fn try_previous_level(ecs: &mut World) -> bool {
-    let player_pos = ecs.fetch::<Point>();
-    let map = ecs.fetch::<Map>();
-    let player_idx = map.xy_idx(player_pos.x, player_pos.y);
-    if map.tiles[player_idx] == TileType::UpStairs {
-        true
-    } else {
-        let mut gamelog = ecs.fetch_mut::<GameLog>();
-        gamelog.entries.push("There is no way up from here.".to_string());
-        false
+    let hunger_clocks = ecs.read_storage::<HungerClock>();
+    let hc = hunger_clocks.get(*player_entity);
+    if let Some(hc) = hc {
+        match hc.state {
+            HungerState::Hungry => can_heal = false,
+            HungerState::Starving => can_heal = false,
+            _ => {}
+        }
     }
+
+    if can_heal {
+        let mut health_components = ecs.write_storage::<Pools>();
+        let pools = health_components.get_mut(*player_entity).unwrap();
+        pools.hit_points.current = i32::min(pools.hit_points.current + 1, pools.hit_points.max);
+    }
+
+    RunState::Ticking
 }
 
 fn use_consumable_hotkey(gs: &mut State, key: i32) -> RunState {
@@ -179,13 +223,13 @@ fn use_consumable_hotkey(gs: &mut State, key: i32) -> RunState {
             *player_entity,
             WantsToUseItem{ item: carried_consumables[key as usize], target: None }
         ).expect("Unable to insert intent");
-        return RunState::Running;
+        return RunState::Ticking;
     }
-    RunState::Running
+    RunState::Ticking
 }
 
-
-pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState {
+pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
+    // Hotkeys
     if ctx.shift && ctx.key.is_some() {
         let key : Option<i32> =
             match ctx.key.unwrap() {
@@ -198,71 +242,63 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk, state: RunState) -> RunState
                 VirtualKeyCode::Key7 => Some(7),
                 VirtualKeyCode::Key8 => Some(8),
                 VirtualKeyCode::Key9 => Some(9),
-                VirtualKeyCode::D =>  return RunState::ShowDropItem,
+                
+                VirtualKeyCode::D => return RunState::ShowDropItem,
+                VirtualKeyCode::T => return RunState::ShowRemoveItem,
+                
+                // Level changes
                 VirtualKeyCode::Period => {
                     if try_next_level(&mut gs.ecs) {
                         return RunState::NextLevel;
                     } else {
-                        return RunState::Running;
+                        return RunState::AwaitingInput;
                     }
                 },
-                
                 VirtualKeyCode::Comma => {
                     if try_previous_level(&mut gs.ecs) {
                         return RunState::PreviousLevel;
                     } else {
-                        return RunState::Running;
+                        return RunState::AwaitingInput;
                     }
                 },
-                
-                VirtualKeyCode::T => return RunState::ShowRemoveItem,
                 _ => None
             };
         if let Some(key) = key {
             return use_consumable_hotkey(gs, key-1);
         }
     }
-    
+
+    // Player movement
     match ctx.key {
-        None => {}
+        None => { return RunState::AwaitingInput } // Nothing happened
         Some(key) => match key {
+            VirtualKeyCode::Numpad4 => return try_move_player(-1, 0, &mut gs.ecs),
+            VirtualKeyCode::Numpad6 => return try_move_player(1, 0, &mut gs.ecs),
+            VirtualKeyCode::Numpad8 => return try_move_player(0, -1, &mut gs.ecs),
+            VirtualKeyCode::Numpad2 => return try_move_player(0, 1, &mut gs.ecs),
+
+            // Diagonals
+            VirtualKeyCode::Numpad9 => return try_move_player(1, -1, &mut gs.ecs),
+            VirtualKeyCode::Numpad7 => return try_move_player(-1, -1, &mut gs.ecs),
+            VirtualKeyCode::Numpad3 => return try_move_player(1, 1, &mut gs.ecs),
+            VirtualKeyCode::Numpad1 => return try_move_player(-1, 1, &mut gs.ecs),
+
+            // Skip Turn
+            VirtualKeyCode::Numpad5 |
+            VirtualKeyCode::Space => return skip_turn(&mut gs.ecs),
+
+            // Picking up items
             VirtualKeyCode::G => get_item(&mut gs.ecs),
-            
-            // Toggle the game pause
-            VirtualKeyCode::Space => {
-                let mut is_paused = gs.ecs.fetch_mut::<bool>();
-                let mut gamelog = gs.ecs.fetch_mut::<GameLog>();
-                
-                if !*is_paused { 
-                    log_entry(&mut gamelog, "Paused the game.".to_string());
-                    *is_paused = true;
-                }
-                else { 
-                    log_entry(&mut gamelog, "Unpaused the game.".to_string());
-                    *is_paused = false;
-                }
-            }
-            
-            // Show the inventory
             VirtualKeyCode::I => return RunState::ShowInventory,
-            
-            // Save and go back to the menu
+
+            // Save and Quit
             VirtualKeyCode::Escape => return RunState::SaveGame,
-            
+
             // Cheating!
             VirtualKeyCode::Backslash => return RunState::ShowCheatMenu,
 
-            VirtualKeyCode::Numpad4 => return try_move_player(-1, 0, &mut gs.ecs), // Left
-            VirtualKeyCode::Numpad6 => return try_move_player(1, 0, &mut gs.ecs), // Right
-            VirtualKeyCode::Numpad8 => return try_move_player(0, -1, &mut gs.ecs), // Up
-            VirtualKeyCode::Numpad2 => return try_move_player(0, 1, &mut gs.ecs), // Down
-            VirtualKeyCode::Numpad7 => return try_move_player(-1, -1, &mut gs.ecs), // Up-Left
-            VirtualKeyCode::Numpad9 => return try_move_player(1, -1, &mut gs.ecs), // Up-Right
-            VirtualKeyCode::Numpad1 => return try_move_player(-1, 1, &mut gs.ecs), // Down-Left
-            VirtualKeyCode::Numpad3 => return try_move_player(1, 1, &mut gs.ecs), // Down-Right
-            _ => { return state }
+            _ => { return RunState::AwaitingInput }
         },
-        
     }
-    state
+    RunState::Ticking
 }

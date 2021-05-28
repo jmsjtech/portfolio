@@ -2,7 +2,6 @@ use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator, SerializeComponents, DeserializeComponents, MarkedBuilder};
 use specs::error::NoError;
 use super::components::*;
-use super::TimeKeeper;
 use std::fs::File;
 use std::path::Path;
 use std::fs;
@@ -42,33 +41,33 @@ pub fn save_game(ecs : &mut World) {
 
         let writer = File::create("./savegame.json").unwrap();
         let mut serializer = serde_json::Serializer::new(writer);
-        serialize_individually!(ecs, serializer, data, Position, Renderable, Player, Viewshed, Monster,
+        serialize_individually!(ecs, serializer, data, Position, Renderable, Player, Viewshed,
             Name, BlocksTile, SufferDamage, WantsToMelee, Item, Consumable, Ranged, InflictsDamage,
-            AreaOfEffect, Confusion, ProvidesHealing, InBackpack, WantsToPickupItem, WantsToUseItem, LastActed,
+            AreaOfEffect, Confusion, ProvidesHealing, InBackpack, WantsToPickupItem, WantsToUseItem,
             WantsToDropItem, SerializationHelper, Equippable, Equipped, MeleeWeapon, Wearable,
-            WantsToRemoveItem, TimeKeeper, ParticleLifetime, HungerClock, ProvidesFood, MagicMapper,
-            Hidden, EntryTrigger, EntityMoved, Door, BlocksVisibility, Bystander, Vendor, Quips, Attributes, Skills,
-            Pools, NaturalAttackDefense, LootTable, Carnivore, Herbivore, OtherLevelPosition, DMSerializationHelper,
-            LightSource, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing
+            WantsToRemoveItem, ParticleLifetime, HungerClock, ProvidesFood, MagicMapper, Hidden,
+            EntryTrigger, EntityMoved, SingleActivation, BlocksVisibility, Door,
+            Quips, Attributes, Skills, Pools, NaturalAttackDefense, LootTable,
+            OtherLevelPosition, DMSerializationHelper, LightSource, Initiative, MyTurn, Faction,
+            WantsToApproach, WantsToFlee, MoveMode, Chasing, TimeKeeper
         );
     }
 
     // Clean up
-      ecs.delete_entity(savehelper).expect("Crash on cleanup");
-      ecs.delete_entity(savehelper2).expect("Crash on cleanup");
+    ecs.delete_entity(savehelper).expect("Crash on cleanup");
+    ecs.delete_entity(savehelper2).expect("Crash on cleanup");
 }
 
 pub fn does_save_exist() -> bool {
     Path::new("./savegame.json").exists()
 }
 
-
 macro_rules! deserialize_individually {
     ($ecs:expr, $de:expr, $data:expr, $( $type:ty),*) => {
         $(
         DeserializeComponents::<NoError, _>::deserialize(
             &mut ( &mut $ecs.write_storage::<$type>(), ),
-            &mut $data.0, // entities
+            &$data.0, // entities
             &mut $data.1, // marker
             &mut $data.2, // allocater
             &mut $de,
@@ -96,14 +95,15 @@ pub fn load_game(ecs: &mut World) {
     {
         let mut d = (&mut ecs.entities(), &mut ecs.write_storage::<SimpleMarker<SerializeMe>>(), &mut ecs.write_resource::<SimpleMarkerAllocator<SerializeMe>>());
 
-        deserialize_individually!(ecs, de, d, Position, Renderable, Player, Viewshed, Monster,
+        deserialize_individually!(ecs, de, d, Position, Renderable, Player, Viewshed,
             Name, BlocksTile, SufferDamage, WantsToMelee, Item, Consumable, Ranged, InflictsDamage,
-            AreaOfEffect, Confusion, ProvidesHealing, InBackpack, WantsToPickupItem, WantsToUseItem, LastActed,
+            AreaOfEffect, Confusion, ProvidesHealing, InBackpack, WantsToPickupItem, WantsToUseItem,
             WantsToDropItem, SerializationHelper, Equippable, Equipped, MeleeWeapon, Wearable,
-            WantsToRemoveItem, TimeKeeper, ParticleLifetime, HungerClock, ProvidesFood, MagicMapper,
-            Hidden, EntryTrigger, EntityMoved, Door, BlocksVisibility, Bystander, Vendor, Quips, Attributes, Skills,
-            Pools, NaturalAttackDefense, LootTable, Carnivore, Herbivore, OtherLevelPosition, DMSerializationHelper,
-            LightSource, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing
+            WantsToRemoveItem, ParticleLifetime, HungerClock, ProvidesFood, MagicMapper, Hidden,
+            EntryTrigger, EntityMoved, SingleActivation, BlocksVisibility, Door,
+            Quips, Attributes, Skills, Pools, NaturalAttackDefense, LootTable,
+            OtherLevelPosition, DMSerializationHelper, LightSource, Initiative, MyTurn, Faction,
+            WantsToApproach, WantsToFlee, MoveMode, Chasing, TimeKeeper
         );
     }
 
@@ -135,4 +135,8 @@ pub fn load_game(ecs: &mut World) {
     }
     ecs.delete_entity(deleteme.unwrap()).expect("Unable to delete helper");
     ecs.delete_entity(deleteme2.unwrap()).expect("Unable to delete helper");
+}
+
+pub fn delete_save() {
+    if Path::new("./savegame.json").exists() { std::fs::remove_file("./savegame.json").expect("Unable to delete file"); }
 }

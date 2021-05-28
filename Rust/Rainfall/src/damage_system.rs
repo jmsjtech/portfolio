@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use super::{Pools, SufferDamage, Player, Name, gamelog::GameLog, RunState, Position, Map,
-    InBackpack, Equipped, LootTable, Attributes, ParticleBuilder};
+    InBackpack, Equipped, LootTable, Attributes, particle_system::ParticleBuilder};
 use crate::gamesystem::{player_hp_at_level, mana_at_level};
 
 pub struct DamageSystem {}
@@ -17,10 +17,11 @@ impl<'a> System<'a> for DamageSystem {
                         WriteExpect<'a, GameLog>,
                         WriteExpect<'a, ParticleBuilder>,
                         ReadExpect<'a, rltk::Point>
-                        );
+                         );
 
     fn run(&mut self, data : Self::SystemData) {
-        let (mut stats, mut damage, positions, mut map, entities, player, attributes, mut log, mut particles, player_pos) = data;
+        let (mut stats, mut damage, positions, mut map, entities, player, attributes,
+            mut log, mut particles, player_pos) = data;
         let mut xp_gain = 0;
 
         for (entity, mut stats, damage) in (&entities, &mut stats, &damage).join() {
@@ -44,31 +45,30 @@ impl<'a> System<'a> for DamageSystem {
             player_stats.xp += xp_gain;
             if player_stats.xp >= player_stats.level * 1000 {
                 // We've gone up a level!
-                log.entries.push(format!("Congratulations, you are now level {}", player_stats.level));
                 player_stats.level += 1;
-                
+                log.entries.push(format!("Congratulations, you are now level {}", player_stats.level));
+                player_stats.hit_points.max = player_hp_at_level(
+                    player_attributes.fitness.base + player_attributes.fitness.modifiers,
+                    player_stats.level
+                );
+                player_stats.hit_points.current = player_stats.hit_points.max;
+                player_stats.mana.max = mana_at_level(
+                    player_attributes.intelligence.base + player_attributes.intelligence.modifiers,
+                    player_stats.level
+                );
+                player_stats.mana.current = player_stats.mana.max;
+
                 for i in 0..10 {
                     if player_pos.y - i > 1 {
                         particles.request(
-                            player_pos.x, 
-                            player_pos.y - i, 
-                            rltk::RGB::named(rltk::GOLD), 
-                            rltk::RGB::named(rltk::BLACK), 
+                            player_pos.x,
+                            player_pos.y - i,
+                            rltk::RGB::named(rltk::GOLD),
+                            rltk::RGB::named(rltk::BLACK),
                             rltk::to_cp437('░'), 400.0
                         );
                     }
                 }
-                player_stats.hit_points.max = player_hp_at_level(
-                player_attributes.fitness.base + player_attributes.fitness.modifiers, 
-                player_stats.level
-                );
-                
-                player_stats.hit_points.current = player_stats.hit_points.max;
-                player_stats.mana.max = mana_at_level(
-                    player_attributes.intelligence.base + player_attributes.intelligence.modifiers, 
-                    player_stats.level
-                );
-                player_stats.mana.current = player_stats.mana.max;
             }
         }
 
@@ -98,7 +98,7 @@ pub fn delete_the_dead(ecs : &mut World) {
                     }
                     Some(_) => {
                         let mut runstate = ecs.write_resource::<RunState>();
-                        *runstate = RunState::PlayerDied;
+                        *runstate = RunState::GameOver;
                     }
                 }
             }

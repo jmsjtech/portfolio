@@ -1,8 +1,8 @@
 use rltk::{ RGB, RandomNumberGenerator };
 use specs::prelude::*;
-use super::{ Player, Renderable, Name, Position, Viewshed, Rect,
-    SerializeMe, random_table::RandomTable, HungerClock, HungerState, Map, TileType, raws::*, LastActed, TimeKeeper, Attribute, Attributes, Skill, 
-    Skills, Pool, Pools, LightSource, Faction };
+use super::{Pools, Pool, Player, Renderable, Name, Position, Viewshed, Rect,
+    SerializeMe, random_table::RandomTable, HungerClock, HungerState, Map, TileType, raws::*,
+    Attribute, Attributes, Skills, Skill, LightSource, Initiative, Faction, TimeKeeper };
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
 use crate::{attr_bonus, player_hp_at_level, mana_at_level};
@@ -27,22 +27,6 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
         .with(Viewshed{ visible_tiles : Vec::new(), range: 8, dirty: true })
         .with(Name{name: "Player".to_string() })
         .with(HungerClock{ state: HungerState::WellFed, duration: 20 })
-        .with(LightSource{ color: rltk::RGB::from_f32(1.0, 1.0, 0.5), range: 8 })
-        .with(Faction{name : "Player".to_string() })
-        .with(LastActed{ lastacted: 0, speed_in_ms: 100 })
-        .with(TimeKeeper {
-            last_second: 0,
-            last_10sec: 0,
-            last_minute: 0,
-            last_10min: 0,
-            last_hour: 0,
-
-            min: 0,
-            hour: 12,
-            day: 1,
-            season: 1,
-            year: 1
-        })
         .with(Attributes{
             might: Attribute{ base: 11, modifiers: 0, bonus: attr_bonus(11) },
             fitness: Attribute{ base: 11, modifiers: 0, bonus: attr_bonus(11) },
@@ -51,9 +35,9 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
         })
         .with(skills)
         .with(Pools{
-            hit_points : Pool{ 
-                current: player_hp_at_level(11, 1), 
-                max: player_hp_at_level(11, 1) 
+            hit_points : Pool{
+                current: player_hp_at_level(11, 1),
+                max: player_hp_at_level(11, 1)
             },
             mana: Pool{
                 current: mana_at_level(11, 1),
@@ -62,6 +46,22 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
             xp: 0,
             level: 1
         })
+        .with(LightSource{ color: rltk::RGB::from_f32(1.0, 1.0, 0.5), range: 8 })
+        .with(Initiative{current: 0})
+        .with(Faction{name : "Player".to_string() })
+        .with(TimeKeeper {
+              last_second: 0,
+              last_10sec: 0,
+              last_minute: 0,
+              last_10min: 0,
+              last_hour: 0,
+
+              min: 0,
+              hour: 12,
+              day: 1,
+              season: 1,
+              year: 1
+          })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 
@@ -77,7 +77,6 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
 }
 
 const MAX_MONSTERS : i32 = 4;
-
 
 fn room_table(map_depth: i32) -> RandomTable {
     get_spawn_table_for_depth(&RAWS.lock().unwrap(), map_depth)
@@ -125,7 +124,6 @@ pub fn spawn_region(_map: &Map, rng: &mut RandomNumberGenerator, area : &[usize]
         spawn_list.push((*spawn.0, spawn.1.to_string()));
     }
 }
-
 
 /// Spawns a named entity (name in tuple.1) at the location in (tuple.0)
 pub fn spawn_entity(ecs: &mut World, spawn : &(&usize, &String)) {

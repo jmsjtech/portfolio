@@ -1,8 +1,8 @@
 use specs::prelude::*;
-use super::{Name, InBackpack, Position, GameLog, Map, AreaOfEffect, SufferDamage, ParticleBuilder};
-use super::{WantsToRemoveItem, WantsToPickupItem, WantsToUseItem, WantsToDropItem, Pools};
-use super::{Equipped, Equippable, HungerState, HungerClock};
-use super::{Consumable, ProvidesHealing, InflictsDamage, Confusion, ProvidesFood, MagicMapper, RunState};
+use super::{WantsToPickupItem, Name, InBackpack, Position, gamelog::GameLog, WantsToUseItem,
+    Consumable, ProvidesHealing, WantsToDropItem, InflictsDamage, Map, SufferDamage,
+    AreaOfEffect, Confusion, Equippable, Equipped, WantsToRemoveItem, particle_system::ParticleBuilder,
+    ProvidesFood, HungerClock, HungerState, MagicMapper, RunState, Pools};
 
 pub struct ItemCollectionSystem {}
 
@@ -32,35 +32,35 @@ impl<'a> System<'a> for ItemCollectionSystem {
     }
 }
 
-
 pub struct ItemUseSystem {}
 
 impl<'a> System<'a> for ItemUseSystem {
     #[allow(clippy::type_complexity)]
     type SystemData = ( ReadExpect<'a, Entity>,
-                       WriteExpect<'a, GameLog>,
-                       WriteExpect<'a, Map>,
-                       Entities<'a>,
-                       WriteStorage<'a, WantsToUseItem>,
-                       ReadStorage<'a, Name>,
-                       ReadStorage<'a, Consumable>,
-                       ReadStorage<'a, ProvidesHealing>,
-                       ReadStorage<'a, InflictsDamage>,
-                       WriteStorage<'a, Pools>,
-                       WriteStorage<'a, SufferDamage>,
-                       ReadStorage<'a, AreaOfEffect>,
-                       WriteStorage<'a, Confusion>,
-                       ReadStorage<'a, Equippable>,
-                       WriteStorage<'a, Equipped>,
-                       WriteStorage<'a, InBackpack>,
-                       WriteExpect<'a, ParticleBuilder>,
-                       ReadStorage<'a, Position>,
-                       ReadStorage<'a, ProvidesFood>,
-                       WriteStorage<'a, HungerClock>,
-                       ReadStorage<'a, MagicMapper>,
-                       WriteExpect<'a, RunState>
-                     );
+                        WriteExpect<'a, GameLog>,
+                        WriteExpect<'a, Map>,
+                        Entities<'a>,
+                        WriteStorage<'a, WantsToUseItem>,
+                        ReadStorage<'a, Name>,
+                        ReadStorage<'a, Consumable>,
+                        ReadStorage<'a, ProvidesHealing>,
+                        ReadStorage<'a, InflictsDamage>,
+                        WriteStorage<'a, Pools>,
+                        WriteStorage<'a, SufferDamage>,
+                        ReadStorage<'a, AreaOfEffect>,
+                        WriteStorage<'a, Confusion>,
+                        ReadStorage<'a, Equippable>,
+                        WriteStorage<'a, Equipped>,
+                        WriteStorage<'a, InBackpack>,
+                        WriteExpect<'a, ParticleBuilder>,
+                        ReadStorage<'a, Position>,
+                        ReadStorage<'a, ProvidesFood>,
+                        WriteStorage<'a, HungerClock>,
+                        ReadStorage<'a, MagicMapper>,
+                        WriteExpect<'a, RunState>
+                      );
 
+    #[allow(clippy::cognitive_complexity)]
     fn run(&mut self, data : Self::SystemData) {
         let (player_entity, mut gamelog, map, entities, mut wants_use, names,
             consumables, healing, inflict_damage, mut combat_stats, mut suffer_damage,
@@ -69,7 +69,6 @@ impl<'a> System<'a> for ItemUseSystem {
 
         for (entity, useitem) in (&entities, &wants_use).join() {
             let mut used_item = true;
-
 
             // Targeting
             let mut targets : Vec<Entity> = Vec::new();
@@ -133,14 +132,39 @@ impl<'a> System<'a> for ItemUseSystem {
                 }
             }
 
+            // It it is edible, eat it!
+            let item_edible = provides_food.get(useitem.item);
+            match item_edible {
+                None => {}
+                Some(_) => {
+                    used_item = true;
+                    let target = targets[0];
+                    let hc = hunger_clocks.get_mut(target);
+                    if let Some(hc) = hc {
+                        hc.state = HungerState::WellFed;
+                        hc.duration = 20;
+                        gamelog.entries.push(format!("You eat the {}.", names.get(useitem.item).unwrap().name));
+                    }
+                }
+            }
 
-
+            // If its a magic mapper...
+            let is_mapper = magic_mapper.get(useitem.item);
+            match is_mapper {
+                None => {}
+                Some(_) => {
+                    used_item = true;
+                    gamelog.entries.push("The map is revealed to you!".to_string());
+                    *runstate = RunState::MagicMapReveal{ row : 0};
+                }
+            }
 
             // If it heals, apply the healing
             let item_heals = healing.get(useitem.item);
             match item_heals {
                 None => {}
                 Some(healer) => {
+                    used_item = false;
                     for target in targets.iter() {
                         let stats = combat_stats.get_mut(*target);
                         if let Some(stats) = stats {
@@ -158,7 +182,6 @@ impl<'a> System<'a> for ItemUseSystem {
                     }
                 }
             }
-
 
             // If it inflicts damage, apply it to the target cell
             let item_damages = inflict_damage.get(useitem.item);
@@ -184,37 +207,6 @@ impl<'a> System<'a> for ItemUseSystem {
                 }
             }
 
-
-            // It it is edible, eat it!
-            let item_edible = provides_food.get(useitem.item);
-            match item_edible {
-                None => {}
-                Some(_) => {
-                    used_item = true;
-                    let target = targets[0];
-                    let hc = hunger_clocks.get_mut(target);
-                    if let Some(hc) = hc {
-                        hc.state = HungerState::WellFed;
-                        hc.duration = 20;
-                        gamelog.entries.push(format!("You eat the {}.", names.get(useitem.item).unwrap().name));
-                    }
-                }
-            }
-
-
-            // If its a magic mapper...
-            let is_mapper = magic_mapper.get(useitem.item);
-            match is_mapper {
-                None => {}
-                Some(_) => {
-                    used_item = true;
-                    gamelog.entries.push("The map is revealed to you!".to_string());
-                    *runstate = RunState::MagicMapReveal{ row : 0};
-                }
-            }
-
-
-
             // Can it pass along confusion? Note the use of scopes to escape from the borrow checker!
             let mut add_confusion = Vec::new();
             {
@@ -234,18 +226,14 @@ impl<'a> System<'a> for ItemUseSystem {
                                 if let Some(pos) = pos {
                                     particle_builder.request(pos.x, pos.y, rltk::RGB::named(rltk::MAGENTA), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('?'), 200.0);
                                 }
-                                used_item = true;
                             }
                         }
                     }
                 }
             }
-
             for mob in add_confusion.iter() {
                 confused.insert(mob.0, Confusion{ turns: mob.1 }).expect("Unable to insert status");
             }
-
-
 
             // If its a consumable, we delete it on use
             if used_item {
@@ -257,41 +245,11 @@ impl<'a> System<'a> for ItemUseSystem {
                     }
                 }
             }
-
         }
 
         wants_use.clear();
     }
 }
-
-
-
-pub struct ItemRemoveSystem {}
-
-impl<'a> System<'a> for ItemRemoveSystem {
-    #[allow(clippy::type_complexity)]
-    type SystemData = (
-                        Entities<'a>,
-                        WriteStorage<'a, WantsToRemoveItem>,
-                        WriteStorage<'a, Equipped>,
-                        WriteStorage<'a, InBackpack>
-                      );
-
-    fn run(&mut self, data : Self::SystemData) {
-        let (entities, mut wants_remove, mut equipped, mut backpack) = data;
-
-        for (entity, to_remove) in (&entities, &wants_remove).join() {
-            equipped.remove(to_remove.item);
-            backpack.insert(to_remove.item, InBackpack{ owner: entity }).expect("Unable to insert backpack");
-        }
-
-        wants_remove.clear();
-    }
-}
-
-
-
-
 
 pub struct ItemDropSystem {}
 
@@ -325,5 +283,28 @@ impl<'a> System<'a> for ItemDropSystem {
         }
 
         wants_drop.clear();
+    }
+}
+
+pub struct ItemRemoveSystem {}
+
+impl<'a> System<'a> for ItemRemoveSystem {
+    #[allow(clippy::type_complexity)]
+    type SystemData = (
+                        Entities<'a>,
+                        WriteStorage<'a, WantsToRemoveItem>,
+                        WriteStorage<'a, Equipped>,
+                        WriteStorage<'a, InBackpack>
+                      );
+
+    fn run(&mut self, data : Self::SystemData) {
+        let (entities, mut wants_remove, mut equipped, mut backpack) = data;
+
+        for (entity, to_remove) in (&entities, &wants_remove).join() {
+            equipped.remove(to_remove.item);
+            backpack.insert(to_remove.item, InBackpack{ owner: entity }).expect("Unable to insert backpack");
+        }
+
+        wants_remove.clear();
     }
 }
