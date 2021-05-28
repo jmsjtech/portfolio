@@ -1,9 +1,8 @@
 use specs::prelude::*;
 use super::*;
-use crate::particle_system::ParticleBuilder;
+use crate::systems::particle_system::ParticleBuilder;
 use crate::map::Map;
 use crate::components::{ParticleAnimation, ParticleLifetime, Renderable, Position};
-use rltk::{Point, to_cp437};
 
 pub fn particle_to_tile(ecs: &mut World, tile_idx : i32, effect: &EffectSpawner) {
     if let EffectType::Particle{ glyph, fg, bg, lifespan } = effect.effect_type {

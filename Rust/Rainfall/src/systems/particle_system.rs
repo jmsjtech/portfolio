@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use super::{ Rltk, ParticleLifetime, Position, Renderable, Map };
+use crate::{ Rltk, ParticleLifetime, Position, Renderable, Map };
 use rltk::RGB;
 
 

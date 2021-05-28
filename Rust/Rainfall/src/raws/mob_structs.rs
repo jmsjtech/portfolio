@@ -2,7 +2,6 @@ use serde::Deserialize;
 use super::Renderable;
 use std::collections::HashMap;
 
-
 #[derive(Deserialize, Debug)]
 pub struct Mob {
     pub name : String,
@@ -25,14 +24,6 @@ pub struct Mob {
     pub vendor : Option<Vec<String>>,
     pub abilities : Option<Vec<MobAbility>>,
     pub on_death : Option<Vec<MobAbility>>
-}
-
-#[derive(Deserialize, Debug)]
-pub struct MobAbility {
-    pub spell : String,
-    pub chance : f32,
-    pub range : f32,
-    pub min_range : f32
 }
 
 #[derive(Deserialize, Debug)]
@@ -61,4 +52,12 @@ pub struct NaturalAttack {
 pub struct MobLight {
     pub range : i32,
     pub color : String
+}
+
+#[derive(Deserialize, Debug)]
+pub struct MobAbility {
+    pub spell : String,
+    pub chance : f32,
+    pub range : f32,
+    pub min_range : f32
 }

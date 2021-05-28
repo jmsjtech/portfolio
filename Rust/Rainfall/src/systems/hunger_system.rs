@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use super::{HungerClock, RunState, HungerState, SufferDamage, MyTurn};
+use crate::{HungerClock, RunState, HungerState, SufferDamage, MyTurn};
 
 pub struct HungerSystem {}
 

@@ -1,11 +1,10 @@
-use rltk::{ RGB, RandomNumberGenerator };
+use rltk::{ RGB };
 use specs::prelude::*;
 use super::{Pools, Pool, Player, Renderable, Name, Position, Viewshed, Rect,
-    SerializeMe, random_table::RandomTable, HungerClock, HungerState, Map, TileType, raws::*,
-    Attribute, Attributes, Skills, Skill, LightSource, Initiative, Faction, TimeKeeper, EquipmentChanged,
-    SingleActivation, TeleportTo, EntryTrigger, OtherLevelPosition, MasterDungeonMap, Duration, StatusEffect, AttributeBonus,
-    KnownSpells, MasterTable};
-    
+    SerializeMe, random_table::MasterTable, HungerClock, HungerState, Map, TileType, raws::*,
+    Attribute, Attributes, Skills, Skill, LightSource, Initiative, Faction, EquipmentChanged,
+    OtherLevelPosition, MasterDungeonMap, EntryTrigger, TeleportTo, SingleActivation,
+    StatusEffect, Duration, AttributeBonus, KnownSpells, TimeKeeper };
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
 use crate::{attr_bonus, player_hp_at_level, mana_at_level};
@@ -13,7 +12,7 @@ use crate::{attr_bonus, player_hp_at_level, mana_at_level};
 /// Spawns the player and returns his/her entity object.
 pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
     spawn_all_spells(ecs);
-    
+
     let mut skills = Skills{ skills: HashMap::new() };
     skills.skills.insert(Skill::Melee, 1);
     skills.skills.insert(Skill::Defense, 1);
@@ -40,9 +39,9 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
         })
         .with(skills)
         .with(Pools{
-            hit_points : Pool{ 
-                current: player_hp_at_level(11, 1), 
-                max: player_hp_at_level(11, 1) 
+            hit_points : Pool{
+                current: player_hp_at_level(11, 1),
+                max: player_hp_at_level(11, 1)
             },
             mana: Pool{
                 current: mana_at_level(11, 1),
@@ -53,12 +52,12 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
             total_weight : 0.0,
             total_initiative_penalty : 0.0,
             gold : 0.0,
-            god_mode: false
+            god_mode : false
         })
+        .with(EquipmentChanged{})
         .with(LightSource{ color: rltk::RGB::from_f32(1.0, 1.0, 0.5), range: 8 })
         .with(Initiative{current: 0})
         .with(Faction{name : "Player".to_string() })
-        .with(EquipmentChanged{})
         .with(KnownSpells{ spells : Vec::new() })
         .with(TimeKeeper {
               last_second: 0,
@@ -83,7 +82,6 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Stained Tunic", SpawnType::Equipped{by : player});
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Torn Trousers", SpawnType::Equipped{by : player});
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Old Boots", SpawnType::Equipped{by : player});
-    
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Shortbow", SpawnType::Carried{by : player});
 
     // Starting hangover
@@ -110,7 +108,7 @@ fn room_table(map_depth: i32) -> MasterTable {
 }
 
 /// Fills a room with stuff!
-pub fn spawn_room(map: &Map, rng: &mut RandomNumberGenerator, room : &Rect, map_depth: i32, spawn_list : &mut Vec<(usize, String)>) {
+pub fn spawn_room(map: &Map, room : &Rect, map_depth: i32, spawn_list : &mut Vec<(usize, String)>) {
     let mut possible_targets : Vec<usize> = Vec::new();
     { // Borrow scope - to keep access to the map separated
         for y in room.y1 + 1 .. room.y2 {
@@ -123,25 +121,25 @@ pub fn spawn_room(map: &Map, rng: &mut RandomNumberGenerator, room : &Rect, map_
         }
     }
 
-    spawn_region(map, rng, &possible_targets, map_depth, spawn_list);
+    spawn_region(map, &possible_targets, map_depth, spawn_list);
 }
 
 /// Fills a region with stuff!
-pub fn spawn_region(_map: &Map, rng: &mut RandomNumberGenerator, area : &[usize], map_depth: i32, spawn_list : &mut Vec<(usize, String)>) {
+pub fn spawn_region(_map: &Map, area : &[usize], map_depth: i32, spawn_list : &mut Vec<(usize, String)>) {
     let spawn_table = room_table(map_depth);
     let mut spawn_points : HashMap<usize, String> = HashMap::new();
     let mut areas : Vec<usize> = Vec::from(area);
 
     // Scope to keep the borrow checker happy
     {
-        let num_spawns = i32::min(areas.len() as i32, rng.roll_dice(1, MAX_MONSTERS + 3) + (map_depth - 1) - 3);
+        let num_spawns = i32::min(areas.len() as i32, crate::rng::roll_dice(1, MAX_MONSTERS + 3) + (map_depth - 1) - 3);
         if num_spawns == 0 { return; }
 
         for _i in 0 .. num_spawns {
-            let array_index = if areas.len() == 1 { 0usize } else { (rng.roll_dice(1, areas.len() as i32)-1) as usize };
+            let array_index = if areas.len() == 1 { 0usize } else { (crate::rng::roll_dice(1, areas.len() as i32)-1) as usize };
 
             let map_idx = areas[array_index];
-            spawn_points.insert(map_idx, spawn_table.roll(rng));
+            spawn_points.insert(map_idx, spawn_table.roll());
             areas.remove(array_index);
         }
     }
@@ -165,7 +163,9 @@ pub fn spawn_entity(ecs: &mut World, spawn : &(&usize, &String)) {
         return;
     }
 
-    rltk::console::log(format!("WARNING: We don't know how to spawn [{}]!", spawn.1));
+    if spawn.1 != "None" {
+        rltk::console::log(format!("WARNING: We don't know how to spawn [{}]!", spawn.1));
+    }
 }
 
 pub fn spawn_town_portal(ecs: &mut World) {
@@ -203,7 +203,7 @@ pub fn spawn_town_portal(ecs: &mut World) {
         })
         .with(EntryTrigger{})
         .with(TeleportTo{ x: player_x, y: player_y, depth: player_depth, player_only: true })
-        .with(Name{ name : "Town Portal".to_string() })
         .with(SingleActivation{})
+        .with(Name{ name : "Town Portal".to_string() })
         .build();
 }

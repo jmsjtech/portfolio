@@ -1,5 +1,5 @@
-use super::{MetaMapBuilder, BuilderMap, Position, TileType};
-use rltk::RandomNumberGenerator;
+use super::{MetaMapBuilder, BuilderMap, Position};
+use crate::map;
 
 #[allow(dead_code)]
 pub enum XStart { LEFT, CENTER, RIGHT }
@@ -8,13 +8,13 @@ pub enum XStart { LEFT, CENTER, RIGHT }
 pub enum YStart { TOP, CENTER, BOTTOM }
 
 pub struct AreaStartingPosition {
-    x : XStart, 
+    x : XStart,
     y : YStart
 }
 
 impl MetaMapBuilder for AreaStartingPosition {
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data : &mut BuilderMap)  {
-        self.build(rng, build_data);
+    fn build_map(&mut self, build_data : &mut BuilderMap)  {
+        self.build(build_data);
     }
 }
 
@@ -26,7 +26,7 @@ impl AreaStartingPosition {
         })
     }
 
-    fn build(&mut self, _rng : &mut RandomNumberGenerator, build_data : &mut BuilderMap) {
+    fn build(&mut self, build_data : &mut BuilderMap) {
         let seed_x;
         let seed_y;
 
@@ -44,7 +44,7 @@ impl AreaStartingPosition {
 
         let mut available_floors : Vec<(usize, f32)> = Vec::new();
         for (idx, tiletype) in build_data.map.tiles.iter().enumerate() {
-            if *tiletype == TileType::Floor {
+            if map::tile_walkable(*tiletype) {
                 available_floors.push(
                     (
                         idx,

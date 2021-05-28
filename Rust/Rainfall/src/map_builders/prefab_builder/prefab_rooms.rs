@@ -22,7 +22,7 @@ const TOTALLY_NOT_A_TRAP_MAP : &str = "
      
  ^^^ 
  ^!^ 
- ^^^
+ ^^^ 
      
 ";
 
@@ -56,7 +56,7 @@ pub const CHECKERBOARD : PrefabRoom = PrefabRoom{
 
 #[allow(dead_code)]
 const CHECKERBOARD_MAP : &str = "
-       
+      
  #^#  
  g#%# 
  #!#  
