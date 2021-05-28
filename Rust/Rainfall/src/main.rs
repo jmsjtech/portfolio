@@ -26,7 +26,7 @@ mod spawner;
 mod inventory_system;
 use inventory_system::{ ItemCollectionSystem, ItemUseSystem, ItemDropSystem, ItemRemoveSystem };
 
-
+pub mod spatial;
 pub mod saveload_system;
 pub mod random_table;
 pub mod particle_system;
