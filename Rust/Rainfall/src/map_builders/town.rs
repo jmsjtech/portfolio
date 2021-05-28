@@ -344,13 +344,9 @@ impl TownBuilder {
         self.random_building_spawn(building, build_data, rng, &mut to_place, player_idx);
     }
 
-    fn build_temple(&mut self,
-        building: &(i32, i32, i32, i32),
-        build_data : &mut BuilderMap,
-        rng: &mut rltk::RandomNumberGenerator)
-    {
+    fn build_temple(&mut self, building: &(i32, i32, i32, i32), build_data : &mut BuilderMap, rng: &mut rltk::RandomNumberGenerator) {
         // Place items
-        let mut to_place : Vec<&str> = vec!["Priest", "Parishioner", "Parishioner", "Chair", "Chair", "Candle", "Candle"];
+        let mut to_place : Vec<&str> = vec!["Priest", "Altar", "Parishioner", "Parishioner", "Chair", "Chair", "Candle", "Candle"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
     }
 

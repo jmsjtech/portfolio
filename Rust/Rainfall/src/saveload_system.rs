@@ -50,7 +50,8 @@ pub fn save_game(ecs : &mut World) {
             Quips, Attributes, Skills, Pools, NaturalAttackDefense, LootTable,
             OtherLevelPosition, DMSerializationHelper, LightSource, Initiative, MyTurn, Faction,
             WantsToApproach, WantsToFlee, MoveMode, Chasing, TimeKeeper, EquipmentChanged, Vendor,
-            TownPortal, TeleportTo, ApplyMove, ApplyTeleport, MagicItem, ObfuscatedName, IdentifiedItem
+            TownPortal, TeleportTo, ApplyMove, ApplyTeleport, MagicItem, ObfuscatedName, IdentifiedItem,
+            SpawnParticleLine, SpawnParticleBurst
         );
     }
 
@@ -105,7 +106,8 @@ pub fn load_game(ecs: &mut World) {
             Quips, Attributes, Skills, Pools, NaturalAttackDefense, LootTable,
             OtherLevelPosition, DMSerializationHelper, LightSource, Initiative, MyTurn, Faction,
             WantsToApproach, WantsToFlee, MoveMode, Chasing, TimeKeeper, EquipmentChanged, Vendor,
-            TownPortal, TeleportTo, ApplyMove, ApplyTeleport, MagicItem, ObfuscatedName, IdentifiedItem
+            TownPortal, TeleportTo, ApplyMove, ApplyTeleport, MagicItem, ObfuscatedName, IdentifiedItem,
+            SpawnParticleLine, SpawnParticleBurst
         );
     }
 
