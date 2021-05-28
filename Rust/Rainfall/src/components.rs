@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use specs_derive::*;
-use rltk::RGB;
+use rltk::{RGB, Point};
 use serde::{Serialize, Deserialize};
 use specs::saveload::{Marker, ConvertSaveload};
 use specs::error::NoError;
@@ -273,7 +273,8 @@ pub struct Equipped {
 pub enum WeaponAttribute { Might, Quickness }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
-pub struct MeleeWeapon {
+pub struct Weapon {
+    pub range : Option<i32>,
     pub attribute : WeaponAttribute,
     pub damage_n_dice : i32,
     pub damage_die_type : i32,
@@ -304,9 +305,18 @@ pub struct NaturalAttackDefense {
     pub attacks : Vec<NaturalAttack>
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ParticleAnimation {
+    pub step_time : f32,
+    pub path : Vec<Point>,
+    pub current_step : usize,
+    pub timer : f32
+}
+
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct ParticleLifetime {
-    pub lifetime_ms : f32
+    pub lifetime_ms : f32,
+    pub animation : Option<ParticleAnimation>
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
@@ -351,9 +361,12 @@ pub struct SerializeMe;
 pub struct SerializationHelper {
     pub map : super::map::Map
 }
+
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct DMSerializationHelper {
-    pub map : super::map::MasterDungeonMap
+    pub map : super::map::MasterDungeonMap,
+    pub log : Vec<Vec<crate::gamelog::LogFragment>>,
+    pub events : HashMap<String, i32>
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
@@ -505,3 +518,11 @@ pub struct OnDeath {
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct AlwaysTargetsSelf {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Target {}
+
+#[derive(Component, Debug, ConvertSaveload, Clone)]
+pub struct WantsToShoot {
+    pub target : Entity
+}

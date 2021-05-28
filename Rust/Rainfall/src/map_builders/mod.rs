@@ -304,6 +304,7 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, wid
     builder
 }
 
+
 pub fn level_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
     rltk::console::log(format!("Depth: {}", new_depth));
     match new_depth {
@@ -314,6 +315,8 @@ pub fn level_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, widt
         5 => limestone_transition_builder(new_depth, rng, width, height),
         6 => dwarf_fort_builder(new_depth, rng, width, height),
         7 => mushroom_entrance(new_depth, rng, width, height),
+        8 => mushroom_builder(new_depth, rng, width, height),
+        9 => mushroom_exit(new_depth, rng, width, height),
         _ => random_builder(new_depth, rng, width, height)
     }
 }

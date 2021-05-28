@@ -17,10 +17,11 @@ mod map_indexing_system;
 use map_indexing_system::MapIndexingSystem;
 mod melee_combat_system;
 use melee_combat_system::MeleeCombatSystem;
+mod ranged_combat_system;
+use ranged_combat_system::RangedCombatSystem;
 mod damage_system;
 mod gui;
 mod gamelog;
-use gamelog::GameLog;
 mod spawner;
 mod inventory_system;
 use inventory_system::{ ItemCollectionSystem, ItemUseSystem, ItemDropSystem, ItemRemoveSystem, SpellUseSystem };
@@ -113,6 +114,8 @@ impl State {
         triggers.run_now(&self.ecs);
         let mut melee = MeleeCombatSystem{};
         melee.run_now(&self.ecs);
+        let mut ranged = RangedCombatSystem{};
+        ranged.run_now(&self.ecs);
         let mut pickup = ItemCollectionSystem{};
         pickup.run_now(&self.ecs);
         let mut itemequip = inventory_system::ItemEquipOnUse{};
@@ -148,7 +151,7 @@ impl GameState for State {
         }
 
         ctx.cls();
-        particle_system::cull_dead_particles(&mut self.ecs, ctx);
+        particle_system::update_particles(&mut self.ecs, ctx);
 
         match newrunstate {
             RunState::MainMenu{..} => {}
@@ -185,12 +188,14 @@ impl GameState for State {
             }
             RunState::AwaitingInput => {
                 newrunstate = player_input(self, ctx);
+                if newrunstate != RunState::AwaitingInput {
+                    crate::gamelog::record_event("Turn", 1);
+                }
             }
             RunState::Ticking => {
                 {
                     let player_entity = self.ecs.fetch::<Entity>();
                     let mut clocks = self.ecs.write_storage::<TimeKeeper>();
-                    let mut gamelog = self.ecs.fetch_mut::<GameLog>();
                     
                     let clock = clocks.get_mut(*player_entity);
                     
@@ -210,34 +215,41 @@ impl GameState for State {
                             clock.season += 1;
                             clock.day = 1;
 
-                            if clock.season == 1 { gamelog.entries.push("Spring has sprung!".to_string()); }
-                            if clock.season == 2 { gamelog.entries.push("Summer is here!".to_string()); }
-                            if clock.season == 3 { gamelog.entries.push("Autumn has arrived!".to_string()); }
-                            if clock.season == 4 { gamelog.entries.push("Winter has come.".to_string()); }
+                            if clock.season == 1 { gamelog::Logger::new().color(rltk::SPRINGGREEN).append("Spring has sprung!").log(); }
+                            if clock.season == 2 { gamelog::Logger::new().color(rltk::GOLD).append("Summer is here!").log(); }
+                            if clock.season == 3 { gamelog::Logger::new().color(rltk::ORANGE_RED).append("Autumn has arrived!").log(); }
+                            if clock.season == 4 { gamelog::Logger::new().color(rltk::CORNFLOWERBLUE).append("Winter has come.").log(); }
                         }
 
                         if clock.season >= 5 {
                             clock.year += 1;
                             clock.season = 1;
 
-                            gamelog.entries.push("Spring has sprung, it's a new year!".to_string());
+                            crate::gamelog::Logger::new().color(rltk::SPRINGGREEN).append("Spring has sprung! It's a new year!").log();
                         }
                     }
                 }
                 
+                let mut should_change_target = false;
                 while newrunstate == RunState::Ticking {
-                    self.run_systems();
-                    self.ecs.maintain();
-                    match *self.ecs.fetch::<RunState>() {
-                        RunState::AwaitingInput => newrunstate = RunState::AwaitingInput,
-                        RunState::MagicMapReveal{ .. } => newrunstate = RunState::MagicMapReveal{ row: 0 },
-                        RunState::TownPortal => newrunstate = RunState::TownPortal,
-                        RunState::TeleportingToOtherLevel{ x, y, depth } => newrunstate = RunState::TeleportingToOtherLevel{ x, y, depth },
-                        RunState::ShowRemoveCurse => newrunstate = RunState::ShowRemoveCurse,
-                        RunState::ShowIdentify => newrunstate = RunState::ShowIdentify,
-                        _ => newrunstate = RunState::Ticking
-                    }
-                }
+                   self.run_systems();
+                   self.ecs.maintain();
+                   match *self.ecs.fetch::<RunState>() {
+                       RunState::AwaitingInput => {
+                           newrunstate = RunState::AwaitingInput;
+                           should_change_target = true;
+                       }
+                       RunState::MagicMapReveal{ .. } => newrunstate = RunState::MagicMapReveal{ row: 0 },
+                       RunState::TownPortal => newrunstate = RunState::TownPortal,
+                       RunState::TeleportingToOtherLevel{ x, y, depth } => newrunstate = RunState::TeleportingToOtherLevel{ x, y, depth },
+                       RunState::ShowRemoveCurse => newrunstate = RunState::ShowRemoveCurse,
+                       RunState::ShowIdentify => newrunstate = RunState::ShowIdentify,
+                       _ => newrunstate = RunState::Ticking
+                   }
+               }
+               if should_change_target {
+                   player::end_turn_targeting(&mut self.ecs);
+               }
             }
             RunState::ShowInventory => {
                 let result = gui::show_inventory(self, ctx);
@@ -491,8 +503,7 @@ impl State {
         self.generate_world_map(current_depth + offset, offset);
 
         // Notify the player
-        let mut gamelog = self.ecs.fetch_mut::<gamelog::GameLog>();
-        gamelog.entries.push("You change level.".to_string());
+         gamelog::Logger::new().append("You change level.").log();
     }
 
     fn game_over_cleanup(&mut self) {
@@ -529,6 +540,15 @@ impl State {
         } else {
             map::thaw_level_entities(&mut self.ecs);
         }
+
+        gamelog::clear_log();
+        gamelog::Logger::new()
+            .append("Welcome to")
+            .color(rltk::CYAN)
+            .append("Rainfall")
+            .log();
+
+        gamelog::clear_events();
     }
 }
 
@@ -570,7 +590,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<DMSerializationHelper>();
     gs.ecs.register::<Equippable>();
     gs.ecs.register::<Equipped>();
-    gs.ecs.register::<MeleeWeapon>();
+    gs.ecs.register::<Weapon>();
     gs.ecs.register::<Wearable>();
     gs.ecs.register::<WantsToRemoveItem>();
     gs.ecs.register::<ParticleLifetime>();
@@ -627,6 +647,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<TileSize>();
     gs.ecs.register::<OnDeath>();
     gs.ecs.register::<AlwaysTargetsSelf>();
+    gs.ecs.register::<Target>();
+    gs.ecs.register::<WantsToShoot>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();
@@ -638,7 +660,6 @@ fn main() -> rltk::BError {
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
     gs.ecs.insert(player_entity);
     gs.ecs.insert(RunState::MapGeneration{} );
-    gs.ecs.insert(gamelog::GameLog{ entries : vec!["Welcome to Rainfall".to_string()] });
     gs.ecs.insert(particle_system::ParticleBuilder::new());
     gs.ecs.insert(rex_assets::RexAssets::new());
 

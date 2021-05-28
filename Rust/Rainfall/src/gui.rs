@@ -1,9 +1,11 @@
-use rltk::{ RGB, Rltk, Point, VirtualKeyCode };
+
+use rltk::{ RGB, Rltk, Point, VirtualKeyCode, TextBlock };
 use specs::prelude::*;
-use super::{Pools, gamelog::GameLog, Map, Name, Position, State, InBackpack,
+use super::{Pools, Map, Name, State, InBackpack,
     Viewshed, RunState, Equipped, HungerClock, HungerState, rex_assets::RexAssets,
-    Hidden, camera, Attributes, Attribute, Consumable, TimeKeeper, Vendor, VendorMode, Item, MagicItem, MagicItemClass, ObfuscatedName,
-    CursedItem, MasterDungeonMap, Duration, StatusEffect, KnownSpells};
+    Hidden, camera, Attributes, Attribute, Consumable, VendorMode, Item, Vendor,
+    MagicItem, MagicItemClass, ObfuscatedName, CursedItem, MasterDungeonMap,
+    StatusEffect, Duration, KnownSpells, Weapon, Target, gamelog, TimeKeeper };
 
 pub fn draw_hollow_box(
     console: &mut Rltk,
@@ -48,6 +50,7 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     let box_gray : RGB = RGB::from_hex("#999999").expect("Oops");
     let black = RGB::named(rltk::BLACK);
     let white = RGB::named(rltk::WHITE);
+    let yellow = RGB::named(rltk::YELLOW);
 
     draw_hollow_box(ctx, 0, 0, 79, 59, box_gray, black); // Overall box
     draw_hollow_box(ctx, 0, 0, 49, 45, box_gray, black); // Map box
@@ -110,10 +113,28 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     let mut y = 13;
     let entities = ecs.entities();
     let equipped = ecs.read_storage::<Equipped>();
+    let weapon = ecs.read_storage::<Weapon>();
     for (entity, equipped_by) in (&entities, &equipped).join() {
         if equipped_by.owner == *player_entity {
-            ctx.print_color(50, y, get_item_color(ecs, entity), black, &get_item_display_name(ecs, entity));
+            let name = get_item_display_name(ecs, entity);
+            ctx.print_color(50, y, get_item_color(ecs, entity), black, &name);
             y += 1;
+
+            if let Some(weapon) = weapon.get(entity) {
+                let mut weapon_info = if weapon.damage_bonus < 0 {
+                    format!("┤ {} ({}d{}{})", &name, weapon.damage_n_dice, weapon.damage_die_type, weapon.damage_bonus)
+                } else if weapon.damage_bonus == 0 {
+                    format!("┤ {} ({}d{})", &name, weapon.damage_n_dice, weapon.damage_die_type)
+                } else {
+                    format!("┤ {} ({}d{}+{})", &name, weapon.damage_n_dice, weapon.damage_die_type, weapon.damage_bonus)
+                };
+
+                if let Some(range) = weapon.range {
+                    weapon_info += &format!(" (range: {}, F to fire, V cycle targets)", range);
+                }
+                weapon_info += " ├";
+                ctx.print_color(3, 45, yellow, black, &weapon_info);
+            }
         }
     }
 
@@ -217,12 +238,9 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     
 
     // Draw the log
-    let log = ecs.fetch::<GameLog>();
-    let mut y = 46;
-    for s in log.entries.iter().rev() {
-        if y < 59 { ctx.print(2, y, s); }
-        y += 1;
-    }
+    let mut block = TextBlock::new(1, 46, 79, 58);
+    block.print(&gamelog::log_display());
+    block.render(&mut rltk::BACKEND_INTERNAL.lock().consoles[0].console);
 
     draw_tooltips(ecs, ctx);
 }
@@ -641,18 +659,24 @@ pub fn main_menu(gs : &mut State, ctx : &mut Rltk) -> MainMenuResult {
 #[derive(PartialEq, Copy, Clone)]
 pub enum GameOverResult { NoSelection, QuitToMenu }
 
+
 pub fn game_over(ctx : &mut Rltk) -> GameOverResult {
     ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Your journey has ended!");
     ctx.print_color_centered(17, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "One day, we'll tell you all about how you did.");
     ctx.print_color_centered(18, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "That day, sadly, is not in this chapter..");
 
-    ctx.print_color_centered(20, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Press any key to return to the menu.");
+    ctx.print_color_centered(19, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), &format!("You lived for {} turns.", crate::gamelog::get_event_count("Turn")));
+    ctx.print_color_centered(20, RGB::named(rltk::RED), RGB::named(rltk::BLACK), &format!("You suffered {} points of damage.", crate::gamelog::get_event_count("Damage Taken")));
+    ctx.print_color_centered(21, RGB::named(rltk::RED), RGB::named(rltk::BLACK), &format!("You inflicted {} points of damage.", crate::gamelog::get_event_count("Damage Inflicted")));
+
+    ctx.print_color_centered(23, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Press any key to return to the menu.");
 
     match ctx.key {
         None => GameOverResult::NoSelection,
         Some(_) => GameOverResult::QuitToMenu
     }
 }
+
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum CheatMenuResult { NoResponse, Cancel, TeleportToExit, Heal, Reveal, GodMode }
