@@ -51,7 +51,7 @@ pub fn save_game(ecs : &mut World) {
             OtherLevelPosition, DMSerializationHelper, LightSource, Initiative, MyTurn, Faction,
             WantsToApproach, WantsToFlee, MoveMode, Chasing, TimeKeeper, EquipmentChanged, Vendor,
             TownPortal, TeleportTo, ApplyMove, ApplyTeleport, MagicItem, ObfuscatedName, IdentifiedItem,
-            SpawnParticleLine, SpawnParticleBurst
+            SpawnParticleLine, SpawnParticleBurst, CursedItem, ProvidesRemoveCurse, ProvidesIdentification
         );
     }
 
@@ -107,7 +107,7 @@ pub fn load_game(ecs: &mut World) {
             OtherLevelPosition, DMSerializationHelper, LightSource, Initiative, MyTurn, Faction,
             WantsToApproach, WantsToFlee, MoveMode, Chasing, TimeKeeper, EquipmentChanged, Vendor,
             TownPortal, TeleportTo, ApplyMove, ApplyTeleport, MagicItem, ObfuscatedName, IdentifiedItem,
-            SpawnParticleLine, SpawnParticleBurst
+            SpawnParticleLine, SpawnParticleBurst, CursedItem, ProvidesRemoveCurse, ProvidesIdentification
         );
     }
 
