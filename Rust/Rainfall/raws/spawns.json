@@ -1,4 +1,36 @@
 {
+  "spells" : [
+      {
+          "name" : "Zap",
+          "mana_cost" : 2,
+          "effects" : { 
+              "ranged" : "6",
+              "damage" : "5",
+              "particle_line" : "▓;#00FFFF;200.0"
+          }
+      },
+      {
+          "name" : "Web",
+          "mana_cost" : 2,
+          "effects" : { 
+              "ranged" : "6",
+              "slow" : "10",
+              "area_of_effect" : "3",
+              "particle_line" : "☼;#FFFFFF;400.0"
+          }
+      },
+
+      {
+          "name" : "Venom",
+          "mana_cost" : 2,
+          "effects" : { 
+              "ranged" : "6",
+              "damage_over_time" : "4",
+              "particle_line" : "▓;#00FF00;400.0"
+          }
+      }
+  ],
+  
   "spawn_table" : [
       { "name" : "Goblin", "weight" : 10, "min_depth" : 3, "max_depth" : 4 },
       { "name" : "Orc", "weight" : 1, "min_depth" : 4, "max_depth" : 100 },
@@ -39,7 +71,20 @@
       { "name" : "Longsword +1", "weight" : 1, "min_depth" : 3, "max_depth" : 100 },
       { "name" : "Longsword -1", "weight" : 1, "min_depth" : 3, "max_depth" : 100 },
       { "name" : "Remove Curse Scroll", "weight" : 4, "min_depth" : 0, "max_depth" : 100 },
-      { "name" : "Identify Scroll", "weight" : 4, "min_depth" : 0, "max_depth" : 100 }
+      { "name" : "Identify Scroll", "weight" : 4, "min_depth" : 0, "max_depth" : 100 },
+      { "name" : "Gauntlets of Ogre Power", "weight" : 1, "min_depth" : 0, "max_depth" : 100 },
+      { "name" : "Wand of Fireballs", "weight" : 1, "min_depth" : 0, "max_depth" : 100 },
+      { "name" : "Strength Potion", "weight" : 2, "min_depth" : 0, "max_depth" : 100 },
+      { "name" : "Mana Potion", "weight" : 7, "min_depth" : 0, "max_depth" : 100 },
+      { "name" : "A Beginner's Guide to Magic", "weight" : 5, "min_depth" : 0, "max_depth" : 100 },
+      { "name" : "Poison Potion", "weight" : 3, "min_depth" : 0, "max_depth" : 100 },
+      { "name" : "Slow Potion", "weight" : 3, "min_depth" : 0, "max_depth" : 100 },
+      { "name" : "Haste Potion", "weight" : 3, "min_depth" : 0, "max_depth" : 100 },
+      { "name" : "Web Scroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100 },
+      { "name" : "Wand of Venom", "weight" : 2, "min_depth" : 0, "max_depth" : 100 },
+      { "name" : "Arachnophilia 101", "weight" : 1, "min_depth" : 0, "max_depth" : 100 },
+      { "name" : "Venom 101", "weight" : 1, "min_depth" : 0, "max_depth" : 100 },
+      { "name" : "Dagger of Venom", "weight" : 1, "min_depth" : 0, "max_depth" : 100 }
   ],
 
 "loot_tables" : [
@@ -71,6 +116,168 @@
 ],
 
 "items" : [
+        {
+          "name" : "Dagger of Venom",
+          "renderable": {
+              "glyph" : "/",
+              "fg" : "#FFAAAA",
+              "bg" : "#000000",
+              "order" : 2
+          },
+          "weapon" : {
+              "range" : "melee",
+              "attribute" : "Quickness",
+              "base_damage" : "1d4+1",
+              "hit_bonus" : 1,
+              "proc_chance" : 0.5,
+              "proc_target" : "Target",
+              "proc_effects" : { "damage_over_time" : "2" }
+          },
+          "weight_lbs" : 1.0,
+          "base_value" : 2.0,
+          "initiative_penalty" : -1,
+          "vendor_category" : "weapon",
+          "magic" : { "class" : "common", "naming" : "Unidentified Dagger" }
+      },
+      {
+        "name" : "Arachnophilia 101",
+        "renderable": {
+            "glyph" : "¶",
+            "fg" : "#FF00FF",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "consumable" : {
+            "effects" : { "teach_spell" : "Web" }
+        },
+        "weight_lbs" : 0.5,
+        "base_value" : 50.0,
+        "vendor_category" : "alchemy"
+    },
+
+    {
+        "name" : "Venom 101",
+        "renderable": {
+            "glyph" : "¶",
+            "fg" : "#FF00FF",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "consumable" : {
+            "effects" : { "teach_spell" : "Venom" }
+        },
+        "weight_lbs" : 0.5,
+        "base_value" : 50.0,
+        "vendor_category" : "alchemy"
+      },
+      {
+        "name" : "Web Scroll",
+        "renderable": {
+            "glyph" : ")",
+            "fg" : "#FFAAAA",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "consumable" : {
+            "effects" : { 
+                "ranged" : "6",
+                "slow" : "10.0",
+                "area_of_effect" : "3",
+                "particle_line" : "☼;#FFFFFF;200.0"
+            }
+        },
+        "weight_lbs" : 0.5,
+        "base_value" : 500.0,
+        "vendor_category" : "alchemy",
+        "magic" : { "class" : "common", "naming" : "scroll" }
+    },
+
+    {
+        "name" : "Wand of Venom",
+        "renderable": {
+            "glyph" : "/",
+            "fg" : "#FFAAAA",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "consumable" : {
+            "effects" : { 
+                "ranged" : "6",
+                "damage_over_time" : "1",
+                "particle_line" : "▓;#00FF00;200.0"
+            },
+            "charges" : 5
+        },
+        "weight_lbs" : 0.5,
+        "base_value" : 500.0,
+        "vendor_category" : "alchemy",
+        "magic" : { "class" : "common", "naming" : "Unidentified Wand" }
+    },
+      {
+        "name" : "Poison Potion",
+        "renderable": {
+            "glyph" : "!",
+            "fg" : "#FF00FF",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "consumable" : {
+            "effects" : { "damage_over_time" : "2" }
+        },
+        "weight_lbs" : 0.5,
+        "base_value" : 50.0,
+        "vendor_category" : "alchemy",
+        "magic" : { "class" : "common", "naming" : "potion" }
+    },
+
+    {
+        "name" : "Slow Potion",
+        "renderable": {
+            "glyph" : "!",
+            "fg" : "#FF00FF",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "consumable" : {
+            "effects" : { "slow" : "2.0" }
+        },
+        "weight_lbs" : 0.5,
+        "base_value" : 50.0,
+        "vendor_category" : "alchemy",
+        "magic" : { "class" : "common", "naming" : "potion" }
+    },
+
+    {
+        "name" : "Haste Potion",
+        "renderable": {
+            "glyph" : "!",
+            "fg" : "#FF00FF",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "consumable" : {
+            "effects" : { "slow" : "-2.0" }
+        },
+        "weight_lbs" : 0.5,
+        "base_value" : 100.0,
+        "vendor_category" : "alchemy",
+        "magic" : { "class" : "common", "naming" : "potion" }
+    },
+      {
+        "name" : "A Beginner's Guide to Magic",
+        "renderable": {
+            "glyph" : "¶",
+            "fg" : "#FF00FF",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "consumable" : {
+            "effects" : { "teach_spell" : "Zap" }
+        },
+        "weight_lbs" : 0.5,
+        "base_value" : 50.0,
+        "vendor_category" : "alchemy"
+    },
     {
         "name" : "Health Potion",
         "renderable": {
@@ -86,6 +293,27 @@
         "base_value" : 50.0,
         "vendor_category" : "alchemy",
         "magic" : { "class" : "common", "naming" : "potion" }
+    },
+    
+    {
+        "name" : "Gauntlets of Ogre Power",
+        "renderable": {
+            "glyph" : "[",
+            "fg" : "#00FF00",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "wearable" : {
+            "slot" : "Hands",
+            "armor_class" : 0.1,
+            "might" : 5
+        },
+        "weight_lbs" : 1.0,
+        "base_value" : 300.0,
+        "initiative_penalty" : 0.0,
+        "vendor_category" : "armor",
+        "magic" : { "class" : "common", "naming" : "Unidentified Gauntlets" },
+        "attributes" : { "might" : 5 }
     },
 
     {
@@ -749,6 +977,62 @@
         "base_value" : 50.0,
         "vendor_category" : "alchemy",
         "magic" : { "class" : "common", "naming" : "scroll" }
+    },
+    
+    {
+        "name" : "Wand of Fireballs",
+        "renderable": {
+            "glyph" : "/",
+            "fg" : "#FFAAAA",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "consumable" : {
+            "effects" : { 
+                "ranged" : "6",
+                "damage" : "20",
+                "area_of_effect" : "3",
+                "particle" : "▓;#FFA500;200.0"
+            },
+            "charges" : 5
+        },
+        "weight_lbs" : 0.5,
+        "base_value" : 500.0,
+        "vendor_category" : "alchemy",
+        "magic" : { "class" : "common", "naming" : "Unidentified Wand" }
+    },
+    {
+        "name" : "Strength Potion",
+        "renderable": {
+            "glyph" : "!",
+            "fg" : "#FF00FF",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "consumable" : {
+            "effects" : { "particle" : "!;#FF0000;200.0" }
+        },
+        "weight_lbs" : 0.5,
+        "base_value" : 50.0,
+        "vendor_category" : "alchemy",
+        "magic" : { "class" : "common", "naming" : "potion" },
+        "attributes" : { "might" : 5 }
+    },
+    {
+        "name" : "Mana Potion",
+        "renderable": {
+            "glyph" : "!",
+            "fg" : "#FF00FF",
+            "bg" : "#000000",
+            "order" : 2
+        },
+        "consumable" : {
+            "effects" : { "provides_mana" : "4" }
+        },
+        "weight_lbs" : 0.5,
+        "base_value" : 50.0,
+        "vendor_category" : "alchemy",
+        "magic" : { "class" : "common", "naming" : "potion" }
     }
 ],
 
@@ -1239,8 +1523,11 @@
             "armor_class" : 12,
             "attacks" : [
                 { "name" : "bite", "hit_bonus" : 1, "damage" : "1d12" }
-            ]   
+            ]
         },
+        "abilities" : [
+            { "spell" : "Web", "chance" : 0.2, "range" : 6.0, "min_range" : 3.0 }
+        ],
         "faction" : "Carnivores"
     },
 

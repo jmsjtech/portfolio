@@ -20,29 +20,28 @@ use melee_combat_system::MeleeCombatSystem;
 mod damage_system;
 mod gui;
 mod gamelog;
-use gamelog::*;
+use gamelog::GameLog;
 mod spawner;
-
-pub mod spatial;
+mod inventory_system;
+use inventory_system::{ ItemCollectionSystem, ItemUseSystem, ItemDropSystem, ItemRemoveSystem, SpellUseSystem };
 pub mod saveload_system;
 pub mod random_table;
 pub mod particle_system;
 pub mod hunger_system;
 pub mod rex_assets;
 pub mod trigger_system;
-pub mod movement_system;
 pub mod map_builders;
 pub mod camera;
 pub mod raws;
-pub mod effects;
-pub mod inventory_system;
-use inventory_system::*;
 mod gamesystem;
 pub use gamesystem::*;
 mod lighting_system;
 mod ai;
+mod movement_system;
+pub mod effects;
 #[macro_use]
 extern crate lazy_static;
+pub mod spatial;
 
 const SHOW_MAPGEN_VISUALIZER : bool = false;
 
@@ -119,12 +118,14 @@ impl State {
         itemequip.run_now(&self.ecs);
         let mut itemuse = ItemUseSystem{};
         itemuse.run_now(&self.ecs);
+        let mut spelluse = SpellUseSystem{};
+        spelluse.run_now(&self.ecs);
+        let mut item_id = inventory_system::ItemIdentificationSystem{};
+        item_id.run_now(&self.ecs);
         let mut drop_items = ItemDropSystem{};
         drop_items.run_now(&self.ecs);
         let mut item_remove = ItemRemoveSystem{};
         item_remove.run_now(&self.ecs);
-        let mut item_id = inventory_system::ItemIdentificationSystem{};
-        item_id.run_now(&self.ecs);
         let mut hunger = hunger_system::HungerSystem{};
         hunger.run_now(&self.ecs);
         effects::run_effects_queue(&mut self.ecs);
@@ -316,17 +317,23 @@ impl GameState for State {
                 }
             }
             RunState::ShowTargeting{range, item} => {
-                let result = gui::ranged_target(self, ctx, range);
-                match result.0 {
-                    gui::ItemMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
-                    gui::ItemMenuResult::NoResponse => {}
-                    gui::ItemMenuResult::Selected => {
-                        let mut intent = self.ecs.write_storage::<WantsToUseItem>();
-                        intent.insert(*self.ecs.fetch::<Entity>(), WantsToUseItem{ item, target: result.1 }).expect("Unable to insert intent");
-                        newrunstate = RunState::Ticking;
-                    }
-                }
-            }
+               let result = gui::ranged_target(self, ctx, range);
+               match result.0 {
+                   gui::ItemMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
+                   gui::ItemMenuResult::NoResponse => {}
+                   gui::ItemMenuResult::Selected => {
+                       if self.ecs.read_storage::<SpellTemplate>().get(item).is_some() {
+                           let mut intent = self.ecs.write_storage::<WantsToCastSpell>();
+                           intent.insert(*self.ecs.fetch::<Entity>(), WantsToCastSpell{ spell: item, target: result.1 }).expect("Unable to insert intent");
+                           newrunstate = RunState::Ticking;
+                       } else {
+                           let mut intent = self.ecs.write_storage::<WantsToUseItem>();
+                           intent.insert(*self.ecs.fetch::<Entity>(), WantsToUseItem{ item, target: result.1 }).expect("Unable to insert intent");
+                           newrunstate = RunState::Ticking;
+                       }
+                   }
+               }
+           }
             RunState::MainMenu{ .. } => {
                 let result = gui::main_menu(self, ctx);
                 match result {
@@ -605,6 +612,17 @@ fn main() -> rltk::BError {
     gs.ecs.register::<CursedItem>();
     gs.ecs.register::<ProvidesRemoveCurse>();
     gs.ecs.register::<ProvidesIdentification>();
+    gs.ecs.register::<AttributeBonus>();
+    gs.ecs.register::<Duration>();
+    gs.ecs.register::<StatusEffect>();
+    gs.ecs.register::<KnownSpells>();
+    gs.ecs.register::<SpellTemplate>();
+    gs.ecs.register::<WantsToCastSpell>();
+    gs.ecs.register::<ProvidesMana>();
+    gs.ecs.register::<TeachesSpell>();
+    gs.ecs.register::<Slow>();
+    gs.ecs.register::<DamageOverTime>();
+    gs.ecs.register::<SpecialAbilities>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();

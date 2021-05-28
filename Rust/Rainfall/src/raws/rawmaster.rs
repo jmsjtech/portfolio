@@ -42,7 +42,8 @@ pub struct RawMaster {
     mob_index : HashMap<String, usize>,
     prop_index : HashMap<String, usize>,
     loot_index : HashMap<String, usize>,
-    faction_index : HashMap<String, HashMap<String, Reaction>>
+    faction_index : HashMap<String, HashMap<String, Reaction>>,
+    spell_index : HashMap<String, usize>
 }
 
 impl RawMaster {
@@ -55,12 +56,14 @@ impl RawMaster {
                 spawn_table: Vec::new(),
                 loot_tables: Vec::new(),
                 faction_table : Vec::new(),
+                spells : Vec::new()
             },
             item_index : HashMap::new(),
             mob_index : HashMap::new(),
             prop_index : HashMap::new(),
             loot_index : HashMap::new(),
-            faction_index : HashMap::new()
+            faction_index : HashMap::new(),
+            spell_index : HashMap::new()
         }
     }
 
@@ -114,6 +117,10 @@ impl RawMaster {
             }
             self.faction_index.insert(faction.name.clone(), reactions);
         }
+
+        for (i,spell) in self.raws.spells.iter().enumerate() {
+            self.spell_index.insert(spell.name.clone(), i);
+        }
     }
 }
 
@@ -166,6 +173,46 @@ pub fn get_vendor_items(categories: &[String], raws : &RawMaster) -> Vec<(String
     }
 
     result
+}
+
+pub fn get_scroll_tags() -> Vec<String> {
+    let raws = &super::RAWS.lock().unwrap();
+    let mut result = Vec::new();
+
+    for item in raws.raws.items.iter() {
+        if let Some(magic) = &item.magic {
+            if &magic.naming == "scroll" {
+                result.push(item.name.clone());
+            }
+        }
+    }
+
+    result
+}
+
+pub fn get_potion_tags() -> Vec<String> {
+    let raws = &super::RAWS.lock().unwrap();
+    let mut result = Vec::new();
+
+    for item in raws.raws.items.iter() {
+        if let Some(magic) = &item.magic {
+            if &magic.naming == "potion" {
+                result.push(item.name.clone());
+            }
+        }
+    }
+
+    result
+}
+
+pub fn is_tag_magic(tag : &str) -> bool {
+    let raws = &super::RAWS.lock().unwrap();
+    if raws.item_index.contains_key(tag) {
+        let item_template = &raws.raws.items[raws.item_index[tag]];
+        item_template.magic.is_some()
+    } else {
+        false
+    }
 }
 
 fn spawn_position<'a>(pos : SpawnType, new_entity : EntityBuilder<'a>, tag : &str, raws: &RawMaster) -> EntityBuilder<'a> {
@@ -228,10 +275,15 @@ macro_rules! apply_effects {
         let effect_name = effect.0.as_str();
             match effect_name {
                 "provides_healing" => $eb = $eb.with(ProvidesHealing{ heal_amount: effect.1.parse::<i32>().unwrap() }),
+                "provides_mana" => $eb = $eb.with(ProvidesMana{ mana_amount: effect.1.parse::<i32>().unwrap() }),
+                "teach_spell" => $eb = $eb.with(TeachesSpell{ spell: effect.1.to_string() }),
                 "ranged" => $eb = $eb.with(Ranged{ range: effect.1.parse::<i32>().unwrap() }),
                 "damage" => $eb = $eb.with(InflictsDamage{ damage : effect.1.parse::<i32>().unwrap() }),
                 "area_of_effect" => $eb = $eb.with(AreaOfEffect{ radius: effect.1.parse::<i32>().unwrap() }),
-                "confusion" => $eb = $eb.with(Confusion{ turns: effect.1.parse::<i32>().unwrap() }),
+                "confusion" => {
+                    $eb = $eb.with(Confusion{});
+                    $eb = $eb.with(Duration{ turns: effect.1.parse::<i32>().unwrap() });
+                }
                 "magic_mapping" => $eb = $eb.with(MagicMapper{}),
                 "town_portal" => $eb = $eb.with(TownPortal{}),
                 "food" => $eb = $eb.with(ProvidesFood{}),
@@ -240,6 +292,8 @@ macro_rules! apply_effects {
                 "particle" => $eb = $eb.with(parse_particle(&effect.1)),
                 "remove_curse" => $eb = $eb.with(ProvidesRemoveCurse{}),
                 "identify" => $eb = $eb.with(ProvidesIdentification{}),
+                "slow" => $eb = $eb.with(Slow{ initiative_penalty : effect.1.parse::<f32>().unwrap() }),
+                "damage_over_time" => $eb = $eb.with( DamageOverTime { damage : effect.1.parse::<i32>().unwrap() } ),
                 _ => rltk::console::log(format!("Warning: consumable effect {} not implemented.", effect_name))
             }
         }
@@ -249,13 +303,14 @@ macro_rules! apply_effects {
 pub fn spawn_named_item(raws: &RawMaster, ecs : &mut World, key : &str, pos : SpawnType) -> Option<Entity> {
     if raws.item_index.contains_key(key) {
         let item_template = &raws.raws.items[raws.item_index[key]];
+
         let dm = ecs.fetch::<crate::map::MasterDungeonMap>();
         let scroll_names = dm.scroll_mappings.clone();
         let potion_names = dm.potion_mappings.clone();
         let identified = dm.identified_items.clone();
         std::mem::drop(dm);
         let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
-        
+
         // Spawn in the specified location
         eb = spawn_position(pos, eb, key, raws);
 
@@ -271,7 +326,41 @@ pub fn spawn_named_item(raws: &RawMaster, ecs : &mut World, key : &str, pos : Sp
             weight_lbs : item_template.weight_lbs.unwrap_or(0.0),
             base_value : item_template.base_value.unwrap_or(0.0)
         });
-        
+
+        if let Some(consumable) = &item_template.consumable {
+            let max_charges = consumable.charges.unwrap_or(1);
+            eb = eb.with(crate::components::Consumable{ max_charges, charges : max_charges });
+            apply_effects!(consumable.effects, eb);
+        }
+
+        if let Some(weapon) = &item_template.weapon {
+            eb = eb.with(Equippable{ slot: EquipmentSlot::Melee });
+            let (n_dice, die_type, bonus) = parse_dice_string(&weapon.base_damage);
+            let mut wpn = MeleeWeapon{
+                attribute : WeaponAttribute::Might,
+                damage_n_dice : n_dice,
+                damage_die_type : die_type,
+                damage_bonus : bonus,
+                hit_bonus : weapon.hit_bonus,
+                proc_chance : weapon.proc_chance,
+                proc_target : weapon.proc_target.clone()
+            };
+            match weapon.attribute.as_str() {
+                "Quickness" => wpn.attribute = WeaponAttribute::Quickness,
+                _ => wpn.attribute = WeaponAttribute::Might
+            }
+            eb = eb.with(wpn);
+            if let Some(proc_effects) =& weapon.proc_effects {
+                apply_effects!(proc_effects, eb);
+            }
+        }
+
+        if let Some(wearable) = &item_template.wearable {
+            let slot = string_to_slot(&wearable.slot);
+            eb = eb.with(Equippable{ slot });
+            eb = eb.with(Wearable{ slot, armor_class: wearable.armor_class });
+        }
+
         if let Some(magic) = &item_template.magic {
             let class = match magic.class.as_str() {
                 "rare" => MagicItemClass::Rare,
@@ -299,32 +388,13 @@ pub fn spawn_named_item(raws: &RawMaster, ecs : &mut World, key : &str, pos : Sp
             }
         }
 
-        if let Some(consumable) = &item_template.consumable {
-            eb = eb.with(crate::components::Consumable{});
-            apply_effects!(consumable.effects, eb);
-        }
-
-        if let Some(weapon) = &item_template.weapon {
-            eb = eb.with(Equippable{ slot: EquipmentSlot::Melee });
-            let (n_dice, die_type, bonus) = parse_dice_string(&weapon.base_damage);
-            let mut wpn = MeleeWeapon{
-                attribute : WeaponAttribute::Might,
-                damage_n_dice : n_dice,
-                damage_die_type : die_type,
-                damage_bonus : bonus,
-                hit_bonus : weapon.hit_bonus
-            };
-            match weapon.attribute.as_str() {
-                "Quickness" => wpn.attribute = WeaponAttribute::Quickness,
-                _ => wpn.attribute = WeaponAttribute::Might
-            }
-            eb = eb.with(wpn);
-        }
-
-        if let Some(wearable) = &item_template.wearable {
-            let slot = string_to_slot(&wearable.slot);
-            eb = eb.with(Equippable{ slot });
-            eb = eb.with(Wearable{ slot, armor_class: wearable.armor_class });
+        if let Some(ab) = &item_template.attributes {
+            eb = eb.with(AttributeBonus{
+                might : ab.might,
+                fitness : ab.fitness,
+                quickness : ab.quickness,
+                intelligence : ab.intelligence,
+            });
         }
 
         return Some(eb.build());
@@ -332,6 +402,7 @@ pub fn spawn_named_item(raws: &RawMaster, ecs : &mut World, key : &str, pos : Sp
     None
 }
 
+#[allow(clippy::cognitive_complexity)]
 pub fn spawn_named_mob(raws: &RawMaster, ecs : &mut World, key : &str, pos : SpawnType) -> Option<Entity> {
     if raws.mob_index.contains_key(key) {
         let mob_template = &raws.raws.mobs[raws.mob_index[key]];
@@ -409,7 +480,7 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs : &mut World, key : &str, pos : Spa
                 } else {
                     0.0
                 },
-            god_mode: false
+            god_mode : false
         };
         eb = eb.with(pools);
         eb = eb.with(EquipmentChanged{});
@@ -471,6 +542,21 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs : &mut World, key : &str, pos : Spa
             eb = eb.with(Vendor{ categories : vendor.clone() });
         }
 
+        if let Some(ability_list) = &mob_template.abilities {
+            let mut a = SpecialAbilities { abilities : Vec::new() };
+            for ability in ability_list.iter() {
+                a.abilities.push(
+                    SpecialAbility{
+                        chance : ability.chance,
+                        spell : ability.spell.clone(),
+                        range : ability.range,
+                        min_range : ability.min_range
+                    }
+                );
+            }
+            eb = eb.with(a);
+        }
+
         let new_mob = eb.build();
 
         // Are they wielding anyting?
@@ -500,12 +586,6 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs : &mut World, key : &str, pos : Sp
         }
 
         eb = eb.with(Name{ name : prop_template.name.clone() });
-        
-        
-        if let Some(light) = &prop_template.light {
-            eb = eb.with(LightSource{ range: light.range, color : rltk::RGB::from_hex(&light.color).expect("Bad color") });
-            eb = eb.with(Viewshed{ range: light.range, dirty: true, visible_tiles: Vec::new() });
-        }
 
         if let Some(hidden) = prop_template.hidden {
             if hidden { eb = eb.with(Hidden{}) };
@@ -523,9 +603,61 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs : &mut World, key : &str, pos : Sp
             eb = eb.with(EntryTrigger{});
             apply_effects!(entry_trigger.effects, eb);
         }
+        if let Some(light) = &prop_template.light {
+            eb = eb.with(LightSource{ range: light.range, color : rltk::RGB::from_hex(&light.color).expect("Bad color") });
+            eb = eb.with(Viewshed{ range: light.range, dirty: true, visible_tiles: Vec::new() });
+        }
 
 
         return Some(eb.build());
+    }
+    None
+}
+
+pub fn spawn_named_spell(raws: &RawMaster, ecs : &mut World, key : &str) -> Option<Entity> {
+    if raws.spell_index.contains_key(key) {
+        let spell_template = &raws.raws.spells[raws.spell_index[key]];
+
+        let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
+        eb = eb.with(SpellTemplate{ mana_cost : spell_template.mana_cost });
+        eb = eb.with(Name{ name : spell_template.name.clone() });
+        apply_effects!(spell_template.effects, eb);
+
+        return Some(eb.build());
+    }
+    None
+}
+
+pub fn spawn_all_spells(ecs : &mut World) {
+    let raws = &super::RAWS.lock().unwrap();
+    for spell in raws.raws.spells.iter() {
+        spawn_named_spell(raws, ecs, &spell.name);
+    }
+}
+
+pub fn find_spell_entity(ecs : &World, name : &str) -> Option<Entity> {
+    let names = ecs.read_storage::<Name>();
+    let spell_templates = ecs.read_storage::<SpellTemplate>();
+    let entities = ecs.entities();
+
+    for (entity, sname, _template) in (&entities, &names, &spell_templates).join() {
+        if name == sname.name {
+            return Some(entity);
+        }
+    }
+    None
+}
+
+pub fn find_spell_entity_by_name(
+    name : &str,
+    names : &ReadStorage::<Name>,
+    spell_templates : &ReadStorage::<SpellTemplate>,
+    entities : &Entities) -> Option<Entity>
+{
+    for (entity, sname, _template) in (entities, names, spell_templates).join() {
+        if name == sname.name {
+            return Some(entity);
+        }
     }
     None
 }
@@ -574,44 +706,4 @@ pub fn get_item_drop(raws: &RawMaster, rng : &mut rltk::RandomNumberGenerator, t
     }
 
     None
-}
-
-pub fn get_scroll_tags() -> Vec<String> {
-    let raws = &super::RAWS.lock().unwrap();
-    let mut result = Vec::new();
-
-    for item in raws.raws.items.iter() {
-        if let Some(magic) = &item.magic {
-            if &magic.naming == "scroll" {
-                result.push(item.name.clone());
-            }
-        }
-    }
-
-    result
-}
-
-pub fn get_potion_tags() -> Vec<String> {
-    let raws = &super::RAWS.lock().unwrap();
-    let mut result = Vec::new();
-
-    for item in raws.raws.items.iter() {
-        if let Some(magic) = &item.magic {
-            if &magic.naming == "potion" {
-                result.push(item.name.clone());
-            }
-        }
-    }
-
-    result
-}
-
-pub fn is_tag_magic(tag : &str) -> bool {
-    let raws = &super::RAWS.lock().unwrap();
-    if raws.item_index.contains_key(tag) {
-        let item_template = &raws.raws.items[raws.item_index[tag]];
-        item_template.magic.is_some()
-    } else {
-        false
-    }
 }

@@ -3,7 +3,7 @@ use specs::prelude::*;
 use super::{Pools, gamelog::GameLog, Map, Name, Position, State, InBackpack,
     Viewshed, RunState, Equipped, HungerClock, HungerState, rex_assets::RexAssets,
     Hidden, camera, Attributes, Attribute, Consumable, TimeKeeper, Vendor, VendorMode, Item, MagicItem, MagicItemClass, ObfuscatedName,
-    CursedItem, MasterDungeonMap};
+    CursedItem, MasterDungeonMap, Duration, StatusEffect, KnownSpells};
 
 pub fn draw_hollow_box(
     console: &mut Rltk,
@@ -131,15 +131,54 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
             index += 1;
         }
     }
+    
+    // Spells
+    y += 1;
+    let blue = RGB::named(rltk::CYAN);
+    let known_spells_storage = ecs.read_storage::<KnownSpells>();
+    let known_spells = &known_spells_storage.get(*player_entity).unwrap().spells;
+    let mut index = 1;
+    for spell in known_spells.iter() {
+        ctx.print_color(50, y, blue, black, &format!("^{}", index));
+        ctx.print_color(53, y, blue, black, &format!("{} ({})", spell.display_name, spell.mana_cost));
+        index += 1;
+        y += 1;
+    }
 
+    
     // Status
+    let mut y = 44;
     let hunger = ecs.read_storage::<HungerClock>();
     let hc = hunger.get(*player_entity).unwrap();
     match hc.state {
-        HungerState::WellFed => ctx.print_color(50, 44, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "Well Fed"),
+        HungerState::WellFed => {
+            ctx.print_color(50, y, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "Well Fed");
+            y -= 1;
+        }
         HungerState::Normal => {}
-        HungerState::Hungry => ctx.print_color(50, 44, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "Hungry"),
-        HungerState::Starving => ctx.print_color(50, 44, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Starving"),
+        HungerState::Hungry => {
+            ctx.print_color(50, y, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "Hungry");
+            y -= 1;
+        }
+        HungerState::Starving => {
+            ctx.print_color(50, y, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Starving");
+            y -= 1;
+        }
+    }
+    let statuses = ecs.read_storage::<StatusEffect>();
+    let durations = ecs.read_storage::<Duration>();
+    let names = ecs.read_storage::<Name>();
+    for (status, duration, name) in (&statuses, &durations, &names).join() {
+        if status.target == *player_entity {
+            ctx.print_color(
+                50, 
+                y, 
+                RGB::named(rltk::RED), 
+                RGB::named(rltk::BLACK), 
+                &format!("{} ({})", name.name, duration.turns)
+            );
+            y -= 1;
+        }
     }
     
     let mut clocks = ecs.write_storage::<TimeKeeper>();
@@ -244,9 +283,9 @@ fn draw_tooltips(ecs: &World, ctx : &mut Rltk) {
     if mouse_pos.0 < 1 || mouse_pos.0 > 49 || mouse_pos.1 < 1 || mouse_pos.1 > 40 {
         return;
     }
-    if mouse_map_pos.0 >= map.width-1 || mouse_map_pos.1 >= map.height-1 || mouse_map_pos.0 < 1 || mouse_map_pos.1 < 1 
-    { 
-        return; 
+    if mouse_map_pos.0 >= map.width-1 || mouse_map_pos.1 >= map.height-1 || mouse_map_pos.0 < 1 || mouse_map_pos.1 < 1
+    {
+        return;
     }
     if !map.visible_tiles[map.xy_idx(mouse_map_pos.0, mouse_map_pos.1)] { return; }
 
@@ -278,6 +317,16 @@ fn draw_tooltips(ecs: &World, ctx : &mut Rltk) {
             let stat = pools.get(entity);
             if let Some(stat) = stat {
                 tip.add(format!("Level: {}", stat.level));
+            }
+
+            // Status effects
+            let statuses = ecs.read_storage::<StatusEffect>();
+            let durations = ecs.read_storage::<Duration>();
+            let names = ecs.read_storage::<Name>();
+            for (status, duration, name) in (&statuses, &durations, &names).join() {
+                if status.target == entity {
+                    tip.add(format!("{} ({})", name.name, duration.turns));
+                }
             }
 
             tip_boxes.push(tip);
@@ -776,7 +825,15 @@ pub fn get_item_display_name(ecs: &World, item : Entity) -> String {
         if ecs.read_storage::<MagicItem>().get(item).is_some() {
             let dm = ecs.fetch::<crate::map::MasterDungeonMap>();
             if dm.identified_items.contains(&name.name) {
-                name.name.clone()
+                if let Some(c) = ecs.read_storage::<Consumable>().get(item) {
+                    if c.max_charges > 1 {
+                        format!("{} ({})", name.name.clone(), c.charges).to_string()
+                    } else {
+                        name.name.clone()
+                    }
+                } else {
+                    name.name.clone()
+                }
             } else if let Some(obfuscated) = ecs.read_storage::<ObfuscatedName>().get(item) {
                 obfuscated.name.clone()
             } else {

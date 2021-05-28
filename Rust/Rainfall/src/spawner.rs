@@ -3,7 +3,8 @@ use specs::prelude::*;
 use super::{Pools, Pool, Player, Renderable, Name, Position, Viewshed, Rect,
     SerializeMe, random_table::RandomTable, HungerClock, HungerState, Map, TileType, raws::*,
     Attribute, Attributes, Skills, Skill, LightSource, Initiative, Faction, TimeKeeper, EquipmentChanged,
-    SingleActivation, TeleportTo, EntryTrigger, OtherLevelPosition, MasterDungeonMap };
+    SingleActivation, TeleportTo, EntryTrigger, OtherLevelPosition, MasterDungeonMap, Duration, StatusEffect, AttributeBonus,
+    KnownSpells};
     
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
@@ -11,6 +12,8 @@ use crate::{attr_bonus, player_hp_at_level, mana_at_level};
 
 /// Spawns the player and returns his/her entity object.
 pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
+    spawn_all_spells(ecs);
+    
     let mut skills = Skills{ skills: HashMap::new() };
     skills.skills.insert(Skill::Melee, 1);
     skills.skills.insert(Skill::Defense, 1);
@@ -56,6 +59,7 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
         .with(Initiative{current: 0})
         .with(Faction{name : "Player".to_string() })
         .with(EquipmentChanged{})
+        .with(KnownSpells{ spells : Vec::new() })
         .with(TimeKeeper {
               last_second: 0,
               last_10sec: 0,
@@ -79,8 +83,21 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Stained Tunic", SpawnType::Equipped{by : player});
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Torn Trousers", SpawnType::Equipped{by : player});
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Old Boots", SpawnType::Equipped{by : player});
-    
-    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Town Portal Scroll", SpawnType::Carried{by : player});
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Strength Potion", SpawnType::Carried{by : player});
+
+    // Starting hangover
+    ecs.create_entity()
+        .with(StatusEffect{ target : player })
+        .with(Duration{ turns:10 })
+        .with(Name{ name: "Hangover".to_string() })
+        .with(AttributeBonus{
+            might : Some(-1),
+            fitness : None,
+            quickness : Some(-1),
+            intelligence : Some(-1)
+        })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
 
     player
 }
