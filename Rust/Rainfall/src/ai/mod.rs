@@ -7,6 +7,8 @@ mod approach_ai_system;
 mod flee_ai_system;
 mod default_move_system;
 mod chase_ai_system;
+mod encumbrance_system;
+pub use encumbrance_system::EncumbranceSystem;
 pub use initiative_system::InitiativeSystem;
 pub use turn_status::TurnStatusSystem;
 pub use quipping::QuipSystem;

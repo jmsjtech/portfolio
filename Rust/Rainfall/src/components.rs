@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use specs_derive::*;
-use rltk::{RGB};
+use rltk::RGB;
 use serde::{Serialize, Deserialize};
 use specs::saveload::{Marker, ConvertSaveload};
 use specs::error::NoError;
@@ -107,12 +107,17 @@ pub struct Pool {
     pub current: i32
 }
 
+
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Pools {
     pub hit_points : Pool,
     pub mana : Pool,
     pub xp : i32,
-    pub level : i32
+    pub level : i32,
+    pub total_weight : f32,
+    pub total_initiative_penalty : f32,
+    pub gold : f32,
+    pub god_mode : bool
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -170,7 +175,11 @@ pub struct LootTable {
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Item {}
+pub struct Item {
+    pub initiative_penalty : f32,
+    pub weight_lbs : f32,
+    pub base_value : f32
+}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Consumable {}
@@ -332,4 +341,12 @@ pub struct SerializationHelper {
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct DMSerializationHelper {
     pub map : super::map::MasterDungeonMap
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct EquipmentChanged {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Vendor {
+    pub categories : Vec<String>
 }

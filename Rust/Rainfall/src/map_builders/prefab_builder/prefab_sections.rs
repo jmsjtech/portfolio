@@ -16,6 +16,34 @@ pub struct PrefabSection {
 }
 
 #[allow(dead_code)]
+pub const ORC_CAMP : PrefabSection = PrefabSection{
+    template : ORC_CAMP_TXT,
+    width: 12,
+    height: 12,
+    placement: ( HorizontalPlacement::Center, VerticalPlacement::Center )
+};
+
+#[allow(dead_code)]
+const ORC_CAMP_TXT : &str = "
+            
+ ≈≈≈≈o≈≈≈≈≈ 
+ ≈☼      ☼≈ 
+ ≈ g      ≈ 
+ ≈        ≈ 
+ ≈    g   ≈ 
+ o   O    o 
+ ≈        ≈ 
+ ≈ g      ≈ 
+ ≈    g   ≈ 
+ ≈☼      ☼≈ 
+ ≈≈≈≈o≈≈≈≈≈ 
+            
+";
+
+
+
+
+#[allow(dead_code)]
 pub const UNDERGROUND_FORT : PrefabSection = PrefabSection{
     template : RIGHT_FORT,
     width: 15,
