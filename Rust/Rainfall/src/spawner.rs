@@ -4,7 +4,7 @@ use super::{Pools, Pool, Player, Renderable, Name, Position, Viewshed, Rect,
     SerializeMe, random_table::RandomTable, HungerClock, HungerState, Map, TileType, raws::*,
     Attribute, Attributes, Skills, Skill, LightSource, Initiative, Faction, TimeKeeper, EquipmentChanged,
     SingleActivation, TeleportTo, EntryTrigger, OtherLevelPosition, MasterDungeonMap, Duration, StatusEffect, AttributeBonus,
-    KnownSpells};
+    KnownSpells, MasterTable};
     
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use std::collections::HashMap;
@@ -104,7 +104,7 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
 
 const MAX_MONSTERS : i32 = 4;
 
-fn room_table(map_depth: i32) -> RandomTable {
+fn room_table(map_depth: i32) -> MasterTable {
     get_spawn_table_for_depth(&RAWS.lock().unwrap(), map_depth)
 }
 

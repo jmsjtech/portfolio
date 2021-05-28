@@ -1,12 +1,13 @@
 use rltk::{ BaseMap, Algorithm2D, Point };
+use specs::prelude::*;
 use serde::{Serialize, Deserialize};
 use std::collections::HashSet;
 mod tiletype;
+pub use tiletype::{TileType, tile_walkable, tile_opaque, tile_cost};
 mod themes;
+pub use themes::*;
 mod dungeon;
 pub use dungeon::{MasterDungeonMap, level_transition, freeze_level_entities, thaw_level_entities};
-pub use themes::*;
-pub use tiletype::{TileType, tile_walkable, tile_opaque, tile_cost};
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct Map {
@@ -34,16 +35,40 @@ impl Map {
         !crate::spatial::is_blocked(idx)
     }
 
-    
     pub fn populate_blocked(&mut self) {
         crate::spatial::populate_blocked_from_map(self);
     }
-    
+
+    pub fn populate_blocked_multi(&mut self, width : i32, height : i32) {
+        self.populate_blocked();
+        for y in 1 .. self.height-1 {
+            for x in 1 .. self.width - 1 {
+                let idx = self.xy_idx(x, y);
+                if !crate::spatial::is_blocked(idx) {
+                    for cy in 0..height {
+                        for cx in 0..width {
+                            let tx = x + cx;
+                            let ty = y + cy;
+                            if tx < self.width-1 && ty < self.height-1 {
+                                let tidx = self.xy_idx(tx, ty);
+                                if crate::spatial::is_blocked(tidx) {
+                                    crate::spatial::set_blocked(idx, true);
+                                }
+                            } else {
+                                crate::spatial::set_blocked(idx, true);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     pub fn clear_content_index(&mut self) {
         crate::spatial::clear();
     }
 
-    
+    /// Generates an empty map, consisting entirely of solid walls
     pub fn new<S : ToString>(new_depth : i32, width: i32, height: i32, name: S) -> Map {
         let map_tile_count = (width*height) as usize;
         crate::spatial::set_size(map_tile_count);
@@ -72,21 +97,13 @@ impl BaseMap for Map {
         }
     }
 
-
-    fn get_pathing_distance(&self, idx1:usize, idx2:usize) -> f32 {
-        let w = self.width as usize;
-        let p1 = Point::new(idx1 % w, idx1 / w);
-        let p2 = Point::new(idx2 % w, idx2 / w);
-        rltk::DistanceAlg::Pythagoras.distance2d(p1, p2)
-    }
-
     fn get_available_exits(&self, idx:usize) -> rltk::SmallVec<[(usize, f32); 10]> {
         const DIAGONAL_COST : f32 = 1.5;
         let mut exits = rltk::SmallVec::new();
         let x = idx as i32 % self.width;
         let y = idx as i32 / self.width;
         let tt = self.tiles[idx as usize];
-        let w = self.width  as usize;
+        let w = self.width as usize;
 
         // Cardinal directions
         if self.is_exit_valid(x-1, y) { exits.push((idx-1, tile_cost(tt))) };
@@ -101,6 +118,13 @@ impl BaseMap for Map {
         if self.is_exit_valid(x+1, y+1) { exits.push(((idx+w)+1, tile_cost(tt) * DIAGONAL_COST)); }
 
         exits
+    }
+
+    fn get_pathing_distance(&self, idx1:usize, idx2:usize) -> f32 {
+        let w = self.width as usize;
+        let p1 = Point::new(idx1 % w, idx1 / w);
+        let p2 = Point::new(idx2 % w, idx2 / w);
+        rltk::DistanceAlg::Pythagoras.distance2d(p1, p2)
     }
 }
 

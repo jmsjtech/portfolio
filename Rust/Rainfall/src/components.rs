@@ -491,3 +491,9 @@ pub struct SpecialAbility {
 pub struct SpecialAbilities {
     pub abilities : Vec<SpecialAbility>
 }
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct TileSize {
+    pub x: i32,
+    pub y: i32,
+}

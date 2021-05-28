@@ -26,6 +26,7 @@ mod inventory_system;
 use inventory_system::{ ItemCollectionSystem, ItemUseSystem, ItemDropSystem, ItemRemoveSystem, SpellUseSystem };
 pub mod saveload_system;
 pub mod random_table;
+use random_table::*;
 pub mod particle_system;
 pub mod hunger_system;
 pub mod rex_assets;
@@ -623,6 +624,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Slow>();
     gs.ecs.register::<DamageOverTime>();
     gs.ecs.register::<SpecialAbilities>();
+    gs.ecs.register::<TileSize>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();

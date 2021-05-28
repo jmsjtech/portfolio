@@ -15,7 +15,6 @@ mod room_based_spawner;
 mod room_based_starting_position;
 mod room_based_stairs;
 mod area_starting_points;
-mod area_ending_point;
 mod cull_unreachable;
 mod voronoi_spawning;
 mod distant_exit;
@@ -29,10 +28,14 @@ mod rooms_corridors_nearest;
 mod rooms_corridors_lines;
 mod room_corridor_spawner;
 mod door_placement;
+mod town;
 mod forest;
 mod limestone_cavern;
-use limestone_cavern::{limestone_cavern_builder, limestone_deep_cavern_builder, limestone_transition_builder};
+mod dwarf_fort_builder;
+mod area_ending_point;
 use forest::forest_builder;
+use limestone_cavern::*;
+use dwarf_fort_builder::*;
 use distant_exit::DistantExit;
 use simple_map::SimpleMapBuilder;
 use bsp_dungeon::BspDungeonBuilder;
@@ -46,7 +49,6 @@ use room_based_spawner::RoomBasedSpawner;
 use room_based_starting_position::RoomBasedStartingPosition;
 use room_based_stairs::RoomBasedStairs;
 use area_starting_points::{AreaStartingPosition, XStart, YStart};
-use area_ending_point::*;
 use cull_unreachable::CullUnreachable;
 use voronoi_spawning::VoronoiSpawning;
 use maze::MazeBuilder;
@@ -62,9 +64,8 @@ use rooms_corridors_nearest::NearestCorridors;
 use rooms_corridors_lines::StraightLineCorridors;
 use room_corridor_spawner::CorridorSpawner;
 use door_placement::DoorPlacement;
-
-mod town;
-use town::*;
+use town::town_builder;
+use area_ending_point::*;
 
 pub struct BuilderMap {
     pub spawn_list : Vec<(usize, String)>,
@@ -301,7 +302,6 @@ pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, wid
     builder
 }
 
-
 pub fn level_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
     rltk::console::log(format!("Depth: {}", new_depth));
     match new_depth {
@@ -310,6 +310,7 @@ pub fn level_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, widt
         3 => limestone_cavern_builder(new_depth, rng, width, height),
         4 => limestone_deep_cavern_builder(new_depth, rng, width, height),
         5 => limestone_transition_builder(new_depth, rng, width, height),
+        6 => dwarf_fort_builder(new_depth, rng, width, height),
         _ => random_builder(new_depth, rng, width, height)
     }
 }
