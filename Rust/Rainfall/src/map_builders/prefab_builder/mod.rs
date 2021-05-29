@@ -85,11 +85,17 @@ impl PrefabBuilder {
         match ch {
             ' ' => build_data.map.tiles[idx] = TileType::Floor,
             '#' => build_data.map.tiles[idx] = TileType::Wall,
-            '≈' => build_data.map.tiles[idx] = TileType::DeepWater,
+            '~' => build_data.map.tiles[idx] = TileType::DeepWater,
+            ',' => build_data.map.tiles[idx] = TileType::Sand,
+            '\"' => build_data.map.tiles[idx] = TileType::Grass,
+            'w' => build_data.map.tiles[idx] = TileType::BuildingWall,
+            '_' => build_data.map.tiles[idx] = TileType::Road,
+            '.' => build_data.map.tiles[idx] = TileType::WoodFloor,
+            '+' => build_data.map.tiles[idx] = TileType::Floor, // Make this place a door later
             '@' => {
                 let x = idx as i32 % build_data.map.width;
                 let y = idx as i32 / build_data.map.width;
-                build_data.map.tiles[idx] = TileType::Floor;
+                build_data.map.tiles[idx] = TileType::Grass;
                 build_data.starting_position = Some(Position{ x:x as i32, y:y as i32 });
             }
             '>' => build_data.map.tiles[idx] = TileType::DownStairs,

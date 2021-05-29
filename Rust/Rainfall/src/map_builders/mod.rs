@@ -307,7 +307,7 @@ pub fn random_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
 pub fn level_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
     rltk::console::log(format!("Depth: {}", new_depth));
     match new_depth {
-        1 => town_builder(new_depth, width, height),
+        1 => town_builder(new_depth, 61, 61),
         2 => forest_builder(new_depth, width, height),
         3 => limestone_cavern_builder(new_depth, width, height),
         4 => limestone_deep_cavern_builder(new_depth, width, height),
