@@ -1,0 +1,253 @@
+{
+    "name" : "Cudgel",
+    "renderable": {
+        "glyph" : "/",
+        "fg" : "#A52A2A",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "weapon" : {
+        "range" : "melee",
+        "attribute" : "Quickness",
+        "base_damage" : "1d4",
+        "hit_bonus" : 0
+    },
+    "weight_lbs" : 2.0,
+    "base_value" : 0.1,
+    "initiative_penalty" : 2.0,
+    "vendor_category" : "junk",
+    "template_magic" : {
+        "unidentified_name" : "Unidentified Cudgel",
+        "bonus_min" : 1,
+        "bonus_max" : 5,
+        "include_cursed" : true
+    }
+},
+
+{
+    "name" : "Rusty Longsword",
+    "renderable": {
+        "glyph" : "/",
+        "fg" : "#BB77BB",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "weapon" : {
+        "range" : "melee",
+        "attribute" : "might",
+        "base_damage" : "1d8-1",
+        "hit_bonus" : -1
+    },
+    "weight_lbs" : 3.0,
+    "base_value" : 10.0,
+    "initiative_penalty" : 2,
+    "vendor_category" : "junk"
+},
+
+{
+    "name" : "Dagger",
+    "renderable": {
+        "glyph" : "/",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "weapon" : {
+        "range" : "melee",
+        "attribute" : "Quickness",
+        "base_damage" : "1d4",
+        "hit_bonus" : 0
+    },
+    "weight_lbs" : 1.0,
+    "base_value" : 2.0,
+    "initiative_penalty" : 0,
+    "vendor_category" : "weapon",
+    "template_magic" : {
+        "unidentified_name" : "Unidentified Dagger",
+        "bonus_min" : 1,
+        "bonus_max" : 5,
+        "include_cursed" : true
+    }
+},
+
+{
+    "name" : "Shortbow",
+    "renderable": {
+        "glyph" : ")",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "weapon" : {
+        "range" : "4",
+        "attribute" : "Quickness",
+        "base_damage" : "1d4",
+        "hit_bonus" : 0
+    },
+    "weight_lbs" : 2.0,
+    "base_value" : 5.0,
+    "initiative_penalty" : 1,
+    "vendor_category" : "weapon",
+    "template_magic" : {
+        "unidentified_name" : "Unidentified Shortbow",
+        "bonus_min" : 1,
+        "bonus_max" : 5,
+        "include_cursed" : true
+    }
+},
+
+{
+    "name" : "Hand Crossbow",
+    "renderable": {
+        "glyph" : ")",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "weapon" : {
+        "range" : "6",
+        "attribute" : "Quickness",
+        "base_damage" : "1d6",
+        "hit_bonus" : 0
+    },
+    "weight_lbs" : 2.0,
+    "base_value" : 5.0,
+    "initiative_penalty" : 1,
+    "vendor_category" : "weapon",
+    "template_magic" : {
+        "unidentified_name" : "Unidentified Hand Crossbow",
+        "bonus_min" : 1,
+        "bonus_max" : 5,
+        "include_cursed" : true
+    }
+},
+
+{
+    "name" : "Shortsword",
+    "renderable": {
+        "glyph" : "/",
+        "fg" : "#FFAAFF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "weapon" : {
+        "range" : "melee",
+        "attribute" : "might",
+        "base_damage" : "1d6",
+        "hit_bonus" : 0
+    },
+    "weight_lbs" : 2.0,
+    "base_value" : 10.0,
+    "initiative_penalty" : 1,
+    "vendor_category" : "weapon",
+    "template_magic" : {
+        "unidentified_name" : "Unidentified Shortsword",
+        "bonus_min" : 1,
+        "bonus_max" : 5,
+        "include_cursed" : true
+    }
+},
+
+{
+    "name" : "Longsword",
+    "renderable": {
+        "glyph" : "/",
+        "fg" : "#FFAAFF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "weapon" : {
+        "range" : "melee",
+        "attribute" : "might",
+        "base_damage" : "1d8",
+        "hit_bonus" : 0
+    },
+    "weight_lbs" : 3.0,
+    "base_value" : 15.0,
+    "initiative_penalty" : 2,
+    "vendor_category" : "weapon",
+    "template_magic" : {
+        "unidentified_name" : "Unidentified Longsword",
+        "bonus_min" : 1,
+        "bonus_max" : 5,
+        "include_cursed" : true
+    }
+},
+
+{
+    "name" : "Scimitar",
+    "renderable": {
+        "glyph" : "/",
+        "fg" : "#FFAAFF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "weapon" : {
+        "range" : "melee",
+        "attribute" : "might",
+        "base_damage" : "1d6+2",
+        "hit_bonus" : 1
+    },
+    "weight_lbs" : 2.5,
+    "base_value" : 25.0,
+    "initiative_penalty" : 1,
+    "vendor_category" : "weapon",
+    "template_magic" : {
+        "unidentified_name" : "Unidentified Scimitar",
+        "bonus_min" : 1,
+        "bonus_max" : 5,
+        "include_cursed" : true
+    }
+},
+
+{
+    "name" : "Battleaxe",
+    "renderable": {
+        "glyph" : "¶",
+        "fg" : "#FF55FF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "weapon" : {
+        "range" : "melee",
+        "attribute" : "might",
+        "base_damage" : "1d8",
+        "hit_bonus" : 0
+    },
+    "weight_lbs" : 4.0,
+    "base_value" : 10.0,
+    "initiative_penalty" : 2,
+    "vendor_category" : "weapon",
+    "template_magic" : {
+        "unidentified_name" : "Unidentified Battleaxe",
+        "bonus_min" : 1,
+        "bonus_max" : 5,
+        "include_cursed" : true
+    }
+},
+
+{
+    "name" : "War Axe",
+    "renderable": {
+        "glyph" : "¶",
+        "fg" : "#FF55FF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "weapon" : {
+        "range" : "melee",
+        "attribute" : "might",
+        "base_damage" : "1d12",
+        "hit_bonus" : 0
+    },
+    "weight_lbs" : 4.0,
+    "base_value" : 100.0,
+    "initiative_penalty" : 2,
+    "vendor_category" : "weapon",
+    "template_magic" : {
+        "unidentified_name" : "Unidentified War Axe",
+        "bonus_min" : 1,
+        "bonus_max" : 5,
+        "include_cursed" : true
+    }
+}

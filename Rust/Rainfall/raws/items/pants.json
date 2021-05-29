@@ -1,0 +1,130 @@
+{
+    "name" : "Torn Trousers",
+    "renderable": {
+        "glyph" : "[",
+        "fg" : "#00FFFF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "wearable" : {
+        "slot" : "Legs",
+        "armor_class" : 0.1
+    },
+    "weight_lbs" : 1.0,
+    "base_value" : 1.0,
+    "initiative_penalty" : 0.1,
+    "vendor_category" : "junk"
+},
+{
+    "name" : "Cloth Pants",
+    "renderable": {
+        "glyph" : "[",
+        "fg" : "#00FFFF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "wearable" : {
+        "slot" : "Legs",
+        "armor_class" : 0.1
+    },
+    "weight_lbs" : 1.0,
+    "base_value" : 1.0,
+    "initiative_penalty" : 0.1,
+    "vendor_category" : "clothes"
+},
+
+{
+    "name" : "Leather Pants",
+    "renderable": {
+        "glyph" : "[",
+        "fg" : "#00FFFF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "wearable" : {
+        "slot" : "Legs",
+        "armor_class" : 0.2
+    },
+    "weight_lbs" : 5.0,
+    "base_value" : 25.0,
+    "initiative_penalty" : 0.2,
+    "vendor_category" : "clothes",
+    "template_magic" : {
+        "unidentified_name" : "Unidentified Leather Pants",
+        "bonus_min" : 1,
+        "bonus_max" : 5,
+        "include_cursed" : true
+    }
+},
+
+{
+    "name" : "Chain Leggings",
+    "renderable": {
+        "glyph" : "[",
+        "fg" : "#00FFFF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "wearable" : {
+        "slot" : "Legs",
+        "armor_class" : 0.3
+    },
+    "weight_lbs" : 10.0,
+    "base_value" : 50.0,
+    "initiative_penalty" : 0.3,
+    "vendor_category" : "clothes",
+    "template_magic" : {
+        "unidentified_name" : "Unidentified Chain Leggings",
+        "bonus_min" : 1,
+        "bonus_max" : 5,
+        "include_cursed" : true
+    }
+},
+
+{
+    "name" : "Drow Leggings",
+    "renderable": {
+        "glyph" : "[",
+        "fg" : "#00FFFF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "wearable" : {
+        "slot" : "Legs",
+        "armor_class" : 0.4
+    },
+    "weight_lbs" : 10.0,
+    "base_value" : 50.0,
+    "initiative_penalty" : 0.1,
+    "vendor_category" : "clothes",
+    "template_magic" : {
+        "unidentified_name" : "Unidentified Drow Leggings",
+        "bonus_min" : 1,
+        "bonus_max" : 5,
+        "include_cursed" : true
+    }
+},
+
+{
+    "name" : "Steel Greaves",
+    "renderable": {
+        "glyph" : "[",
+        "fg" : "#00FFFF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "wearable" : {
+        "slot" : "Legs",
+        "armor_class" : 0.5
+    },
+    "weight_lbs" : 20.0,
+    "base_value" : 100.0,
+    "initiative_penalty" : 0.5,
+    "vendor_category" : "clothes",
+    "template_magic" : {
+        "unidentified_name" : "Unidentified Steel Greaves",
+        "bonus_min" : 1,
+        "bonus_max" : 5,
+        "include_cursed" : true
+    }
+}

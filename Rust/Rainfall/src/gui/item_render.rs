@@ -1,6 +1,6 @@
 use rltk::prelude::*;
 use specs::prelude::*;
-use crate::{Name, Consumable, MagicItem, MagicItemClass, ObfuscatedName, CursedItem };
+use crate::{Name, Consumable, MagicItem, MagicItemClass, ObfuscatedName, CursedItem, EquipmentSlot };
 
 pub fn get_item_color(ecs : &World, item : Entity) -> RGB {
     let dm = ecs.fetch::<crate::map::MasterDungeonMap>();
@@ -45,5 +45,18 @@ pub fn get_item_display_name(ecs: &World, item : Entity) -> String {
 
     } else {
         "Nameless item (bug)".to_string()
+    }
+}
+
+pub fn get_equip_slot(slot: EquipmentSlot) -> String {
+    match slot {
+        EquipmentSlot::Head => { "head".to_string() },
+        EquipmentSlot::Legs => { "legs".to_string() },
+        EquipmentSlot::Feet => { "feet".to_string() },
+        EquipmentSlot::Melee => { "weapon".to_string() },
+        EquipmentSlot::Torso => { "torso".to_string() },
+        EquipmentSlot::Hands => { "hands".to_string() },
+        EquipmentSlot::Shield => { "shield".to_string() },
+        _ => { "none?".to_string() }
     }
 }

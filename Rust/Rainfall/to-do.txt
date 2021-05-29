@@ -1,6 +1,6 @@
-Split spawns.json.
-- Separate directories for each of mobs, props, items, factions, spells, and spawntables
-- Load all files in each directory, with functionally no limit to how many individual files it can have.
+(DONE) Split spawns.json.
+(DONE) - Separate directories for each of mobs, props, items, factions, spells, spawn tables, loot tables, and weapon traits
+(DONE) - Load all files in each directory, with functionally no limit to how many individual files it can have.
 
 Redesign Noonbreeze to use a static layout and static NPCs
 - Blacksmith (Buys/Sells ores and metals, upgrades tools)
@@ -32,7 +32,10 @@ Dialogue system for interacting with NPCs
 - Allow gifting items
 -- Lists of liked and disliked items, liked increases friendship while disliked decreases it.
 - Different dialogue based on relationship, season, time of day, etc
-
+- Each time dialogue is opened pick 3 random topics that can be selected to talk about.
+-- Each NPC likes and dislikes different topics
+-- Talking about liked topics increases their opinion of you, disliked topics do the opposite. Loved and hated topics double the changes
+-- Diminishing returns in the same day - maybe a max of +/- 10 points, minimum points are -100 and maximum are +100
 
 
 The Farm
@@ -66,4 +69,8 @@ Alchemy systems
 
 
 
-Item Use System: Separate equip, zap, quaff, and read into their own menus?
+Item Use System: Separate zap/aim wands into their own menu
+
+
+
+Implement more equipment slots: Amulet, Ring1, Ring2

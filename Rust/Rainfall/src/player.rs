@@ -349,6 +349,15 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             // Picking up items
             VirtualKeyCode::G => get_item(&mut gs.ecs),
             VirtualKeyCode::I => return RunState::ShowInventory,
+            
+            // Quaff a potion
+            VirtualKeyCode::Q => return RunState::ShowDrinkMenu,
+            
+            // Read Something
+            VirtualKeyCode::R => return RunState::ShowReadMenu,
+            
+            // Equip an item
+            VirtualKeyCode::E => return RunState::ShowEquipMenu,
 
             // Save and Quit
             VirtualKeyCode::Escape => return RunState::SaveGame,

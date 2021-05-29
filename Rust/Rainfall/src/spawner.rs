@@ -1,4 +1,4 @@
-use rltk::{ RGB };
+use rltk::RGB;
 use specs::prelude::*;
 use super::{Pools, Pool, Player, Renderable, Name, Position, Viewshed, Rect,
     SerializeMe, random_table::MasterTable, HungerClock, HungerState, Map, TileType, raws::*,
@@ -83,6 +83,10 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Torn Trousers", SpawnType::Equipped{by : player});
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Old Boots", SpawnType::Equipped{by : player});
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Shortbow", SpawnType::Carried{by : player});
+    
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Health Potion", SpawnType::Carried{by : player});
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Fireball Scroll", SpawnType::Carried{by : player});
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Beginner's Magic", SpawnType::Carried{by : player});
 
     // Starting hangover
     ecs.create_entity()

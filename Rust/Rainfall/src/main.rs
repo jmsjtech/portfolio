@@ -57,7 +57,10 @@ pub enum RunState {
     ShowVendor { vendor: Entity, mode : VendorMode },
     TeleportingToOtherLevel { x: i32, y: i32, depth: i32 },
     ShowRemoveCurse,
-    ShowIdentify
+    ShowIdentify,
+    ShowDrinkMenu,
+    ShowReadMenu,
+    ShowEquipMenu
 }
 
 pub struct State {
@@ -261,6 +264,48 @@ impl GameState for State {
                         let item_entity = result.1.unwrap();
                         let mut intent = self.ecs.write_storage::<WantsToRemoveItem>();
                         intent.insert(*self.ecs.fetch::<Entity>(), WantsToRemoveItem{ item: item_entity }).expect("Unable to insert intent");
+                        newrunstate = RunState::Ticking;
+                    }
+                }
+            }
+            RunState::ShowDrinkMenu => {
+                let result = gui::drink_potion_menu(self, ctx);
+                match result.0 {
+                    gui::ItemMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
+                    gui::ItemMenuResult::NoResponse => {}
+                    gui::ItemMenuResult::Selected => {
+                        let item_entity = result.1.unwrap();
+                        
+                        let mut intent = self.ecs.write_storage::<WantsToUseItem>();
+                        intent.insert(*self.ecs.fetch::<Entity>(), WantsToUseItem{ item: item_entity, target: None }).expect("Unable to insert intent");
+                        newrunstate = RunState::Ticking;
+                    }
+                }
+            }
+            RunState::ShowReadMenu => {
+                let result = gui::read_menu(self, ctx);
+                match result.0 {
+                    gui::ItemMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
+                    gui::ItemMenuResult::NoResponse => {}
+                    gui::ItemMenuResult::Selected => {
+                        let item_entity = result.1.unwrap();
+                        
+                        let mut intent = self.ecs.write_storage::<WantsToUseItem>();
+                        intent.insert(*self.ecs.fetch::<Entity>(), WantsToUseItem{ item: item_entity, target: None }).expect("Unable to insert intent");
+                        newrunstate = RunState::Ticking;
+                    }
+                }
+            }
+            RunState::ShowEquipMenu => {
+                let result = gui::equip_menu(self, ctx);
+                match result.0 {
+                    gui::ItemMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
+                    gui::ItemMenuResult::NoResponse => {}
+                    gui::ItemMenuResult::Selected => {
+                        let item_entity = result.1.unwrap();
+                        
+                        let mut intent = self.ecs.write_storage::<WantsToUseItem>();
+                        intent.insert(*self.ecs.fetch::<Entity>(), WantsToUseItem{ item: item_entity, target: None }).expect("Unable to insert intent");
                         newrunstate = RunState::Ticking;
                     }
                 }

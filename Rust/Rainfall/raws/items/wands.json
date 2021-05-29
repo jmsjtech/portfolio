@@ -1,0 +1,44 @@
+{
+    "name" : "Wand of Fireballs",
+    "renderable": {
+        "glyph" : "/",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : { 
+            "ranged" : "6",
+            "damage" : "20",
+            "area_of_effect" : "3",
+            "particle" : "▓;#FFA500;200.0"
+        },
+        "charges" : 5
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 500.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "Unidentified Wand" }
+},
+
+{
+    "name" : "Wand of Venom",
+    "renderable": {
+        "glyph" : "/",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : { 
+            "ranged" : "6",
+            "damage_over_time" : "1",
+            "particle_line" : "▓;#00FF00;200.0"
+        },
+        "charges" : 5
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 500.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "Unidentified Wand" }
+}
