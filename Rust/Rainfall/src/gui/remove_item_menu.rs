@@ -24,6 +24,6 @@ pub fn remove_item_menu(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Op
         &items,
         ctx.key
     );
-    draw_batch.submit(6000);
+    draw_batch.submit(6000).expect("Unhelpful Error Code");
     result
 }

@@ -43,7 +43,7 @@ fn vendor_sell_menu(gs : &mut State, ctx : &mut Rltk, _vendor : Entity, _mode : 
         j += 1;
     }
 
-    draw_batch.submit(6000);
+    draw_batch.submit(6000).expect("Unhelpful Error Code");
 
     match ctx.key {
         None => (VendorResult::NoResponse, None, None, None),
@@ -90,7 +90,7 @@ fn vendor_buy_menu(gs : &mut State, ctx : &mut Rltk, vendor : Entity, _mode : Ve
         y += 1;
     }
 
-    draw_batch.submit(6000);
+    draw_batch.submit(6000).expect("Unhelpful Error Code");
 
     match ctx.key {
         None => (VendorResult::NoResponse, None, None, None),

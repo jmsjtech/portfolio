@@ -1,5 +1,4 @@
 use rltk::{ BaseMap, Algorithm2D, Point };
-use specs::prelude::*;
 use serde::{Serialize, Deserialize};
 use std::collections::HashSet;
 mod tiletype;

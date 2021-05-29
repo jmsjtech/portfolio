@@ -20,8 +20,8 @@ pub fn particle_to_tile(ecs: &mut World, tile_idx : i32, effect: &EffectSpawner)
 }
 
 pub fn projectile(ecs: &mut World, tile_idx : i32, effect: &EffectSpawner) {
-    if let EffectType::ParticleProjectile{ glyph, fg, bg, 
-        lifespan, speed, path } = &effect.effect_type 
+    #[allow(unused_variables)]
+    if let EffectType::ParticleProjectile{ glyph, fg, bg, lifespan, speed, path } = &effect.effect_type 
     {
         let map = ecs.fetch::<Map>();
         let x = tile_idx % map.width;

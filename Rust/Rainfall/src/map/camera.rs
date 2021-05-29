@@ -115,7 +115,7 @@ pub fn render_camera(ecs: &World, ctx : &mut Rltk) {
         }
     }
 
-    draw_batch.submit(0);
+    draw_batch.submit(0).expect("Unhelpful Error Code - Draw Batch");
 }
 
 pub fn render_debug_map(map : &Map, ctx : &mut Rltk) {

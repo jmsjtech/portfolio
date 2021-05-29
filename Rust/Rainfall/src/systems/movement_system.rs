@@ -1,6 +1,5 @@
 use specs::prelude::*;
-use crate::{Map, Position, BlocksTile, ApplyMove, ApplyTeleport, OtherLevelPosition, EntityMoved,
-    Viewshed, RunState};
+use crate::{Map, Position, ApplyMove, ApplyTeleport, OtherLevelPosition, EntityMoved, Viewshed, RunState};
 
 pub struct MovementSystem {}
 
@@ -8,7 +7,6 @@ impl<'a> System<'a> for MovementSystem {
     #[allow(clippy::type_complexity)]
     type SystemData = ( WriteExpect<'a, Map>,
                         WriteStorage<'a, Position>,
-                        ReadStorage<'a, BlocksTile>,
                         Entities<'a>,
                         WriteStorage<'a, ApplyMove>,
                         WriteStorage<'a, ApplyTeleport>,
@@ -19,7 +17,8 @@ impl<'a> System<'a> for MovementSystem {
                         WriteExpect<'a, RunState>);
 
     fn run(&mut self, data : Self::SystemData) {
-        let (mut map, mut position, blockers, entities, mut apply_move, 
+        #[allow(unused_mut)]
+        let (mut map, mut position, entities, mut apply_move, 
             mut apply_teleport, mut other_level, mut moved,
             mut viewsheds, player_entity, mut runstate) = data;
 

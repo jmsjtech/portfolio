@@ -43,7 +43,7 @@ pub fn main_menu(gs : &mut State, ctx : &mut Rltk) -> MainMenuResult {
             draw_batch.print_color_centered(y, "Quit", ColorPair::new(RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)));
         }
 
-        draw_batch.submit(6000);
+        draw_batch.submit(6000).expect("Unhelpful Error Code");
 
         match ctx.key {
             None => return MainMenuResult::NoSelection{ selected: selection },

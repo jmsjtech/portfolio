@@ -56,7 +56,7 @@ pub fn ranged_target(gs : &mut State, ctx : &mut Rltk, range : i32) -> (ItemMenu
         }
     }
 
-    draw_batch.submit(5000);
+    draw_batch.submit(5000).expect("Unhelpful Error Code");
 
     (ItemMenuResult::NoResponse, None)
 }

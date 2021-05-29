@@ -24,7 +24,7 @@ pub fn show_cheat_mode(_gs : &mut State, ctx : &mut Rltk) -> CheatMenuResult {
     y += 1;
     menu_option(&mut draw_batch, 17, y, rltk::to_cp437('G'), "God Mode (No Death)");
 
-    draw_batch.submit(6000);
+    draw_batch.submit(6000).expect("Unhelpful Error Code");
 
     match ctx.key {
         None => CheatMenuResult::NoResponse,

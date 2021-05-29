@@ -27,6 +27,6 @@ pub fn show_inventory(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Opti
         &items,
         ctx.key
     );
-    draw_batch.submit(6000);
+    draw_batch.submit(6000).expect("Unhelpful Error Code");
     result
 }

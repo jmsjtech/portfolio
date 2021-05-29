@@ -1,0 +1,69 @@
+Split spawns.json.
+- Separate directories for each of mobs, props, items, factions, spells, and spawntables
+- Load all files in each directory, with functionally no limit to how many individual files it can have.
+
+Redesign Noonbreeze to use a static layout and static NPCs
+- Blacksmith (Buys/Sells ores and metals, upgrades tools)
+- Alchemist (Buys/sells potions and potion ingredients)
+- Barkeep (Doesn't buy anything, sells food and drinks)
+- Shady Salesman (Buys anything at half price, sells random junk)
+- Rework the Clergy
+-- Priest, three clerics
+- Carpenter (Sells construction supplies)
+- Herbalist/Botanist (Sells seeds)
+- Doctor (Buys/sells healing items)
+- Adventure Guild
+-- Guild Leader
+-- Guild Storekeep (Buys/sells adventuring gear)
+- Magic Guild
+-- Guild Leader
+-- Guild Storekeep (Buys/sells wands, rods, staves, rings, and amulets)
+-- Tristan the Librarian (Buys/sells scrolls and spellbooks)
+
+
+
+NPCs Schedule system
+- Assign each NPC a schedule. Each point should have a position (and map, if they move maps) and the time they leave that place to move to the next one.
+- NPCs should be teleported back to their homes when a day-skip occurs
+
+Dialogue system for interacting with NPCs
+- Store how much they like you
+- Change shop prices based on relationship
+- Allow gifting items
+-- Lists of liked and disliked items, liked increases friendship while disliked decreases it.
+- Different dialogue based on relationship, season, time of day, etc
+
+
+
+The Farm
+- Has a small shack.
+-- Bed to pass the day (move to tomorrow at 6am)
+-- Holes in walls that need to be fixed, to teach construction mechanics
+-- Basement with a rat problem to teach some combat basics
+- Plot of tillable land
+- Well to refill watering can
+- Allow players to build in this map? Maybe build everywhere except in town?
+
+
+Forest Outside Town - maybe make it static?
+- Stop normal items from spawning there
+- Spawn mushrooms, herbs, and flowers
+
+
+The Old Mines
+- First X levels of mines before leading into other biomes at the bottom?
+- Spawns ore rocks as enemies (that can't fight back), destroying them drops the ore.
+-- Higher chance to get ore if you use a proper tool
+- Common enemies: Kobolds, Goblins, 
+
+
+Alchemy systems
+- Assign RYBW values to each potions
+- Assign RYBW values to ingredients
+- Combine any amount of ingredients into vial, heat to turn into a potions
+-- If the prospective potion RYBW matches a valid potion RYBW, you get that potions
+- Process ingredients to get special essences that only have a single RYBW value for easier future Use
+
+
+
+Item Use System: Separate equip, zap, quaff, and read into their own menus?

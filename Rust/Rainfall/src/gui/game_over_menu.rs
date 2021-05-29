@@ -42,7 +42,7 @@ pub fn game_over(ctx : &mut Rltk) -> GameOverResult {
         ColorPair::new(RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK))
     );
 
-    draw_batch.submit(6000);
+    draw_batch.submit(6000).expect("Unhelpful Error Code");
 
     match ctx.key {
         None => GameOverResult::NoSelection,

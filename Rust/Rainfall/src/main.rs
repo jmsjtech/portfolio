@@ -432,7 +432,7 @@ impl GameState for State {
         if SHOW_FPS {
             ctx.print(1, 59, &format!("FPS: {}", ctx.fps));
         }
-        rltk::render_draw_buffer(ctx);
+        rltk::render_draw_buffer(ctx).expect("Unhelpful Error Code");
     }
 }
 

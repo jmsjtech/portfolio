@@ -147,5 +147,5 @@ pub fn draw_tooltips(ecs: &World, ctx : &mut Rltk) {
         y += tt.height();
     }
 
-    draw_batch.submit(7000);
+    draw_batch.submit(7000).expect("Unhelpful Error Code");
 }

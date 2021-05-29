@@ -306,5 +306,5 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
 
     }
 
-    draw_batch.submit(5000);
+    draw_batch.submit(5000).expect("Unhelpful Error Code");
 }

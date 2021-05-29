@@ -464,9 +464,9 @@ fn cycle_target(ecs: &mut World) {
             }
 
             if index > possible_targets.len()-2 {
-                targets.insert(possible_targets[0].1, Target{});
+                targets.insert(possible_targets[0].1, Target{}).expect("Unhelpful Error Code");
             } else {
-                targets.insert(possible_targets[index+1].1, Target{});
+                targets.insert(possible_targets[index+1].1, Target{}).expect("Unhelpful Error Code");
             }
         }
     }
