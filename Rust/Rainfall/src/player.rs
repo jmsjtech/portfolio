@@ -161,6 +161,12 @@ fn get_item(ecs: &mut World) {
     }
 }
 
+fn get_pos(ecs: &mut World) -> RunState {
+    let player_pos = ecs.fetch::<Point>();
+    crate::gamelog::Logger::new().append(format!("x{}, y{}", player_pos.x, player_pos.y)).log();
+    return RunState::AwaitingInput;
+}
+
 fn skip_turn(ecs: &mut World) -> RunState {
     let player_entity = ecs.fetch::<Entity>();
     let viewshed_components = ecs.read_storage::<Viewshed>();
@@ -343,8 +349,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::Numpad1 => return try_move_player(-1, 1, &mut gs.ecs),
 
             // Skip Turn
-            VirtualKeyCode::Numpad5 |
-            VirtualKeyCode::Space => return skip_turn(&mut gs.ecs),
+            VirtualKeyCode::Numpad5 => return skip_turn(&mut gs.ecs),
 
             // Picking up items
             VirtualKeyCode::G => get_item(&mut gs.ecs),
@@ -352,7 +357,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             
             // Quaff a potion
             VirtualKeyCode::Q => return RunState::ShowDrinkMenu,
-            
+        
             // Read Something
             VirtualKeyCode::R => return RunState::ShowReadMenu,
             
@@ -361,6 +366,14 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
 
             // Save and Quit
             VirtualKeyCode::Escape => return RunState::SaveGame,
+            
+            
+            // Close adjacent doors
+            VirtualKeyCode::C => return RunState::CloseDoor,
+            
+            
+            // Log current position
+            VirtualKeyCode::Space => return get_pos(&mut gs.ecs),
             
             // Ranged
             VirtualKeyCode::V => {

@@ -91,7 +91,8 @@ impl PrefabBuilder {
             'w' => build_data.map.tiles[idx] = TileType::BuildingWall,
             '_' => build_data.map.tiles[idx] = TileType::Road,
             '.' => build_data.map.tiles[idx] = TileType::WoodFloor,
-            '+' => build_data.map.tiles[idx] = TileType::Floor, // Make this place a door later
+            '+' => build_data.map.tiles[idx] = TileType::DoorSpot,
+            '=' => build_data.map.tiles[idx] = TileType::Glass,
             '@' => {
                 let x = idx as i32 % build_data.map.width;
                 let y = idx as i32 / build_data.map.width;

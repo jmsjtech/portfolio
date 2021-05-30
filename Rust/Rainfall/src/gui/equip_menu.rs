@@ -16,9 +16,8 @@ pub fn equip_menu(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Option<E
         .filter(|item| item.1.owner == *player_entity )
         .for_each(|item| {
             if equippables.contains(item.0) {
-                    let mut name = get_item_display_name(&gs.ecs, item.0);
                     if let Some(equip) = equippables.get(item.0) {
-                        name = format!("{} ({})", get_item_display_name(&gs.ecs, item.0), get_equip_slot(equip.slot));
+                        let name = format!("{} ({})", get_item_display_name(&gs.ecs, item.0), get_equip_slot(equip.slot));
                         items.push((item.0, name));
                     }
             }

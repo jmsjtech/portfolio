@@ -734,7 +734,12 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs : &mut World, key : &str, pos : Sp
             }
         }
 
-        eb = eb.with(Name{ name : prop_template.name.clone() });
+        if let Some(display_name) = &prop_template.display_name {
+            eb = eb.with(Name { name: display_name.clone() });
+        } else {
+            eb = eb.with(Name{ name : prop_template.name.clone() });
+        }
+        eb = eb.with(VisibleWhenOutOfSight {});
 
         if let Some(hidden) = prop_template.hidden {
             if hidden { eb = eb.with(Hidden{}) };
@@ -756,6 +761,7 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs : &mut World, key : &str, pos : Sp
             eb = eb.with(LightSource{ range: light.range, color : rltk::RGB::from_hex(&light.color).expect("Bad color") });
             eb = eb.with(Viewshed{ range: light.range, dirty: true, visible_tiles: Vec::new() });
         }
+        
 
 
         return Some(eb.build());

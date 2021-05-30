@@ -3,10 +3,17 @@
 (DONE) - Load all files in each directory, with functionally no limit to how many individual files it can have.
 
 Redesign Noonbreeze to use a static layout and static NPCs
-- Blacksmith (Buys/Sells ores and metals, upgrades tools)
+(DONE) - Basic map layout
+(DONE) - Props you've seen visible even outside of view because it looked weird when they disappeared
+- Place props in all the houses
+- Place NPCs
+
+
+NPCs
+- Properties needed: Schedule, Opinion of Player, Item Likes/Dislikes, Topic Likes/Dislikes
+- Tim the Blacksmith (Buys/Sells ores and metals, upgrades tools)
 - Alchemist (Buys/sells potions and potion ingredients)
 - Barkeep (Doesn't buy anything, sells food and drinks)
-- Shady Salesman (Buys anything at half price, sells random junk)
 - Rework the Clergy
 -- Priest, three clerics
 - Carpenter (Sells construction supplies)
@@ -19,6 +26,10 @@ Redesign Noonbreeze to use a static layout and static NPCs
 -- Guild Leader
 -- Guild Storekeep (Buys/sells wands, rods, staves, rings, and amulets)
 -- Tristan the Librarian (Buys/sells scrolls and spellbooks)
+- Thieves Guild
+-- Guild Leader
+-- 2-3 street urchins
+-- Shady Salesman (buys anything at half price, sells junk / illicit goods)
 
 
 

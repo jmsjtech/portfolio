@@ -60,7 +60,8 @@ pub enum RunState {
     ShowIdentify,
     ShowDrinkMenu,
     ShowReadMenu,
-    ShowEquipMenu
+    ShowEquipMenu,
+    CloseDoor
 }
 
 pub struct State {
@@ -328,6 +329,14 @@ impl GameState for State {
                    }
                }
            }
+           RunState::CloseDoor => {
+              let result = gui::close_door(self, ctx);
+              match result.0 {
+                  gui::ItemMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
+                  gui::ItemMenuResult::NoResponse => {}
+                  gui::ItemMenuResult::Selected => newrunstate = RunState::Ticking
+              }
+          }
             RunState::MainMenu{ .. } => {
                 let result = gui::main_menu(self, ctx);
                 match result {
@@ -539,7 +548,10 @@ impl State {
     }
 }
 
+rltk::embedded_resource!(TILE_FONT, "../resources/vga8x16.png");
+
 fn main() -> rltk::BError {
+    rltk::link_resource!(TILE_FONT, "resources/vga8x16.png");
     use rltk::RltkBuilder;
     let mut context = RltkBuilder::simple(80, 60)
         .unwrap()
@@ -640,6 +652,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<AlwaysTargetsSelf>();
     gs.ecs.register::<Target>();
     gs.ecs.register::<WantsToShoot>();
+    gs.ecs.register::<VisibleWhenOutOfSight>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();

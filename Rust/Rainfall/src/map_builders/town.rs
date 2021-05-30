@@ -1,26 +1,143 @@
-use super::{BuilderChain, BuilderMap, InitialMapBuilder, TileType, Position, PrefabBuilder};
-use crate::rex_assets::RexAssets;
-use std::collections::HashSet;
+use super::{BuilderChain, BuilderMap, MetaMapBuilder, TileType, PrefabBuilder};
 
 pub fn town_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
     let noonbreeze_path = "../resources/noonbreeze.xp";
     let mut chain = BuilderChain::new(new_depth, width, height, "The Town of Noonbreeze");
     chain.start_with(PrefabBuilder::rex_level(noonbreeze_path));
-    //chain.with(TownBuilder::new());
+    chain.with(TownBuilder::new());
     chain
 }
 
 pub struct TownBuilder {}
 
-impl InitialMapBuilder for TownBuilder {
+impl MetaMapBuilder for TownBuilder {
     #[allow(dead_code)]
     fn build_map(&mut self, build_data : &mut BuilderMap) {
-        self.build_rooms(build_data);
+        self.add_doors(build_data);
+        
+        
+        
+        // Peasant House 1
+        build_data.spawn_list.push((build_data.map.xy_idx(21, 42), "Table".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(22, 42), "ChairL".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(21, 44), "Bed".to_string()));
+        
+        // Peasant House 2
+        build_data.spawn_list.push((build_data.map.xy_idx(21, 48), "Table".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(22, 48), "ChairL".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(21, 50), "Bed".to_string()));
+        
+        // Peasant House 3
+        build_data.spawn_list.push((build_data.map.xy_idx(21, 54), "Table".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(22, 54), "ChairL".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(21, 56), "Bed".to_string()));
+        
+        // Peasant House 4
+        build_data.spawn_list.push((build_data.map.xy_idx(32, 42), "ChairR".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(33, 42), "Table".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(33, 44), "Bed".to_string()));
+        
+        // Peasant House 5
+        build_data.spawn_list.push((build_data.map.xy_idx(32, 48), "ChairR".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(33, 48), "Table".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(33, 50), "Bed".to_string()));
+        
+        // Peasant House 6
+        build_data.spawn_list.push((build_data.map.xy_idx(32, 54), "ChairR".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(33, 54), "Table".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(33, 56), "Bed".to_string()));
+        
+        
+        
+        // Peasant House 7
+        build_data.spawn_list.push((build_data.map.xy_idx(37, 42), "Table".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(38, 42), "ChairL".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(37, 44), "Bed".to_string()));
+        
+        // Peasant House 8
+        build_data.spawn_list.push((build_data.map.xy_idx(37, 48), "Table".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(38, 48), "ChairL".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(37, 50), "Bed".to_string()));
+        
+        // Peasant House 9
+        build_data.spawn_list.push((build_data.map.xy_idx(37, 54), "Table".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(38, 54), "ChairL".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(37, 56), "Bed".to_string()));
+        
+        // Peasant House 10
+        build_data.spawn_list.push((build_data.map.xy_idx(48, 42), "ChairR".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(49, 42), "Table".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(49, 44), "Bed".to_string()));
+        
+        // Peasant House 11
+        build_data.spawn_list.push((build_data.map.xy_idx(48, 48), "ChairR".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(49, 48), "Table".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(49, 50), "Bed".to_string()));
+        
+        // Peasant House 12
+        build_data.spawn_list.push((build_data.map.xy_idx(48, 54), "ChairR".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(49, 54), "Table".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(49, 56), "Bed".to_string()));
+        
+        
+        
+        // The Inn
+        build_data.spawn_list.push((build_data.map.xy_idx(56, 30), "Bed".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(56, 27), "Bed".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(50, 27), "Bed".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(50, 30), "Bed".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(50, 33), "Bed".to_string()));
+        
+        
+        
+        // Blacksmith
+        build_data.spawn_list.push((build_data.map.xy_idx(45, 29), "Armor Stand".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(45, 33), "Weapon Rack".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(47, 29), "Water Trough".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(48, 29), "Anvil".to_string()));
+        
+        // Tavern
+        build_data.spawn_list.push((build_data.map.xy_idx(33, 27), "Keg".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(34, 27), "Keg".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(35, 27), "Cabinet".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(36, 27), "Cabinet".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(33, 29), "Countertop".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(34, 29), "Countertop".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(35, 29), "Countertop".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(36, 29), "Countertop".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(33, 30), "Stool".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(34, 30), "Stool".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(35, 30), "Stool".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(36, 30), "Stool".to_string())); 
+        build_data.spawn_list.push((build_data.map.xy_idx(33, 34), "ChairR".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(34, 34), "Table".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(35, 34), "ChairL".to_string())); 
+        build_data.spawn_list.push((build_data.map.xy_idx(33, 32), "ChairR".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(34, 32), "Table".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(35, 32), "ChairL".to_string()));
+        
+        
+        
+        // Carpenter
+        build_data.spawn_list.push((build_data.map.xy_idx(26, 25), "Bed".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(25, 27), "Cabinet".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(21, 25), "Cabinet".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(22, 25), "Cabinet".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(23, 25), "Cabinet".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(22, 27), "Stool".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(21, 28), "Countertop".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(22, 28), "Countertop".to_string()));
+        
+        
+        // Herbalist
+        build_data.spawn_list.push((build_data.map.xy_idx(26, 22), "Cabinet".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(26, 23), "Bed".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(21, 23), "Stool".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(22, 22), "Countertop".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(22, 23), "Countertop".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(21, 20), "Potted Plant".to_string()));
+        build_data.spawn_list.push((build_data.map.xy_idx(22, 20), "Potted Plant".to_string()));
     }
-}
-
-enum BuildingTag {
-    Pub, Temple, Blacksmith, Clothier, Alchemist, PlayerHouse, Hovel, Abandoned, Unassigned
 }
 
 impl TownBuilder {
@@ -28,18 +145,14 @@ impl TownBuilder {
         Box::new(TownBuilder{})
     }
 
-    pub fn build_rooms(&mut self, build_data : &mut BuilderMap) {
-        
-        // Make visible for screenshot
-        for t in build_data.map.visible_tiles.iter_mut() {
-            *t = true;
+    fn add_doors(&mut self, build_data : &mut BuilderMap) {
+        for idx in 1 .. build_data.map.tiles.len() {
+            if build_data.map.tiles[idx] == TileType::DoorSpot {
+                build_data.map.tiles[idx] = TileType::Floor;
+                build_data.spawn_list.push((idx, "Door".to_string()));
+            }
         }
-        build_data.take_snapshot();
     }
-
-    
-
-    
 
     // fn build_pub(&mut self,
     //     building: &(i32, i32, i32, i32),

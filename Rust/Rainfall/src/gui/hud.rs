@@ -45,7 +45,7 @@ pub fn map_label(ecs: &World, draw_batch: &mut DrawBatch) {
 
     let map = ecs.fetch::<Map>();
     let name_length = map.name.len() + 2;
-    let x_pos = (22 - (name_length / 2)) as i32;
+    let x_pos = (25 - (name_length / 2)) as i32;
     draw_batch.set(Point::new(x_pos, 0), ColorPair::new(box_gray, black), to_cp437('┤'));
     draw_batch.set(Point::new(x_pos + name_length as i32 - 1, 0), ColorPair::new(box_gray, black), to_cp437('├'));
     draw_batch.print_color(Point::new(x_pos+1, 0), &map.name, ColorPair::new(white, black));

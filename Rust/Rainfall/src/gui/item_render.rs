@@ -57,6 +57,8 @@ pub fn get_equip_slot(slot: EquipmentSlot) -> String {
         EquipmentSlot::Torso => { "torso".to_string() },
         EquipmentSlot::Hands => { "hands".to_string() },
         EquipmentSlot::Shield => { "shield".to_string() },
+        
+        #[allow(unreachable_patterns)]
         _ => { "none?".to_string() }
     }
 }

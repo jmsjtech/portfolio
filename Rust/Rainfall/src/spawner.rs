@@ -28,7 +28,7 @@ pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
             render_order: 0
         })
         .with(Player{})
-        .with(Viewshed{ visible_tiles : Vec::new(), range: 8, dirty: true })
+        .with(Viewshed{ visible_tiles : Vec::new(), range: 16, dirty: true })
         .with(Name{name: "Player".to_string() })
         .with(HungerClock{ state: HungerState::WellFed, duration: 20 })
         .with(Attributes{

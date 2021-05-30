@@ -32,3 +32,5 @@ mod read_menu;
 pub use read_menu::read_menu;
 mod equip_menu;
 pub use equip_menu::equip_menu;
+mod close_door;
+pub use close_door::close_door;

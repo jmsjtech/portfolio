@@ -526,3 +526,6 @@ pub struct Target {}
 pub struct WantsToShoot {
     pub target : Entity
 }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct VisibleWhenOutOfSight {}

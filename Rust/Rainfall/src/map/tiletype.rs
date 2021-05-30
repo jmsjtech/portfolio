@@ -16,7 +16,9 @@ pub enum TileType {
     Gravel,
     UpStairs,
     Sand,
-    BuildingWall
+    BuildingWall,
+    DoorSpot,
+    Glass
 }
 
 pub fn tile_walkable(tt : TileType) -> bool {

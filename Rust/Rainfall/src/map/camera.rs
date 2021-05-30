@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{Map,Position,Renderable,Hidden,TileSize,Target};
+use crate::{Map,Position,Renderable,Hidden,TileSize,Target, VisibleWhenOutOfSight, Door};
 use rltk::prelude::*;
 use crate::map::tile_glyph;
 
@@ -35,7 +35,7 @@ pub fn render_camera(ecs: &World, ctx : &mut Rltk) {
         for (x,tx) in (min_x .. max_x).enumerate() {
             if tx > 0 && tx < map_width && ty > 0 && ty < map_height {
                 let idx = map.xy_idx(tx, ty);
-                if map.revealed_tiles[idx] {
+                if map.revealed_tiles[idx] || map.name == "The Town of Noonbreeze" {
                     let (glyph, fg, bg) = tile_glyph(idx, &*map);
                     draw_batch.set(
                         Point::new(x+1, y+1),
@@ -61,6 +61,8 @@ pub fn render_camera(ecs: &World, ctx : &mut Rltk) {
     let sizes = ecs.read_storage::<TileSize>();
     let entities = ecs.entities();
     let targets = ecs.read_storage::<Target>();
+    let props = ecs.read_storage::<VisibleWhenOutOfSight>();
+    let door = ecs.read_storage::<Door>();
 
     let mut data = (&positions, &renderables, &entities, !&hidden).join().collect::<Vec<_>>();
     data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order) );
@@ -71,10 +73,10 @@ pub fn render_camera(ecs: &World, ctx : &mut Rltk) {
                     let tile_x = cx + pos.x;
                     let tile_y = cy + pos.y;
                     let idx = map.xy_idx(tile_x, tile_y);
-                    if map.visible_tiles[idx] {
+                    if map.visible_tiles[idx] || (props.get(*entity).is_some() && map.revealed_tiles[idx]) || (props.get(*entity).is_some() && map.name == "The Town of Noonbreeze")  {
                         let entity_screen_x = (cx + pos.x) - min_x;
                         let entity_screen_y = (cy + pos.y) - min_y;
-                        if entity_screen_x > 0 && entity_screen_x < map_width && entity_screen_y > 0 && entity_screen_y < map_height {
+                        if entity_screen_x > 0 && entity_screen_x < max_x && entity_screen_y > 0 && entity_screen_y < max_y {
                             draw_batch.set(
                                 Point::new(entity_screen_x + 1, entity_screen_y + 1),
                                 ColorPair::new(render.fg, render.bg),
@@ -86,10 +88,10 @@ pub fn render_camera(ecs: &World, ctx : &mut Rltk) {
             }
         } else {
             let idx = map.xy_idx(pos.x, pos.y);
-            if map.visible_tiles[idx] {
+            if map.visible_tiles[idx] || (props.get(*entity).is_some() && map.revealed_tiles[idx]) || (props.get(*entity).is_some() && map.name == "The Town of Noonbreeze") {
                 let entity_screen_x = pos.x - min_x;
                 let entity_screen_y = pos.y - min_y;
-                if entity_screen_x > 0 && entity_screen_x < map_width && entity_screen_y > 0 && entity_screen_y < map_height {
+                if entity_screen_x >= 0 && entity_screen_x <= max_x && entity_screen_y >= 0 && entity_screen_y <= max_y {
                     draw_batch.set(
                         Point::new(entity_screen_x + 1, entity_screen_y + 1),
                         ColorPair::new(render.fg, render.bg),

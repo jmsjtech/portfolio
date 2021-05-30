@@ -58,7 +58,7 @@ pub fn save_game(ecs : &mut World) {
             SpawnParticleBurst, SpawnParticleLine, CursedItem, ProvidesRemoveCurse, ProvidesIdentification,
             AttributeBonus, StatusEffect, Duration, KnownSpells, SpellTemplate, WantsToCastSpell, ProvidesMana,
             TeachesSpell, Slow, DamageOverTime, SpecialAbilities, TileSize, OnDeath, AlwaysTargetsSelf,
-            Target, WantsToShoot
+            Target, WantsToShoot, VisibleWhenOutOfSight
         );
     }
 
@@ -117,7 +117,7 @@ pub fn load_game(ecs: &mut World) {
             SpawnParticleBurst, SpawnParticleLine, CursedItem, ProvidesRemoveCurse, ProvidesIdentification,
             AttributeBonus, StatusEffect, Duration, KnownSpells, SpellTemplate, WantsToCastSpell, ProvidesMana,
             TeachesSpell, Slow, DamageOverTime, SpecialAbilities, TileSize, OnDeath, AlwaysTargetsSelf,
-            Target, WantsToShoot
+            Target, WantsToShoot, VisibleWhenOutOfSight
         );
     }
 
