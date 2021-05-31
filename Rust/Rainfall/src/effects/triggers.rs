@@ -83,7 +83,7 @@ pub fn trigger(creator : Option<Entity>, trigger: Entity, targets : &Targets, ec
 #[allow(clippy::cognitive_complexity)]
 fn event_trigger(creator : Option<Entity>, entity: Entity, targets : &Targets, ecs: &mut World) -> bool {
     let mut did_something = false;
-
+    
     // Simple particle spawn
     if let Some(part) = ecs.read_storage::<SpawnParticleBurst>().get(entity) {
         add_effect(

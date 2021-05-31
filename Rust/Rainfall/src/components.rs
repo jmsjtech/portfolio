@@ -529,3 +529,9 @@ pub struct WantsToShoot {
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct VisibleWhenOutOfSight {}
+
+#[derive(Component, Debug, ConvertSaveload, Clone)]
+pub struct IsAWave {
+    pub moving_backwards : bool,
+    pub fade: i32
+}

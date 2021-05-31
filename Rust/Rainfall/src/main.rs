@@ -1,6 +1,6 @@
 
 extern crate serde;
-use rltk::{GameState, Rltk, Point};
+use rltk::{GameState, Rltk, Point, RGB};
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
@@ -136,6 +136,54 @@ impl GameState for State {
                 {
                     let player_entity = self.ecs.fetch::<Entity>();
                     let mut clocks = self.ecs.write_storage::<TimeKeeper>();
+                    
+                    let mut waves = self.ecs.write_storage::<IsAWave>();
+                    let mut positions = self.ecs.write_storage::<Position>();
+                    let mut renderables = self.ecs.write_storage::<Renderable>();
+                    let map = self.ecs.fetch::<Map>();
+                    
+                    for (wave, render, position) in (&mut waves, &mut renderables, &mut positions).join() {
+                        if !wave.moving_backwards {
+                            position.x += 1;
+                            render.fg.r = f32::min(render.fg.r + 0.2, 1.0);
+                            render.fg.g = f32::min(render.fg.g + 0.2, 1.0);
+                        } else {
+                            // position.x -= 1;
+                            // render.fg.r = f32::max(render.fg.r - 0.2, 0.0);
+                            // render.fg.g = f32::max(render.fg.g - 0.2, 0.0);
+                        }
+                        
+                        if position.x <= 1 {
+                            wave.moving_backwards = false;
+                            position.y = crate::rng::roll_dice(1, 58);
+                        }
+                        
+                        if map.tiles[map.xy_idx(position.x, position.y)] != TileType::DeepWater {
+                            let gold = RGB::named(rltk::GOLD);
+                            wave.moving_backwards = true;
+                            if render.glyph == rltk::to_cp437(',') {
+                                if wave.fade > 0 {
+                                    wave.fade -= 1;
+                                    render.fg.r = (render.fg.r + gold.r) / 2.0;
+                                    render.fg.g = (render.fg.g + gold.g) / 2.0;
+                                    render.fg.b = (render.fg.b + gold.b) / 2.0;
+                                } else {
+                                    position.x = 1;
+                                    wave.fade = 5;
+                                    render.fg = RGB::from_f32(0.0, 0.0, 1.0);
+                                    render.glyph = rltk::to_cp437('}');
+                                }
+                            } else if render.glyph == rltk::to_cp437(';') {
+                                render.glyph = rltk::to_cp437(',');
+                            } else if render.glyph == rltk::to_cp437('|') {
+                                render.glyph = rltk::to_cp437(';');
+                            } else if render.glyph == rltk::to_cp437(')') {
+                                render.glyph = rltk::to_cp437('|');
+                            } else if render.glyph == rltk::to_cp437('}') {
+                                render.glyph = rltk::to_cp437(')');
+                            }
+                        }
+                    }
                     
                     let clock = clocks.get_mut(*player_entity);
                     
@@ -653,6 +701,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Target>();
     gs.ecs.register::<WantsToShoot>();
     gs.ecs.register::<VisibleWhenOutOfSight>();
+    gs.ecs.register::<IsAWave>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();

@@ -12,7 +12,8 @@ pub struct Prop {
     pub door_open : Option<bool>,
     pub entry_trigger : Option<EntryTrigger>,
     pub light : Option<super::mob_structs::MobLight>,
-    pub display_name: Option<String>
+    pub display_name: Option<String>,
+    pub wave : Option<bool>
 }
 
 #[derive(Deserialize, Debug)]

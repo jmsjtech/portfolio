@@ -396,7 +396,7 @@ fn parse_particle(n : &str) -> SpawnParticleBurst {
 macro_rules! apply_effects {
     ( $effects:expr, $eb:expr ) => {
         for effect in $effects.iter() {
-        let effect_name = effect.0.as_str();
+            let effect_name = effect.0.as_str();
             match effect_name {
                 "provides_healing" => $eb = $eb.with(ProvidesHealing{ heal_amount: effect.1.parse::<i32>().unwrap() }),
                 "provides_mana" => $eb = $eb.with(ProvidesMana{ mana_amount: effect.1.parse::<i32>().unwrap() }),
@@ -419,6 +419,15 @@ macro_rules! apply_effects {
                 "slow" => $eb = $eb.with(Slow{ initiative_penalty : effect.1.parse::<f32>().unwrap() }),
                 "damage_over_time" => $eb = $eb.with( DamageOverTime { damage : effect.1.parse::<i32>().unwrap() } ),
                 "target_self" => $eb = $eb.with( AlwaysTargetsSelf{} ),
+                "teleport_to" => {
+                    let input: Vec<String> = effect.1.split('|').map(|s| s.to_string()).collect();
+                    let in_x = input[0].parse::<i32>().unwrap();
+                    let in_y = input[1].parse::<i32>().unwrap();
+                    let in_depth = input[2].parse::<i32>().unwrap();
+                    let in_p_only = input[3].parse::<bool>().unwrap();
+                    
+                    $eb = $eb.with( TeleportTo{ x: in_x, y: in_y, depth: in_depth, player_only: in_p_only } )
+                },
                 _ => rltk::console::log(format!("Warning: consumable effect {} not implemented.", effect_name))
             }
         }
@@ -740,6 +749,10 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs : &mut World, key : &str, pos : Sp
             eb = eb.with(Name{ name : prop_template.name.clone() });
         }
         eb = eb.with(VisibleWhenOutOfSight {});
+        
+        if let Some(wave) = prop_template.wave {
+            if wave { eb = eb.with(IsAWave{ moving_backwards: false, fade: 5 }) };
+        }
 
         if let Some(hidden) = prop_template.hidden {
             if hidden { eb = eb.with(Hidden{}) };

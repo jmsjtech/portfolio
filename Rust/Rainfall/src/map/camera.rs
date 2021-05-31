@@ -19,7 +19,7 @@ pub fn get_screen_bounds(ecs: &World, _ctx:  &mut Rltk) -> (i32, i32, i32, i32) 
     (min_x, max_x, min_y, max_y)
 }
 
-const SHOW_BOUNDARIES : bool = false;
+const SHOW_BOUNDARIES : bool = true;
 
 pub fn render_camera(ecs: &World, ctx : &mut Rltk) {
     let mut draw_batch = DrawBatch::new();
@@ -46,7 +46,7 @@ pub fn render_camera(ecs: &World, ctx : &mut Rltk) {
             } else if SHOW_BOUNDARIES {
                 draw_batch.set(
                     Point::new(x+1, y+1),
-                    ColorPair::new(RGB::named(rltk::GRAY), RGB::named(rltk::BLACK)),
+                    ColorPair::new(RGBA::from_f32(1.0, 1.0, 1.0, 0.4), RGB::named(rltk::BLACK)),
                     to_cp437('·')
                 );
             }
@@ -76,7 +76,7 @@ pub fn render_camera(ecs: &World, ctx : &mut Rltk) {
                     if map.visible_tiles[idx] || (props.get(*entity).is_some() && map.revealed_tiles[idx]) || (props.get(*entity).is_some() && map.name == "The Town of Noonbreeze")  {
                         let entity_screen_x = (cx + pos.x) - min_x;
                         let entity_screen_y = (cy + pos.y) - min_y;
-                        if entity_screen_x > 0 && entity_screen_x < max_x && entity_screen_y > 0 && entity_screen_y < max_y {
+                        if tile_x < max_x && tile_y < max_y {
                             draw_batch.set(
                                 Point::new(entity_screen_x + 1, entity_screen_y + 1),
                                 ColorPair::new(render.fg, render.bg),
@@ -91,7 +91,8 @@ pub fn render_camera(ecs: &World, ctx : &mut Rltk) {
             if map.visible_tiles[idx] || (props.get(*entity).is_some() && map.revealed_tiles[idx]) || (props.get(*entity).is_some() && map.name == "The Town of Noonbreeze") {
                 let entity_screen_x = pos.x - min_x;
                 let entity_screen_y = pos.y - min_y;
-                if entity_screen_x >= 0 && entity_screen_x <= max_x && entity_screen_y >= 0 && entity_screen_y <= max_y {
+                //if entity_screen_x >= 0 && entity_screen_x <= max_x && entity_screen_y >= 0 && entity_screen_y <= max_y {
+                if pos.x < max_x && pos.y < max_y {
                     draw_batch.set(
                         Point::new(entity_screen_x + 1, entity_screen_y + 1),
                         ColorPair::new(render.fg, render.bg),

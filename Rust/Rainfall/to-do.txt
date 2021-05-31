@@ -12,23 +12,23 @@ Redesign Noonbreeze to use a static layout and static NPCs
 NPCs
 - Properties needed: Schedule, Opinion of Player, Item Likes/Dislikes, Topic Likes/Dislikes
 - Tim the Blacksmith (Buys/Sells ores and metals, upgrades tools)
-- Alchemist (Buys/sells potions and potion ingredients)
-- Barkeep (Doesn't buy anything, sells food and drinks)
+- Jade the Alchemist (Buys/sells potions and potion ingredients)
+- Moss the Barkeep (Doesn't buy anything, sells food and drinks)
 - Rework the Clergy
--- Priest, three clerics
-- Carpenter (Sells construction supplies)
-- Herbalist/Botanist (Sells seeds)
-- Doctor (Buys/sells healing items)
+-- Priest, three clerics ()
+- Brick the Carpenter (Sells construction supplies)
+- Amber the Herbalist/Botanist (Sells seeds)
+- Doctor Willow (Buys/sells healing items)
 - Adventure Guild
--- Guild Leader
--- Guild Storekeep (Buys/sells adventuring gear)
+-- Stirling, Guild Leader
+-- Hazel the Guild Storekeep (Buys/sells adventuring gear)
 - Magic Guild
--- Guild Leader
+-- Auburn, Guild Leader
 -- Guild Storekeep (Buys/sells wands, rods, staves, rings, and amulets)
--- Tristan the Librarian (Buys/sells scrolls and spellbooks)
+-- Cobalt the Librarian (Buys/sells scrolls and spellbooks)
 - Thieves Guild
--- Guild Leader
--- 2-3 street urchins
+-- Jet, Guild Leader
+-- 2-3 street urchins (Ash, Raven, Gray)
 -- Shady Salesman (buys anything at half price, sells junk / illicit goods)
 
 

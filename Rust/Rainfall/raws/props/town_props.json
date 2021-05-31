@@ -157,17 +157,6 @@
 },
 
 {
-    "name" : "Dead Thing",
-    "renderable": {
-        "glyph" : "☻",
-        "fg" : "#AA0000",
-        "bg" : "#000000",
-        "order" : 2
-    },
-    "hidden" : false
-},
-
-{
     "name" : "Cabinet",
     "renderable": {
         "glyph" : "±",
@@ -193,7 +182,7 @@
 {
     "name" : "Loom",
     "renderable": {
-        "glyph" : "≡",
+        "glyph" : "¢",
         "fg" : "#805A46",
         "bg" : "#000000",
         "order" : 2
@@ -224,4 +213,118 @@
     },
     "hidden" : false,
     "blocks_tile" : true
+},
+
+{
+    "name" : "Rose",
+    "renderable": {
+        "glyph" : "*",
+        "fg" : "#FF2200",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false
+},
+
+{
+    "name" : "Violet",
+    "renderable": {
+        "glyph" : "*",
+        "fg" : "#ee82ee",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false
+},
+
+{
+    "name" : "Daisy",
+    "renderable": {
+        "glyph" : "*",
+        "fg" : "#FFFF00",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false
+},
+
+{
+    "name" : "Quest Board",
+    "renderable": {
+        "glyph" : "¥",
+        "fg" : "#805A46",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true
+},
+
+{
+    "name" : "Bookshelf",
+    "renderable": {
+        "glyph" : "E",
+        "fg" : "#805A46",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true
+},
+
+{
+    "name" : "Stack of BooksB",
+    "renderable": {
+        "glyph" : "ñ",
+        "fg" : "#0088FF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true,
+    "display_name": "Stack of Books"
+},
+
+{
+    "name" : "Stack of BooksR",
+    "renderable": {
+        "glyph" : "ñ",
+        "fg" : "#FF0000",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true,
+    "display_name": "Stack of Books"
+},
+
+{
+    "name" : "Teleporter CrystalU",
+    "renderable": {
+        "glyph" : "«",
+        "fg" : "#FF0000",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "display_name": "Teleporter Crystal",
+    "entry_trigger" : {
+        "effects" : {
+            "damage" : "5"
+        }
+    }
+},
+
+{
+    "name" : "Wave",
+    "renderable": {
+        "glyph" : "}",
+        "fg" : "#FFFFFF",
+        "bg" : "#000000",
+        "order" : 2,
+        "x_size": 1,
+        "y_size": 3
+    },
+    "hidden" : false,
+    "wave": true
 }
