@@ -52,9 +52,10 @@ namespace TearsInRain.Serializers {
             }
 
 
-            foreach (KeyValuePair<Point, TileBase> tile in map.NewTiles) {
-                string simplePos = tile.Key.X + "," + tile.Key.Y;
-                stringTiles.Add(simplePos, tile.Value);
+            for(int i = 0; i < map.Tiles.Length; i++) {
+                Point loc = map.idx_xy(i);
+                string simplePos = loc.X + "," + loc.Y;
+                stringTiles.Add(simplePos, map.Tiles[i]);
             }
 
 
@@ -80,10 +81,11 @@ namespace TearsInRain.Serializers {
                 rebuiltTiles.Add(newPos, tile.Value);
             }
 
+            TileBase[] tiles = new TileBase[600];
 
 
 
-            Map map = new Map(rebuiltTiles, sObj.mapW, sObj.mapH);
+            Map map = new Map(tiles, sObj.mapW, sObj.mapH);
 
             map.Entities = new GoRogue.MultiSpatialMap<Entity>();
 

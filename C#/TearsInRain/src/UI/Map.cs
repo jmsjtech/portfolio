@@ -18,9 +18,8 @@ namespace TearsInRain {
         public int Width { get; }
         public int Height { get; }
 
-        //public TileBase[] Tiles;
+        public TileBase[] Tiles;
 
-        public Dictionary<Point, TileBase> NewTiles = new Dictionary<Point, TileBase>();
 
         public GoRogue.MultiSpatialMap<Entity> Entities;
         public static GoRogue.IDGenerator IDGenerator = new GoRogue.IDGenerator();
@@ -36,12 +35,12 @@ namespace TearsInRain {
             }
         }
 
-        public Map(Dictionary<Point, TileBase> tiles, int W = 100, int H = 100) {
+        public Map(TileBase[] tiles, int W = 100, int H = 100) {
             Width = W;
             Height = H;
 
-            foreach (KeyValuePair<Point, TileBase> tile in tiles) {
-                NewTiles.Add(tile.Key, tile.Value);
+            for (int i = 0; i < tiles.Length; i++) {
+                Tiles[i] = tiles[i];
             }
 
             if (GameLoop.ReceivedEntities != null) {
@@ -63,25 +62,15 @@ namespace TearsInRain {
         }
 
         public T GetTileAt<T>(int x, int y) where T : TileBase {
-            Point loc = new Point(x, y);
-
-            if (NewTiles.ContainsKey(loc) && NewTiles[loc] is T) {
-                return (T)NewTiles[loc];
-            } else if (!NewTiles.ContainsKey(loc)) {
-                NewTiles.Add(loc, GenerateTile(SimplexNoise.Noise.CalcPixel2D(loc.X, loc.Y, 0.5f)));
-
-                return (T)NewTiles[loc];
+            if (Tiles[xy_idx(x, y)] is T) {
+                return (T)Tiles[xy_idx(x, y)];
             } else return null;
         }
 
 
         public T GetTileAt<T>(Point loc) where T : TileBase {
-            if (NewTiles.ContainsKey(loc) && NewTiles[loc] is T) {
-                return (T) NewTiles[loc];
-            } else if (!NewTiles.ContainsKey(loc)) {
-                NewTiles.Add(loc, GenerateTile(SimplexNoise.Noise.CalcPixel2D(loc.X, loc.Y, 0.5f)));
-
-                return (T) NewTiles[loc];
+            if (Tiles[xy_idx(loc.X, loc.Y)] != null && Tiles[xy_idx(loc.X, loc.Y)] is T) {
+                return (T) Tiles[xy_idx(loc.X, loc.Y)];
             } else return null;
         }
 
@@ -128,10 +117,16 @@ namespace TearsInRain {
         }
 
         public void SetTile(Point pos, TileBase tile) {
-            if (NewTiles.ContainsKey(pos))
-                NewTiles[pos] = tile;
+            Tiles[xy_idx(pos.X, pos.Y)] = tile;
         }
 
+        public int xy_idx(int x, int y) {
+            return (y * Width) + x;
+        }
+
+        public Point idx_xy(int idx) {
+            return new Point(idx / Width, idx % Width);
+        }
 
 
         public void PlaceTrees(int num) {

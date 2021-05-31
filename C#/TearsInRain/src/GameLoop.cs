@@ -53,7 +53,6 @@ namespace TearsInRain {
 
         public static Random Random = new Random();
         static void Main(string[] args) {
-            initSounds();
 
             SadConsole.Game.Create(GameWidth, GameHeight);
 
@@ -86,7 +85,7 @@ namespace TearsInRain {
         }
 
         private static void Init() {
-            SadConsole.Themes.WindowTheme windowTheme = new SadConsole.Themes.WindowTheme(new SadConsole.Themes.Colors());
+            SadConsole.Themes.WindowTheme windowTheme = new SadConsole.Themes.WindowTheme();
             windowTheme.BorderLineStyle = CellSurface.ConnectedLineThick;
             SadConsole.Themes.Library.Default.WindowTheme = windowTheme;
 
@@ -168,13 +167,6 @@ namespace TearsInRain {
         private static void initLibraries() {
             string tileLibJson = File.ReadAllText(@"./data/json/tiles.json");
             TileLibrary = JsonConvert.DeserializeObject<SortedDictionary<string, TileBase>>(tileLibJson, new TileJsonConverter());
-        }
-
-
-        private static void initSounds() {
-            SoundLibrary.Add("door_close", new System.Media.SoundPlayer(@"res/door_close.wav"));
-            SoundLibrary.Add("door_open", new System.Media.SoundPlayer(@"res/door_open.wav"));
-            
         }
 
 
