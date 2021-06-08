@@ -2,6 +2,7 @@
 using SadConsole.Components;
 using Microsoft.Xna.Framework;
 using DefaultEcs;
+using Oasis.Tiles;
 
 namespace Oasis {
     // All game state data is stored in World
@@ -40,19 +41,16 @@ namespace Oasis {
             player = GameLoop.gs.ecs.CreateEntity();
 
             player.Set(new Render { sce = new SadConsole.Entities.Entity(1, 1) });
-            player.Get<Render>().SimpleSet('@', Color.Yellow);
 
             for (int i = 0; i < CurrentMap.Tiles.Length; i++) {
                 if (!CurrentMap.Tiles[i].IsBlockingMove) {
                     Point loc = SadConsole.Helpers.GetPointFromIndex(i, CurrentMap.Width);
-                    player.Get<Render>().SetPosition(loc.X, loc.Y);
+                    player.Get<Render>().Init(loc, '@', Color.Yellow);
                 }
-            }
-            
-            player.Get<Render>().sce.Components.Add(new EntityViewSyncComponent());
-
+            } 
             player.Set(new Player { });
             player.Set(new Name { name = "Player" });
+            player.Set(new BlocksMovement { });
             player.Set(new Stats { Defense = 10, Attack = 12, Damage = "1d6", Health = 10, MaxHealth = 10 });
         }
 
@@ -64,8 +62,6 @@ namespace Oasis {
 
                 Entity newItem = GameLoop.gs.ecs.CreateEntity();
                 newItem.Set(new Render { sce = new SadConsole.Entities.Entity(1, 1) });
-                newItem.Get<Render>().SimpleSet('L', Color.Green);
-                newItem.Get<Render>().sce.Components.Add(new EntityViewSyncComponent());
                 newItem.Set(new Item { condition = 100, weight = 2, glyph = 'L', fg = Color.Green });
                 newItem.Set(new Name { name = "Fancy Shirt" });
                 
@@ -73,7 +69,7 @@ namespace Oasis {
                     lootPosition = GameLoop.GlobalRand.Next(0, CurrentMap.Width * CurrentMap.Height);
                 }
 
-                newItem.Get<Render>().SetPosition(CurrentMap.idx_xy(lootPosition));
+                newItem.Get<Render>().Init(CurrentMap.idx_xy(lootPosition), 'L', Color.Green);
             }
         }
 
@@ -84,8 +80,6 @@ namespace Oasis {
                 int monsterPosition = 0;
                 Entity newMonster = GameLoop.gs.ecs.CreateEntity();
                 newMonster.Set(new Render { sce = new SadConsole.Entities.Entity(1, 1) });
-                newMonster.Get<Render>().SimpleSet('o', Color.Blue);
-                newMonster.Get<Render>().sce.Components.Add(new EntityViewSyncComponent());
                 newMonster.Set(new Monster { });
 
                 while (CurrentMap.Tiles[monsterPosition].IsBlockingMove) {
@@ -93,7 +87,7 @@ namespace Oasis {
                 }
 
                 newMonster.Set(new Stats { Defense = GameLoop.GlobalRand.Next(3, 10), Attack = GameLoop.GlobalRand.Next(3, 10), Damage = "1d6", Health = 10, MaxHealth = 10 });
-
+                newMonster.Set(new BlocksMovement { });
                 newMonster.Set(new Name { name = "orc" });
 
                 Entity newItem = GameLoop.gs.ecs.CreateEntity();
@@ -101,7 +95,7 @@ namespace Oasis {
                 newItem.Set(new Name { name = "Spork" });
                 newItem.Set(new InBackpack { owner = newMonster });
 
-                newMonster.Get<Render>().SetPosition(CurrentMap.idx_xy(monsterPosition));
+                newMonster.Get<Render>().Init(CurrentMap.idx_xy(monsterPosition), 'o', Color.Red);
             }
         }
     }

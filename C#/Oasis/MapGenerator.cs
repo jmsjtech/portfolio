@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DefaultEcs;
 using Microsoft.Xna.Framework;
+using Oasis.Tiles;
 
 namespace Oasis {
     public class MapGenerator {
@@ -54,6 +56,10 @@ namespace Oasis {
                 }
             }
 
+            foreach (Rectangle room in Rooms) {
+                CreateDoor(room);
+            }
+
             // spit out the final map
             return _map;
         }
@@ -71,8 +77,8 @@ namespace Oasis {
         // Floors are placed in the interior area of the room
         private void CreateRoom(Rectangle room) {
             // Place floors in interior area
-            for (int x = room.Left + 1; x < room.Right - 1; x++) {
-                for (int y = room.Top + 1; y < room.Bottom - 1; y++) {
+            for (int x = room.Left + 1; x < room.Right; x++) {
+                for (int y = room.Top + 1; y < room.Bottom; y++) {
                     CreateFloor(new Point(x, y));
                 }
             }
@@ -92,6 +98,64 @@ namespace Oasis {
         // Creates a Wall tile at the specified X/Y location
         private void CreateWall(Point location) {
             _map.Tiles[location.ToIndex(_map.Width)] = new TileWall();
+        }
+
+        private void CreateDoor(Rectangle room) {
+            List<Point> borderCells = GetBorderCellLocations(room);
+
+            //go through every border cell and look for potential door candidates
+            foreach (Point location in borderCells) {
+                int locationIndex = location.ToIndex(_map.Width);
+                if (IsPotentialDoor(location)) {
+                    // Create a new door that is closed and unlocked.
+                    Entity newDoor = GameLoop.gs.ecs.CreateEntity();
+                    newDoor.Set(new Door { is_locked = false, is_open = false });
+                    newDoor.Set(new BlocksMovement { });
+                    newDoor.Set(new BlocksVisibility { });
+                    newDoor.Set(new Name { name = "Door" });
+                    newDoor.Set(new Render { sce = new SadConsole.Entities.Entity(1, 1) });
+                    newDoor.Get<Render>().Init(_map.idx_xy(locationIndex), '+', Color.Brown);
+                    
+
+                }
+            }
+        }
+
+        private bool IsPotentialDoor(Point location) {
+            //if the target location is not walkable
+            //then it's a wall and not a good place for a door
+            int locationIndex = location.ToIndex(_map.Width);
+            if (_map.Tiles[locationIndex] != null && _map.Tiles[locationIndex] is TileWall) {
+                return false;
+            }
+
+            //store references to all neighbouring cells
+            Point right = new Point(location.X + 1, location.Y);
+            Point left = new Point(location.X - 1, location.Y);
+            Point top = new Point(location.X, location.Y - 1);
+            Point bottom = new Point(location.X, location.Y + 1);
+
+            // check to see if there is a door already in the target
+            // location, or above/below/right/left of the target location
+            // If it detects a door there, return false.
+            if (_map.GetEntityAt<Door>(location) != null ||
+                _map.GetEntityAt<Door>(right) != null ||
+                _map.GetEntityAt<Door>(left) != null ||
+                _map.GetEntityAt<Door>(top) != null ||
+                _map.GetEntityAt<Door>(bottom) != null
+               ) {
+                return false;
+            }
+
+            //if all the prior checks are okay, make sure that the door is placed along a horizontal wall
+            if (!_map.Tiles[right.ToIndex(_map.Width)].IsBlockingMove && !_map.Tiles[left.ToIndex(_map.Width)].IsBlockingMove && _map.Tiles[top.ToIndex(_map.Width)].IsBlockingMove && _map.Tiles[bottom.ToIndex(_map.Width)].IsBlockingMove) {
+                return true;
+            }
+            //or make sure that the door is placed along a vertical wall
+            if (_map.Tiles[right.ToIndex(_map.Width)].IsBlockingMove && _map.Tiles[left.ToIndex(_map.Width)].IsBlockingMove && !_map.Tiles[top.ToIndex(_map.Width)].IsBlockingMove && !_map.Tiles[bottom.ToIndex(_map.Width)].IsBlockingMove) {
+                return true;
+            }
+            return false;
         }
 
         // Returns a list of points expressing the perimeter of a rectangle

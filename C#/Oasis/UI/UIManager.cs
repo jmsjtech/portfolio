@@ -10,7 +10,10 @@ namespace Oasis.UI {
     public class UIManager : ContainerConsole {
         public ScrollingConsole MapConsole;
         public Window MapWindow;
+        public Window StatWindow;
+        public SadConsole.Console StatConsole;
         public MessageLogWindow MessageLog;
+        public SadConsole.Themes.Colors CustomColors;
 
         public UIManager() { 
             IsVisible = true;
@@ -24,7 +27,7 @@ namespace Oasis.UI {
 
         public void CreateMapWindow(int width, int height, string title) {
             MapWindow = new Window(width, height);
-            MapWindow.CanDrag = true;
+            MapWindow.CanDrag = false;
             int mapConsoleWidth = width - 2;
             int mapConsoleHeight = height - 2;
 
@@ -32,11 +35,11 @@ namespace Oasis.UI {
             MapConsole.Position = new Point(1, 1);
 
             Button closeButton = new Button(3, 1);
-            closeButton.Position = new Point(0, 0);
+            closeButton.Position = new Point(width, 0);
             closeButton.Text = "[X]";
             MapWindow.Add(closeButton);
 
-            MapWindow.Title = title.Align(HorizontalAlignment.Center, mapConsoleWidth);
+            MapWindow.Title = title.Align(HorizontalAlignment.Center, mapConsoleWidth, (char) 205);
 
             MapWindow.Children.Add(MapConsole);
 
@@ -47,20 +50,49 @@ namespace Oasis.UI {
             MapWindow.Show();
         }
 
+        public void CreateStatWindow(int width, int height, string title) {
+            StatWindow = new Window(width, height);
+            StatWindow.CanDrag = false;
+            
+            int statConsoleW = width - 2;
+            int statConsoleH = height - 2;
+
+            StatConsole = new SadConsole.Console(statConsoleW, statConsoleH);
+            StatConsole.Position = new Point(1, 1);
+
+            Button closeButton = new Button(3, 1);
+            closeButton.Position = new Point(width, 0);
+            closeButton.Text = "[X]";
+            StatWindow.Add(closeButton);
+
+            StatWindow.Title = title.Align(HorizontalAlignment.Center, statConsoleW, (char) 205);
+            StatWindow.Position = new Point(GameLoop.GameWidth - 20, 0);
+            
+
+
+            StatWindow.Children.Add(StatConsole);
+
+            Children.Add(StatWindow);
+
+            StatWindow.Show();
+        }
+
         public void Init() {
+            SetupCustomColors();
             CreateConsoles();
            
 
             //Message Log initialization
-            MessageLog = new MessageLogWindow(GameLoop.GameWidth, GameLoop.GameHeight / 2, "Message Log");
+            MessageLog = new MessageLogWindow(GameLoop.GameWidth, 15, "[MESSAGE LOG]");
             Children.Add(MessageLog);
             MessageLog.Show();
-            MessageLog.Position = new Point(0, GameLoop.GameHeight / 2);
+            MessageLog.Position = new Point(0, GameLoop.GameHeight -15);
 
 
             LoadMap(GameLoop.World.CurrentMap);
 
-            CreateMapWindow(GameLoop.GameWidth, GameLoop.GameHeight / 2, "Game Map");
+            CreateMapWindow(GameLoop.GameWidth - 20 , GameLoop.GameHeight - 15, "[MAP]");
+            CreateStatWindow(20, GameLoop.GameHeight - 15, "[STATS]");
             UseMouse = true;
 
             CenterOnActor(GameLoop.World.player);
@@ -140,12 +172,40 @@ namespace Oasis.UI {
             foreach (Entity entity in GameLoop.gs.ecs.GetEntities().With<Render>().AsEnumerable()) {
                 MapConsole.Children.Add(entity.Get<Render>().sce);
             }
+
+            MapConsole.IsDirty = true;
         }
 
         private void LoadMap(Map map) { 
             MapConsole = new SadConsole.ScrollingConsole(GameLoop.World.CurrentMap.Width, GameLoop.World.CurrentMap.Height, Global.FontDefault, new Rectangle(0, 0, GameLoop.GameWidth, GameLoop.GameHeight), map.Tiles);
              
             SyncMapEntities(map);
+        }
+
+        private void SetupCustomColors() {
+            CustomColors = SadConsole.Themes.Colors.CreateDefault();
+
+            Color backgroundColor = Color.Black;
+
+            CustomColors.ControlHostBack = backgroundColor;
+            CustomColors.ControlBack = backgroundColor;
+
+            CustomColors.ControlBackLight = (backgroundColor * 1.3f).FillAlpha();
+            CustomColors.ControlBackDark = (backgroundColor * 0.7f).FillAlpha();
+
+            CustomColors.ControlBackSelected = CustomColors.GrayDark;
+
+            CustomColors.TitleText = Color.White;
+            CustomColors.Lines = Color.White;
+
+            SadConsole.Themes.WindowTheme windowTheme = new SadConsole.Themes.WindowTheme();
+            windowTheme.BorderLineStyle = CellSurface.ConnectedLineThick;
+            SadConsole.Themes.Library.Default.WindowTheme = windowTheme;
+
+            CustomColors.RebuildAppearances();
+
+            SadConsole.Themes.Library.Default.Colors = CustomColors;
+            
         }
 
     }

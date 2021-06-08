@@ -1,5 +1,7 @@
 ﻿using DefaultEcs;
 using Microsoft.Xna.Framework;
+using SadConsole;
+using SadConsole.Components;
 
 namespace Oasis {
     public struct Render {
@@ -28,6 +30,9 @@ namespace Oasis {
             if (bg != null) {
                 sce.Animation.CurrentFrame[0].Background = bg.Value;
             }
+
+
+            sce.Animation.IsDirty = true;
         }
 
         public void SetPosition(int x, int y) {
@@ -41,6 +46,12 @@ namespace Oasis {
         public Point GetPosition() {
             return sce.Position;
         }
+
+        public void Init(Point loc, int glyph, Color? fg = null, Color? bg = null) {
+            SetPosition(loc);
+            SimpleSet(glyph, fg, bg);
+            sce.Components.Add(new EntityViewSyncComponent());
+        }
     }
 
     public struct Name { public string name; }
@@ -49,7 +60,29 @@ namespace Oasis {
 
     public struct Monster { }
 
-    public struct Tile { }
+   
+    public struct Door {
+        public bool is_open;
+        public bool is_locked;
+
+        public void ToggleOpen(Entity parent) {
+            if (!is_open) {
+                if (!is_locked) {
+                    is_open = true;
+                    if (parent.Has<BlocksVisibility>()) { parent.Remove<BlocksVisibility>(); }
+                    if (parent.Has<BlocksMovement>()) { parent.Remove<BlocksMovement>(); }
+                    if (parent.Has<Render>()) { 
+                        parent.Get<Render>().SimpleSet('-');
+                    }
+                }
+            } else {
+                is_open = false;
+                parent.Set(new BlocksVisibility { });
+                parent.Set(new BlocksMovement { });
+                if (parent.Has<Render>()) { parent.Get<Render>().SimpleSet('+'); }
+            }
+        }
+    }
 
     public struct InBackpack {
         public Entity owner;

@@ -1,6 +1,7 @@
 ﻿using System;
 using DefaultEcs;
 using Microsoft.Xna.Framework;
+using Oasis.Tiles;
 
 namespace Oasis {
     // Stores, manipulates and queries Tile data
@@ -36,6 +37,16 @@ namespace Oasis {
             }
 
             return null;
+        }
+
+        public T GetTileAt<T>(int x, int y) where T : TileBase {
+            int locationIndex = xy_idx(x, y);
+            // make sure the index is within the boundaries of the map!
+            if (locationIndex <= Width * Height && locationIndex >= 0) {
+                if (Tiles[locationIndex] is T)
+                    return (T)Tiles[locationIndex];
+                else return null;
+            } else return null;
         }
 
 

@@ -24,6 +24,19 @@ namespace Oasis.Commands {
                 return true;
             }
 
+            if (GameLoop.World.CurrentMap.GetEntityAt<Door>(entity.Get<Render>().GetPosition() + position) != null) {
+                Entity door = GameLoop.World.CurrentMap.GetEntityAt<Door>(entity.Get<Render>().GetPosition() + position).Value;
+                if (!door.Get<Door>().is_open) {
+                    GameLoop.CommandManager.UseDoor(entity, door);
+                    return true;
+                }
+            }
+
+
+            if (GameLoop.World.CurrentMap.GetEntityAt<BlocksMovement>(entity.Get<Render>().GetPosition() + position) != null) {
+                return false;
+            }
+
             return entity.Get<Render>().Move(position.X, position.Y);
         }
 
@@ -99,9 +112,7 @@ namespace Oasis.Commands {
             foreach (Entity item in GameLoop.gs.ecs.GetEntities().With<Item>().With<InBackpack>().AsEnumerable()) {
                 if (item.Get<InBackpack>().owner == defender) {
                     item.Set(new Render { sce = new SadConsole.Entities.Entity(1, 1) });
-                    item.Get<Render>().SimpleSet(item.Get<Item>().glyph, item.Get<Item>().fg, item.Get<Item>().bg);
-                    item.Get<Render>().SetPosition(defender.Get<Render>().GetPosition());
-                    item.Get<Render>().sce.Components.Add(new EntityViewSyncComponent());
+                    item.Get<Render>().Init(defender.Get<Render>().GetPosition(), item.Get<Item>().glyph, item.Get<Item>().fg, item.Get<Item>().bg);
                     item.Remove<InBackpack>();
                 }
             }
@@ -116,6 +127,18 @@ namespace Oasis.Commands {
             GameLoop.UIManager.MessageLog.Add($"{actor.Get<Name>().name} picked up {item.Get<Name>().name}");
             item.Remove<Render>();
             item.Set(new InBackpack { owner = actor });
+        }
+
+        public void UseDoor(Entity actor, Entity door) {
+            // Handle a locked door
+            if (door.Get<Door>().is_locked) {
+                // We have no way of opening a locked door for the time being.
+            }
+            // Handled an unlocked door that is closed
+            else if (!door.Get<Door>().is_locked && !door.Get<Door>().is_open) {
+                door.Get<Door>().ToggleOpen(door);
+                GameLoop.UIManager.MessageLog.Add($"{actor.Get<Name>().name} opened a {door.Get<Name>().name}");
+            }
         }
     }
 }

@@ -19,8 +19,8 @@ namespace Oasis.UI {
         public MessageLogWindow(int width, int height, string title) : base(width, height) { 
             Theme.FillStyle.Background = DefaultBackground;
             _lines = new Queue<string>();
-            CanDrag = true;
-            Title = title.Align(HorizontalAlignment.Center, Width);
+            CanDrag = false;
+            Title = title.Align(HorizontalAlignment.Center, Width, (char) 205);
 
             // add the message console, reposition, enable the viewport, and add it to the window
             _messageConsole = new SadConsole.ScrollingConsole(width - _windowBorderThickness, _maxLines);

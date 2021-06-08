@@ -596,18 +596,21 @@ impl State {
     }
 }
 
-rltk::embedded_resource!(TILE_FONT, "../resources/vga8x16.png");
+rltk::embedded_resource!(TILE_FONT, "../resources/terminal8x8.jpg");
 
 fn main() -> rltk::BError {
-    rltk::link_resource!(TILE_FONT, "resources/vga8x16.png");
+    rltk::link_resource!(TILE_FONT, "resources/terminal8x8.jpg");
     use rltk::RltkBuilder;
-    let mut context = RltkBuilder::simple(80, 60)
-        .unwrap()
+    let mut context = RltkBuilder::new()
+        .with_dimensions(80, 60)
         .with_title("Rainfall")
-        .with_font("vga8x16.png", 8, 16)
-        .with_sparse_console(80, 30, "vga8x16.png")
+        .with_font("terminal8x8.jpg", 16, 16)
+        .with_tile_dimensions(16, 16)
+        .with_simple_console(80, 60, "terminal8x8.jpg")
+        .with_fancy_console(80, 30, "terminal8x8.jpg")
         .build()?;
     context.with_post_scanlines(true);
+    context.set_char_size_and_resize_window(16, 16);
     let mut gs = State {
         ecs: World::new(),
         mapgen_next_state : Some(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame }),

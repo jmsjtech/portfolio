@@ -38,7 +38,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>Oasis.GameLoop</StartupObject>
+    <StartupObject>
+    </StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DefaultEcs, Version=0.15.2.0, Culture=neutral, PublicKeyToken=0ab8f459261ccb3c, processorArchitecture=MSIL">
@@ -96,13 +97,12 @@
     <Compile Include="lib\discord\csharp\LobbyManager.cs" />
     <Compile Include="lib\discord\csharp\StorageManager.cs" />
     <Compile Include="lib\discord\csharp\StoreManager.cs" />
-    <Compile Include="lib\discord\examples\csharp\Program.cs" />
     <Compile Include="Map.cs" />
     <Compile Include="MapGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TileBase.cs" />
-    <Compile Include="TileFloor.cs" />
-    <Compile Include="TileWall.cs" />
+    <Compile Include="Tiles\TileBase.cs" />
+    <Compile Include="Tiles\TileFloor.cs" />
+    <Compile Include="Tiles\TileWall.cs" />
     <Compile Include="UI\MessageLogWindow.cs" />
     <Compile Include="UI\UIManager.cs" />
     <Compile Include="World.cs" />
@@ -156,8 +156,6 @@
     <Content Include="lib\discord\cpp\voice_manager.cpp" />
     <Content Include="lib\discord\cpp\voice_manager.h" />
     <Content Include="lib\discord\c\discord_game_sdk.h" />
-    <Content Include="lib\discord\examples\cpp\main.cpp" />
-    <Content Include="lib\discord\examples\c\main.c" />
     <Content Include="lib\discord\lib\x86\discord_game_sdk.dll" />
     <Content Include="lib\discord\lib\x86_64\discord_game_sdk.dll" />
   </ItemGroup>

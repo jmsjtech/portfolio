@@ -2,7 +2,7 @@ use rltk::prelude::*;
 use specs::prelude::*;
 use crate::{Pools, Map, Name, InBackpack,
     Equipped, HungerClock, HungerState, Attributes, Attribute, Consumable,
-    StatusEffect, Duration, KnownSpells, Weapon, gamelog, TimeKeeper };
+    StatusEffect, Duration, KnownSpells, Weapon, gamelog, TimeKeeper, RunState };
 use super::{draw_tooltips, get_item_display_name, get_item_color};
 
 fn draw_attribute(name : &str, attribute : &Attribute, y : i32, draw_batch: &mut DrawBatch) {
@@ -259,6 +259,19 @@ fn status(ecs: &World, draw_batch: &mut DrawBatch, player_entity: &Entity) {
 }
 
 pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
+    let mut newrunstate;
+    {
+        let runstate = ecs.fetch::<RunState>();
+        newrunstate = *runstate;
+    }
+    
+    match newrunstate {
+        RunState::MainMenu {..} => { return; }
+        RunState::MapGeneration => { return; }
+    
+        _ => {}
+    }
+    
     let mut draw_batch = DrawBatch::new();
     let player_entity = ecs.fetch::<Entity>();
 
@@ -306,5 +319,5 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
 
     }
 
-    draw_batch.submit(5000).expect("Unhelpful Error Code");
+    draw_batch.submit(1000).expect("Unhelpful Error Code");
 }
