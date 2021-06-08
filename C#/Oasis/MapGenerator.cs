@@ -115,8 +115,8 @@ namespace Oasis {
                     newDoor.Set(new Name { name = "Door" });
                     newDoor.Set(new Render { sce = new SadConsole.Entities.Entity(1, 1) });
                     newDoor.Get<Render>().Init(_map.idx_xy(locationIndex), '+', Color.Brown);
-                    
 
+                    _map.Tiles[locationIndex].IsBlockingLOS = true;
                 }
             }
         }

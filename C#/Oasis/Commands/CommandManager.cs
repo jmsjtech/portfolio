@@ -40,6 +40,32 @@ namespace Oasis.Commands {
             return entity.Get<Render>().Move(position.X, position.Y);
         }
 
+        public bool MoveEntityTo(Entity entity, Point position) {
+            _lastMoveEntity = entity;
+            _lastMoveEntityPoint = position;
+
+            if (GameLoop.World.CurrentMap.GetEntityAt<Monster>(position) != null) {
+                Entity monster = GameLoop.World.CurrentMap.GetEntityAt<Monster>(position).Value;
+                GameLoop.CommandManager.Attack(entity, monster);
+                return true;
+            }
+
+            if (GameLoop.World.CurrentMap.GetEntityAt<Door>(position) != null) {
+                Entity door = GameLoop.World.CurrentMap.GetEntityAt<Door>(position).Value;
+                if (!door.Get<Door>().is_open) {
+                    GameLoop.CommandManager.UseDoor(entity, door);
+                    return true;
+                }
+            }
+
+
+            if (GameLoop.World.CurrentMap.GetEntityAt<BlocksMovement>(position) != null) {
+                return false;
+            }
+
+            return entity.Get<Render>().MoveTo(position);
+        }
+
         public bool RedoMoveEntityBy() {
             if (_lastMoveEntity != null) {
                 return MoveEntityBy(_lastMoveEntity, _lastMoveEntityPoint);
@@ -127,6 +153,7 @@ namespace Oasis.Commands {
             GameLoop.UIManager.MessageLog.Add($"{actor.Get<Name>().name} picked up {item.Get<Name>().name}");
             item.Remove<Render>();
             item.Set(new InBackpack { owner = actor });
+            GameLoop.UIManager.SyncMapEntities(GameLoop.World.CurrentMap);
         }
 
         public void UseDoor(Entity actor, Entity door) {
@@ -137,6 +164,7 @@ namespace Oasis.Commands {
             // Handled an unlocked door that is closed
             else if (!door.Get<Door>().is_locked && !door.Get<Door>().is_open) {
                 door.Get<Door>().ToggleOpen(door);
+                GameLoop.World.CurrentMap.Tiles[GameLoop.World.CurrentMap.xy_idx(door.Get<Render>().GetPosition())].IsBlockingLOS = false;
                 GameLoop.UIManager.MessageLog.Add($"{actor.Get<Name>().name} opened a {door.Get<Name>().name}");
             }
         }

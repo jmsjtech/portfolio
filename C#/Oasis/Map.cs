@@ -1,5 +1,6 @@
 ﻿using System;
 using DefaultEcs;
+using GoRogue.Pathing;
 using Microsoft.Xna.Framework;
 using Oasis.Tiles;
 
@@ -14,6 +15,9 @@ namespace Oasis {
         public int Width { get { return _width; } set { _width = value; } }
         public int Height { get { return _height; } set { _height = value; } }
 
+        public AStar aStar;
+
+        public GoRogue.MapViews.LambdaMapView<bool> sightMap;
 
 
         //Build a new map with a specified width and height
@@ -21,11 +25,22 @@ namespace Oasis {
             _width = width;
             _height = height;
             Tiles = new TileBase[width * height];
+
+            var mapView = new GoRogue.MapViews.LambdaMapView<bool>(Width, Height, pos => IsTileWalkable(new Point(pos.X, pos.Y)));
+            aStar = new AStar(mapView, GoRogue.Distance.EUCLIDEAN);
+
+            sightMap = new GoRogue.MapViews.LambdaMapView<bool>(Width, Height, pos => IsTileTransparent(new Point(pos.X, pos.Y)));
         }
         public bool IsTileWalkable(Point location) {
             if (location.X < 0 || location.Y < 0 || location.X >= Width || location.Y >= Height)
                 return false;
             return !_tiles[location.Y * Width + location.X].IsBlockingMove;
+        }
+
+        public bool IsTileTransparent(Point location) {
+            if (location.X < 0 || location.Y < 0 || location.X >= Width || location.Y >= Height)
+                return false;
+            return !_tiles[location.Y * Width + location.X].IsBlockingLOS;
         }
 
 

@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using SadConsole;
 using System;
 using SadConsole.Controls;
-
+using GoRogue.Pathing;
 
 namespace Oasis.UI {
     public class UIManager : ContainerConsole {
@@ -102,12 +102,121 @@ namespace Oasis.UI {
             MapConsole.CenterViewPortOnPoint(player.Get<Render>().sce.Position);
         }
 
+
+        public void AI_Act(string action, Point goal_loc, Entity monster, AI_GOAL goal) {
+            Point pos = monster.Get<Render>().GetPosition();
+            Path path;
+            if (monster.Get<AI>().CurrentPath != null && monster.Get<AI>().CurrentPath.End == goal_loc) {
+                path = monster.Get<AI>().CurrentPath;
+            } else {
+                path = GameLoop.World.CurrentMap.aStar.ShortestPath(pos.X, pos.Y, goal_loc.X, goal_loc.Y);
+            }
+
+            bool acted = false;
+
+            if (action == "Attack") {
+                if (path.Length != 0) {
+                    acted = GameLoop.CommandManager.MoveEntityTo(monster, path.GetStep(0));
+                }
+            }
+
+            if (action == "Loot") {
+                if (pos != goal_loc) {
+                    acted = GameLoop.CommandManager.MoveEntityTo(monster, path.GetStep(0));
+
+                    if (pos == goal_loc) {
+                        GameLoop.CommandManager.Pickup(monster, GameLoop.World.CurrentMap.GetEntityAt<Item>(pos).Value);
+                    }
+
+
+                } else {
+                    if (GameLoop.World.CurrentMap.GetEntityAt<Item>(pos).HasValue) {
+                        GameLoop.CommandManager.Pickup(monster, GameLoop.World.CurrentMap.GetEntityAt<Item>(pos).Value);
+                    }
+                }
+
+                acted = true;
+            }
+
+            if (action == "Flee") {
+                if (path != null) {
+                    Point away = new Point((path.GetStep(0).X - pos.X) * -1, (path.GetStep(0).Y - pos.Y) * -1);
+                    acted = GameLoop.CommandManager.MoveEntityBy(monster, away);
+                }
+            }
+
+
+            if (acted) {
+                monster.Get<LastActed>().last_action = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                if (pos == goal_loc) {
+                    monster.Get<AI>().Goals.Remove(goal);
+                }
+            }
+        }
+
+        public void UpdateGoals(Entity monster) {
+            AI monAI = monster.Get<AI>();
+            
+
+
+        //    monAI.ClearGoals();
+
+            foreach (Entity target in GameLoop.gs.ecs.GetEntities().With<Render>().AsEnumerable()) {
+                if (target != monster) {
+                    if (monster.Get<Viewshed>().view.BooleanFOV[target.Get<Render>().GetPosition()]) {
+                        if (target.Has<Item>()) {
+                            monAI.NewGoal("Loot", target.Get<Item>().value, 0, monAI.Greed, monster.Get<Render>().GetPosition(), target.Get<Render>().GetPosition(), target);
+                        } else if (target.Has<Monster>() || target.Has<Player>()) {
+                            int targetSTR = 1;
+                            if (target.Has<Monster>()) { targetSTR = target.Get<AI>().ApparentStrength; } 
+                            else { targetSTR = target.Get<Stats>().Attack; }
+
+                            if (targetSTR < monAI.SelfStrength + monAI.Bravery) {
+                                monAI.NewGoal("Attack", targetSTR, monAI.Bravery, 1, monster.Get<Render>().GetPosition(), target.Get<Render>().GetPosition(), target);
+                            } else {
+                                monAI.NewGoal("Flee", targetSTR, monAI.Bravery, 1, monster.Get<Render>().GetPosition(), target.Get<Render>().GetPosition(), target);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (monAI.Goals.Count > 0) {
+                monAI.SortGoals();
+                AI_Act(monAI.Goals.ToArray()[0].Action, monAI.Goals.ToArray()[0].Location, monster, monAI.Goals.ToArray()[0]);
+            }
+        }
+
+
         public override void Update(TimeSpan timeElapsed) {
             CheckKeyboard();
+
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            long nowInMS = now.ToUnixTimeMilliseconds();
+
+            foreach (Entity monster in GameLoop.gs.ecs.GetEntities().With<AI>().AsEnumerable()) {
+                if (monster.Get<LastActed>().last_action + monster.Get<LastActed>().speed_in_ms <= nowInMS) {
+                    if (monster.Get<Viewshed>().view == null) {
+                        monster.Get<Viewshed>().view = new GoRogue.FOV(GameLoop.World.CurrentMap.sightMap);
+                    }
+
+                    monster.Get<Viewshed>().view.Calculate(monster.Get<Render>().GetPosition(), monster.Get<Viewshed>().radius);
+                    UpdateGoals(monster);
+                    
+                }
+            }
+
+            if (GameLoop.World.player.Get<Viewshed>().view == null) {
+                GameLoop.World.player.Get<Viewshed>().view = new GoRogue.FOV(GameLoop.World.CurrentMap.sightMap);
+            }
+            GameLoop.World.player.Get<Viewshed>().view.Calculate(GameLoop.World.player.Get<Render>().GetPosition(), GameLoop.World.player.Get<Viewshed>().radius);
+
             base.Update(timeElapsed);
         }
 
         private void CheckKeyboard() {
+            bool acted = false;
+
             if (SadConsole.Global.KeyboardState.IsKeyReleased(Microsoft.Xna.Framework.Input.Keys.F5)) {
                 SadConsole.Settings.ToggleFullScreen();
             }
@@ -121,6 +230,17 @@ namespace Oasis.UI {
                 CenterOnActor(GameLoop.World.player);
             }
 
+            if (Global.KeyboardState.IsKeyReleased(Keys.T)) {
+                Entity newItem = GameLoop.gs.ecs.CreateEntity();
+                newItem.Set(new Render { sce = new SadConsole.Entities.Entity(1, 1) });
+                newItem.Set(new Item { condition = 100, weight = 2, glyph = 'L', fg = Color.Green, value = 2 });
+                newItem.Set(new Name { name = "Fancy Shirt" });
+
+                newItem.Get<Render>().Init(GameLoop.World.player.Get<Render>().GetPosition(), 'L', Color.Green);
+                SyncMapEntities(GameLoop.World.CurrentMap);
+            }
+
+
             if (Global.KeyboardState.IsKeyPressed(Keys.G)) {
                 if (GameLoop.World.CurrentMap.GetEntityAt<Item>(GameLoop.World.player.Get<Render>().GetPosition()) != null) {
                     Entity item = GameLoop.World.CurrentMap.GetEntityAt<Item>(GameLoop.World.player.Get<Render>().GetPosition()).Value;
@@ -130,39 +250,45 @@ namespace Oasis.UI {
                 }
             }
 
+            if (GameLoop.World.player.Get<LastActed>().last_action + GameLoop.World.player.Get<LastActed>().speed_in_ms <= DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()) {
 
-            if (Global.KeyboardState.IsKeyPressed(Keys.NumPad8)) {
-                GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(0, -1));
-                CenterOnActor(GameLoop.World.player);
-            }
-            if (Global.KeyboardState.IsKeyPressed(Keys.NumPad2)) {
-                GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(0, 1));
-                CenterOnActor(GameLoop.World.player);
-            }
-            if (Global.KeyboardState.IsKeyPressed(Keys.NumPad4)) {
-                GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(-1, 0));
-                CenterOnActor(GameLoop.World.player);
-            }
-            if (Global.KeyboardState.IsKeyPressed(Keys.NumPad6)) {
-                GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(1, 0));
-                CenterOnActor(GameLoop.World.player);
-            }
+                if (Global.KeyboardState.IsKeyPressed(Keys.NumPad8)) {
+                    acted = GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(0, -1));
+                    CenterOnActor(GameLoop.World.player);
+                }
+                if (Global.KeyboardState.IsKeyPressed(Keys.NumPad2)) {
+                    acted = GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(0, 1));
+                    CenterOnActor(GameLoop.World.player);
+                }
+                if (Global.KeyboardState.IsKeyPressed(Keys.NumPad4)) {
+                    acted = GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(-1, 0));
+                    CenterOnActor(GameLoop.World.player);
+                }
+                if (Global.KeyboardState.IsKeyPressed(Keys.NumPad6)) {
+                    acted = GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(1, 0));
+                    CenterOnActor(GameLoop.World.player);
+                }
 
-            if (Global.KeyboardState.IsKeyPressed(Keys.NumPad7)) {
-               GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(-1, -1));
-                CenterOnActor(GameLoop.World.player);
-            }
-            if (Global.KeyboardState.IsKeyPressed(Keys.NumPad9)) {
-                GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(1, -1));
-                CenterOnActor(GameLoop.World.player);
-            }
-            if (Global.KeyboardState.IsKeyPressed(Keys.NumPad1)) {
-                GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(-1, 1));
-                CenterOnActor(GameLoop.World.player);
-            }
-            if (Global.KeyboardState.IsKeyPressed(Keys.NumPad3)) {
-                GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(1, 1));
-                CenterOnActor(GameLoop.World.player);
+                if (Global.KeyboardState.IsKeyPressed(Keys.NumPad7)) {
+                    acted = GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(-1, -1));
+                    CenterOnActor(GameLoop.World.player);
+                }
+                if (Global.KeyboardState.IsKeyPressed(Keys.NumPad9)) {
+                    acted = GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(1, -1));
+                    CenterOnActor(GameLoop.World.player);
+                }
+                if (Global.KeyboardState.IsKeyPressed(Keys.NumPad1)) {
+                    acted = GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(-1, 1));
+                    CenterOnActor(GameLoop.World.player);
+                }
+                if (Global.KeyboardState.IsKeyPressed(Keys.NumPad3)) {
+                    acted = GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(1, 1));
+                    CenterOnActor(GameLoop.World.player);
+                }
+
+                if (acted) {
+                    GameLoop.World.player.Get<LastActed>().last_action = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                }
             }
         }
 
