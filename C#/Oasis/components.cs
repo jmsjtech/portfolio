@@ -136,7 +136,13 @@ namespace Oasis {
 
     public struct Viewshed {
         public GoRogue.FOV view;
+        public GoRogue.MapViews.IMapView<bool> old_bool;
         public int radius;
+
+        public void UpdateFOV(Point center) {
+            old_bool = view.BooleanFOV;
+            view.Calculate(center, radius);
+        }
     }
 
 
@@ -166,7 +172,7 @@ namespace Oasis {
             if (target.HasValue) {
                 foreach (AI_GOAL existing in Goals) {
                     if (existing.Target.HasValue && existing.Target.Value == target.Value) {
-                        RecalculateDesire(existing, pos, adds, mult, existing.Target.Value.Get<Render>().GetPosition());
+                        UpdateDesire(existing, existing.Target.Value.Get<Render>().GetPosition());
                         return;
                     }
                 }
@@ -184,6 +190,10 @@ namespace Oasis {
             AI_GOAL goal = new AI_GOAL(name, goal_loc, desire, base_desire, target);
 
             Goals.Add(goal);
+        }
+
+        public void UpdateDesire(AI_GOAL goal, Point new_loc) {
+            goal.Location = new_loc;
         }
 
         public void RecalculateDesire(AI_GOAL goal, Point pos, float adds, float mult, Point new_loc) {

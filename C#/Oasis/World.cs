@@ -92,7 +92,7 @@ namespace Oasis {
                     monsterPosition = GameLoop.GlobalRand.Next(0, CurrentMap.Width * CurrentMap.Height);
                 }
 
-                newMonster.Set(new Stats { Defense = GameLoop.GlobalRand.Next(3, 10), Attack = GameLoop.GlobalRand.Next(8, 14), Damage = "1d6", Health = 10, MaxHealth = 10 });
+                newMonster.Set(new Stats { Defense = GameLoop.GlobalRand.Next(3, 10), Attack = GameLoop.GlobalRand.Next(10, 14), Damage = "1d6", Health = 10, MaxHealth = 10 });
                 newMonster.Set(new BlocksMovement { });
                 newMonster.Set(new Name { name = "orc " + i.ToString() });
                 newMonster.Set(new AI { Greed = 1, Bravery = 1, SelfStrength = newMonster.Get<Stats>().Attack, ApparentStrength = 2, Goals = new List<AI_GOAL>() });

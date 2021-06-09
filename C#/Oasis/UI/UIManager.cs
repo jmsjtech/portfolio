@@ -145,65 +145,90 @@ namespace Oasis.UI {
                 }
             }
 
+            if (action == "Wander") {
+                if (path.Length != 0) {
+                    acted = GameLoop.CommandManager.MoveEntityTo(monster, path.GetStep(0));
+                }
+            }
+
 
             if (acted) {
                 monster.Get<LastActed>().last_action = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                if (pos == goal_loc) {
-                    monster.Get<AI>().Goals.Remove(goal);
-                }
+            }
+
+            if (pos == goal_loc || action == "Flee") {
+                monster.Get<AI>().Goals.Remove(goal);
             }
         }
 
         public void UpdateGoals(Entity monster) {
             AI monAI = monster.Get<AI>();
-            
+            Viewshed viewshed = monster.Get<Viewshed>();
+            Point pos = monster.Get<Render>().GetPosition();
 
-
-        //    monAI.ClearGoals();
+            //  monAI.ClearGoals();
 
             foreach (Entity target in GameLoop.gs.ecs.GetEntities().With<Render>().AsEnumerable()) {
                 if (target != monster) {
-                    if (monster.Get<Viewshed>().view.BooleanFOV[target.Get<Render>().GetPosition()]) {
+                    if (viewshed.view.BooleanFOV[target.Get<Render>().GetPosition()] || (viewshed.old_bool != null && viewshed.old_bool[target.Get<Render>().GetPosition()])) {
                         if (target.Has<Item>()) {
-                            monAI.NewGoal("Loot", target.Get<Item>().value, 0, monAI.Greed, monster.Get<Render>().GetPosition(), target.Get<Render>().GetPosition(), target);
+                            monAI.NewGoal("Loot", target.Get<Item>().value, 0, monAI.Greed, pos, target.Get<Render>().GetPosition(), target);
                         } else if (target.Has<Monster>() || target.Has<Player>()) {
                             int targetSTR = 1;
                             if (target.Has<Monster>()) { targetSTR = target.Get<AI>().ApparentStrength; } 
                             else { targetSTR = target.Get<Stats>().Attack; }
 
                             if (targetSTR < monAI.SelfStrength + monAI.Bravery) {
-                                monAI.NewGoal("Attack", targetSTR, monAI.Bravery, 1, monster.Get<Render>().GetPosition(), target.Get<Render>().GetPosition(), target);
+                                monAI.NewGoal("Attack", targetSTR, monAI.Bravery, 1, pos, target.Get<Render>().GetPosition(), target);
                             } else {
-                                monAI.NewGoal("Flee", targetSTR, monAI.Bravery, 1, monster.Get<Render>().GetPosition(), target.Get<Render>().GetPosition(), target);
+                                monAI.NewGoal("Flee", targetSTR, monAI.Bravery, 1, pos, target.Get<Render>().GetPosition(), target);
                             }
                         }
                     }
                 }
             }
 
+            if (monAI.Goals.Count > 1) {
+                foreach (AI_GOAL goal in monAI.Goals) {
+                    if (goal.Action == "Wander") {
+                        monAI.Goals.Remove(goal);
+                        break;
+                    }
+                }
+            }
+
             if (monAI.Goals.Count > 0) {
                 monAI.SortGoals();
-                AI_Act(monAI.Goals.ToArray()[0].Action, monAI.Goals.ToArray()[0].Location, monster, monAI.Goals.ToArray()[0]);
+                DateTimeOffset now = DateTimeOffset.UtcNow;
+                long nowInMS = now.ToUnixTimeMilliseconds();
+
+                if (monster.Get<LastActed>().last_action + monster.Get<LastActed>().speed_in_ms <= nowInMS) {
+                    AI_Act(monAI.Goals.ToArray()[0].Action, monAI.Goals.ToArray()[0].Location, monster, monAI.Goals.ToArray()[0]);
+                }
+            } else if (monAI.Goals.Count == 0) {
+                Point topL = new Point(pos.X - (viewshed.radius / 2), pos.Y - (viewshed.radius / 2));
+                Point random = new Point(topL.X + GameLoop.GlobalRand.Next(0, viewshed.radius), topL.Y + GameLoop.GlobalRand.Next(0, viewshed.radius));
+
+                while (!GameLoop.World.CurrentMap.IsTileWalkable(random)) {
+                    random = new Point(topL.X + GameLoop.GlobalRand.Next(0, viewshed.radius), topL.Y + GameLoop.GlobalRand.Next(0, viewshed.radius));
+                }
+
+                monAI.NewGoal("Wander", 1, 0, 1, pos, random);
             }
+
+            
         }
 
 
         public override void Update(TimeSpan timeElapsed) {
             CheckKeyboard();
 
-            DateTimeOffset now = DateTimeOffset.UtcNow;
-            long nowInMS = now.ToUnixTimeMilliseconds();
-
             foreach (Entity monster in GameLoop.gs.ecs.GetEntities().With<AI>().AsEnumerable()) {
-                if (monster.Get<LastActed>().last_action + monster.Get<LastActed>().speed_in_ms <= nowInMS) {
-                    if (monster.Get<Viewshed>().view == null) {
-                        monster.Get<Viewshed>().view = new GoRogue.FOV(GameLoop.World.CurrentMap.sightMap);
-                    }
-
-                    monster.Get<Viewshed>().view.Calculate(monster.Get<Render>().GetPosition(), monster.Get<Viewshed>().radius);
-                    UpdateGoals(monster);
-                    
+                if (monster.Get<Viewshed>().view == null) {
+                    monster.Get<Viewshed>().view = new GoRogue.FOV(GameLoop.World.CurrentMap.sightMap);
                 }
+                monster.Get<Viewshed>().UpdateFOV(monster.Get<Render>().GetPosition());
+                UpdateGoals(monster);
             }
 
             if (GameLoop.World.player.Get<Viewshed>().view == null) {
@@ -231,6 +256,7 @@ namespace Oasis.UI {
             }
 
             if (Global.KeyboardState.IsKeyReleased(Keys.T)) {
+                GameLoop.UIManager.MessageLog.Add("space");
                 Entity newItem = GameLoop.gs.ecs.CreateEntity();
                 newItem.Set(new Render { sce = new SadConsole.Entities.Entity(1, 1) });
                 newItem.Set(new Item { condition = 100, weight = 2, glyph = 'L', fg = Color.Green, value = 2 });
