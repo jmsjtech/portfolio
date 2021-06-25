@@ -35,6 +35,8 @@ namespace CritterQuest.Commands {
 
 
             if (GameLoop.World.CurrentMap.GetEntityAt<BlocksMovement>(entity.Get<Render>().GetPosition() + position) != null) {
+                GameLoop.UIManager.MessageLog.Add(GameLoop.World.CurrentMap.GetEntityAt<BlocksMovement>(entity.Get<Render>().GetPosition() + position).Value.Get<Name>().name);
+                GameLoop.UIManager.MapConsole.IsDirty = true;
                 return false;
             }
 

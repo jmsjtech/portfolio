@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-public static class SumMultiples35 {
+public static class FindSlope {
 	public static void Main (string[] args) {
 		int j;
 		
@@ -15,7 +15,7 @@ public static class SumMultiples35 {
 			} 
 		}
 		
-		else if (args[0] == "b") {
+		else if (args[0] == "b") { // From Slope and Point
 			float slope = float.Parse(args[1], CultureInfo.InvariantCulture.NumberFormat);
 			float x = float.Parse(args[2].Split(',')[0], CultureInfo.InvariantCulture.NumberFormat);
 			float y = float.Parse(args[2].Split(',')[1], CultureInfo.InvariantCulture.NumberFormat);
@@ -23,7 +23,7 @@ public static class SumMultiples35 {
 			FromPointAndSlope(x, y, slope);
 		}
 		
-		else if (args[0] == "c") {
+		else if (args[0] == "c") { // From Two Points
 			float x1 = float.Parse(args[1].Split(',')[0], CultureInfo.InvariantCulture.NumberFormat);
 			float y1 = float.Parse(args[1].Split(',')[1], CultureInfo.InvariantCulture.NumberFormat);
 			float x2 = float.Parse(args[2].Split(',')[0], CultureInfo.InvariantCulture.NumberFormat);

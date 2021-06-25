@@ -1,0 +1,34 @@
+﻿>> AI Refinement
+    >> Need-based Goals
+        >> Hunger
+        >> Thirst
+        >> Sleep
+        >> Entertainment?
+        >> Store at least one known place to fill a need, go there to fill it, remove it if need can't be filled there anymore
+    >> Faction Data
+        >> Attach faction data to every NPC
+        >> Don't attack entities in the same faction
+        >> Variable reactions to other Factions
+        >> Killing NPCs lowers relationship with their faction
+>> Networking Stuff
+    >> Differentiate between hosting and joining
+    >> Establish and maintain connections
+    >> Only run AI on host? Send updates to clients
+    >> Code-based Joining (A-Z, 0-9, Excluding O and I)
+    >> Server Lobbies (Only show Public lobbies, allow people to set lobbies to Private)
+    >> Let players join/leave while the game is going
+>> Serialize/Deserialize Data
+    >> Make all the components and entities serializable
+    >> Make world and map data serializable
+    >> Load monster and item data from files
+    >> Make an in-game raw editor
+        >> Make new entries
+        >> Edit existing entries
+        >> Put entries into a separate module that can be loaded optionally
+        >> Modules have a hash generated based on all their data
+            >> Use hash to check if raws need to be sent to connecting players
+>> Map Generation
+    >> Create multiple ways to generate a map
+    >> Prefabs: levels and sections
+        >> In-game prefab maker?
+        >> Let Unique monsters spawn specific prefabs

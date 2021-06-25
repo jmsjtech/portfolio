@@ -6,7 +6,7 @@ using System;
 using SadConsole.Controls;
 using GoRogue.Pathing;
 
-namespace Oasis.UI {
+namespace CritterQuest.UI {
     public class UIManager : ContainerConsole {
         public ScrollingConsole MapConsole;
         public Window MapWindow;
@@ -103,133 +103,9 @@ namespace Oasis.UI {
         }
 
 
-        public void AI_Act(string action, Point goal_loc, Entity monster, AI_GOAL goal) {
-            Point pos = monster.Get<Render>().GetPosition();
-            Path path;
-            if (monster.Get<AI>().CurrentPath != null && monster.Get<AI>().CurrentPath.End == goal_loc) {
-                path = monster.Get<AI>().CurrentPath;
-            } else {
-                path = GameLoop.World.CurrentMap.aStar.ShortestPath(pos.X, pos.Y, goal_loc.X, goal_loc.Y);
-            }
-
-            bool acted = false;
-
-            if (action == "Attack") {
-                if (path.Length != 0) {
-                    acted = GameLoop.CommandManager.MoveEntityTo(monster, path.GetStep(0));
-                }
-            }
-
-            if (action == "Loot") {
-                if (pos != goal_loc) {
-                    acted = GameLoop.CommandManager.MoveEntityTo(monster, path.GetStep(0));
-
-                    if (pos == goal_loc) {
-                        GameLoop.CommandManager.Pickup(monster, GameLoop.World.CurrentMap.GetEntityAt<Item>(pos).Value);
-                    }
-
-
-                } else {
-                    if (GameLoop.World.CurrentMap.GetEntityAt<Item>(pos).HasValue) {
-                        GameLoop.CommandManager.Pickup(monster, GameLoop.World.CurrentMap.GetEntityAt<Item>(pos).Value);
-                    }
-                }
-
-                acted = true;
-            }
-
-            if (action == "Flee") {
-                if (path != null) {
-                    Point away = new Point((path.GetStep(0).X - pos.X) * -1, (path.GetStep(0).Y - pos.Y) * -1);
-                    acted = GameLoop.CommandManager.MoveEntityBy(monster, away);
-                }
-            }
-
-            if (action == "Wander") {
-                if (path.Length != 0) {
-                    acted = GameLoop.CommandManager.MoveEntityTo(monster, path.GetStep(0));
-                }
-            }
-
-
-            if (acted) {
-                monster.Get<LastActed>().last_action = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            }
-
-            if (pos == goal_loc || action == "Flee") {
-                monster.Get<AI>().Goals.Remove(goal);
-            }
-        }
-
-        public void UpdateGoals(Entity monster) {
-            AI monAI = monster.Get<AI>();
-            Viewshed viewshed = monster.Get<Viewshed>();
-            Point pos = monster.Get<Render>().GetPosition();
-
-            //  monAI.ClearGoals();
-
-            foreach (Entity target in GameLoop.gs.ecs.GetEntities().With<Render>().AsEnumerable()) {
-                if (target != monster) {
-                    if (viewshed.view.BooleanFOV[target.Get<Render>().GetPosition()] || (viewshed.old_bool != null && viewshed.old_bool[target.Get<Render>().GetPosition()])) {
-                        if (target.Has<Item>()) {
-                            monAI.NewGoal("Loot", target.Get<Item>().value, 0, monAI.Greed, pos, target.Get<Render>().GetPosition(), target);
-                        } else if (target.Has<Monster>() || target.Has<Player>()) {
-                            int targetSTR = 1;
-                            if (target.Has<Monster>()) { targetSTR = target.Get<AI>().ApparentStrength; } 
-                            else { targetSTR = target.Get<Stats>().Attack; }
-
-                            if (targetSTR < monAI.SelfStrength + monAI.Bravery) {
-                                monAI.NewGoal("Attack", targetSTR, monAI.Bravery, 1, pos, target.Get<Render>().GetPosition(), target);
-                            } else {
-                                monAI.NewGoal("Flee", targetSTR, monAI.Bravery, 1, pos, target.Get<Render>().GetPosition(), target);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (monAI.Goals.Count > 1) {
-                foreach (AI_GOAL goal in monAI.Goals) {
-                    if (goal.Action == "Wander") {
-                        monAI.Goals.Remove(goal);
-                        break;
-                    }
-                }
-            }
-
-            if (monAI.Goals.Count > 0) {
-                monAI.SortGoals();
-                DateTimeOffset now = DateTimeOffset.UtcNow;
-                long nowInMS = now.ToUnixTimeMilliseconds();
-
-                if (monster.Get<LastActed>().last_action + monster.Get<LastActed>().speed_in_ms <= nowInMS) {
-                    AI_Act(monAI.Goals.ToArray()[0].Action, monAI.Goals.ToArray()[0].Location, monster, monAI.Goals.ToArray()[0]);
-                }
-            } else if (monAI.Goals.Count == 0) {
-                Point topL = new Point(pos.X - (viewshed.radius / 2), pos.Y - (viewshed.radius / 2));
-                Point random = new Point(topL.X + GameLoop.GlobalRand.Next(0, viewshed.radius), topL.Y + GameLoop.GlobalRand.Next(0, viewshed.radius));
-
-                while (!GameLoop.World.CurrentMap.IsTileWalkable(random)) {
-                    random = new Point(topL.X + GameLoop.GlobalRand.Next(0, viewshed.radius), topL.Y + GameLoop.GlobalRand.Next(0, viewshed.radius));
-                }
-
-                monAI.NewGoal("Wander", 1, 0, 1, pos, random);
-            }
-
-            
-        }
-
-
         public override void Update(TimeSpan timeElapsed) {
             CheckKeyboard();
 
-            foreach (Entity monster in GameLoop.gs.ecs.GetEntities().With<AI>().AsEnumerable()) {
-                if (monster.Get<Viewshed>().view == null) {
-                    monster.Get<Viewshed>().view = new GoRogue.FOV(GameLoop.World.CurrentMap.sightMap);
-                }
-                monster.Get<Viewshed>().UpdateFOV(monster.Get<Render>().GetPosition());
-                UpdateGoals(monster);
-            }
 
             if (GameLoop.World.player.Get<Viewshed>().view == null) {
                 GameLoop.World.player.Get<Viewshed>().view = new GoRogue.FOV(GameLoop.World.CurrentMap.sightMap);
@@ -310,6 +186,14 @@ namespace Oasis.UI {
                 if (Global.KeyboardState.IsKeyPressed(Keys.NumPad3)) {
                     acted = GameLoop.CommandManager.MoveEntityBy(GameLoop.World.player, new Point(1, 1));
                     CenterOnActor(GameLoop.World.player);
+                }
+
+                if (Global.KeyboardState.IsKeyPressed(Keys.S)) {
+                    GameLoop.SaveManager.save();
+                }
+
+                if (Global.KeyboardState.IsKeyPressed(Keys.L)) {
+                    GameLoop.SaveManager.load();
                 }
 
                 if (acted) {

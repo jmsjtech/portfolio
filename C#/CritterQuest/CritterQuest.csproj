@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{138B7287-48A7-4BA6-8B47-883565A5C03E}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>Oasis</RootNamespace>
-    <AssemblyName>Oasis</AssemblyName>
+    <RootNamespace>CritterQuest</RootNamespace>
+    <AssemblyName>CritterQuest</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -87,7 +87,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\CommandManager.cs" />
+    <Compile Include="src\Commands\CommandManager.cs" />
     <Compile Include="src\components.cs" />
     <Compile Include="src\GameLoop.cs" />
     <Compile Include="lib\discord\csharp\ActivityManager.cs" />
@@ -100,9 +100,7 @@
     <Compile Include="src\Map.cs" />
     <Compile Include="src\MapGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="src\Tiles\TileBase.cs" />
-    <Compile Include="src\Tiles\TileFloor.cs" />
-    <Compile Include="src\Tiles\TileWall.cs" />
+    <Compile Include="src\SaveManager.cs" />
     <Compile Include="src\UI\MessageLogWindow.cs" />
     <Compile Include="src\UI\UIManager.cs" />
     <Compile Include="src\World.cs" />

@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using DefaultEcs;
 using Microsoft.Xna.Framework;
-using Oasis.Tiles;
 
-namespace Oasis {
+namespace CritterQuest {
     public class MapGenerator {
         public MapGenerator() {
         }
@@ -67,7 +66,15 @@ namespace Oasis {
         // Fills the map with walls
         private void FloodWalls() {
             for (int i = 0; i < _map.Tiles.Length; i++) {
-                _map.Tiles[i] = new TileWall();
+                Entity newTile = GameLoop.gs.ecs.CreateEntity();
+                newTile.Set(new Tile { cell = new SadConsole.Cell(Color.White, Color.Transparent, '#') });
+                newTile.Get<Tile>().SetPosition(i, _map.Width);
+                newTile.Set(new BlocksMovement { });
+                newTile.Set(new BlocksVisibility { });
+                newTile.Set(new Name { name = "Wall" });
+
+                _map._tiles[i] = newTile;
+                _map.Tiles[i] = newTile.Get<Tile>().cell;
             }
         }
 
@@ -92,12 +99,34 @@ namespace Oasis {
 
         // Creates a Floor tile at the specified X/Y location
         private void CreateFloor(Point location) {
-            _map.Tiles[location.ToIndex(_map.Width)] = new TileFloor();
+            if (_map._tiles[location.ToIndex(_map.Width)] != null) {
+                _map._tiles[location.ToIndex(_map.Width)].Dispose();
+            }
+
+            Entity newTile = GameLoop.gs.ecs.CreateEntity();
+            newTile.Set(new Tile { cell = new SadConsole.Cell(Color.White, Color.Transparent, '.') });
+            newTile.Get<Tile>().SetPosition(location);
+            newTile.Set(new Name { name = "Floor" });
+
+            _map._tiles[location.ToIndex(_map.Width)] = newTile;
+            _map.Tiles[location.ToIndex(_map.Width)] = newTile.Get<Tile>().cell;
         }
 
         // Creates a Wall tile at the specified X/Y location
         private void CreateWall(Point location) {
-            _map.Tiles[location.ToIndex(_map.Width)] = new TileWall();
+            if (_map._tiles[location.ToIndex(_map.Width)] != null) {
+                _map._tiles[location.ToIndex(_map.Width)].Dispose();
+            }
+
+            Entity newTile = GameLoop.gs.ecs.CreateEntity();
+            newTile.Set(new Tile { cell = new SadConsole.Cell(Color.White, Color.Transparent, '#') });
+            newTile.Get<Tile>().SetPosition(location);
+            newTile.Set(new BlocksMovement { });
+            newTile.Set(new BlocksVisibility { });
+            newTile.Set(new Name { name = "Wall" });
+
+            _map._tiles[location.ToIndex(_map.Width)] = newTile;
+            _map.Tiles[location.ToIndex(_map.Width)] = newTile.Get<Tile>().cell;
         }
 
         private void CreateDoor(Rectangle room) {
@@ -107,16 +136,21 @@ namespace Oasis {
             foreach (Point location in borderCells) {
                 int locationIndex = location.ToIndex(_map.Width);
                 if (IsPotentialDoor(location)) {
+                    if(_map._tiles[locationIndex] != null) {
+                        _map._tiles[locationIndex].Dispose();
+                    }
+
                     // Create a new door that is closed and unlocked.
                     Entity newDoor = GameLoop.gs.ecs.CreateEntity();
                     newDoor.Set(new Door { is_locked = false, is_open = false });
                     newDoor.Set(new BlocksMovement { });
                     newDoor.Set(new BlocksVisibility { });
                     newDoor.Set(new Name { name = "Door" });
-                    newDoor.Set(new Render { sce = new SadConsole.Entities.Entity(1, 1) });
-                    newDoor.Get<Render>().Init(_map.idx_xy(locationIndex), '+', Color.Brown);
+                    newDoor.Set(new Tile { cell = new SadConsole.Cell(Color.SaddleBrown, Color.Transparent, '+') });
+                    newDoor.Get<Tile>().SetPosition(locationIndex, _map.Width);
 
-                    _map.Tiles[locationIndex].IsBlockingLOS = true;
+                    _map._tiles[locationIndex] = newDoor;
+                    _map.Tiles[locationIndex] = newDoor.Get<Tile>().cell;
                 }
             }
         }
@@ -125,7 +159,7 @@ namespace Oasis {
             //if the target location is not walkable
             //then it's a wall and not a good place for a door
             int locationIndex = location.ToIndex(_map.Width);
-            if (_map.Tiles[locationIndex] != null && _map.Tiles[locationIndex] is TileWall) {
+            if (_map.Tiles[locationIndex] != null && _map._tiles[locationIndex].Get<Name>().name == "Wall") {
                 return false;
             }
 
@@ -148,11 +182,11 @@ namespace Oasis {
             }
 
             //if all the prior checks are okay, make sure that the door is placed along a horizontal wall
-            if (!_map.Tiles[right.ToIndex(_map.Width)].IsBlockingMove && !_map.Tiles[left.ToIndex(_map.Width)].IsBlockingMove && _map.Tiles[top.ToIndex(_map.Width)].IsBlockingMove && _map.Tiles[bottom.ToIndex(_map.Width)].IsBlockingMove) {
+            if (!_map._tiles[right.ToIndex(_map.Width)].Has<BlocksMovement>() && !_map._tiles[left.ToIndex(_map.Width)].Has<BlocksMovement>() && _map._tiles[top.ToIndex(_map.Width)].Has<BlocksMovement>() && _map._tiles[bottom.ToIndex(_map.Width)].Has<BlocksMovement>()) {
                 return true;
             }
             //or make sure that the door is placed along a vertical wall
-            if (_map.Tiles[right.ToIndex(_map.Width)].IsBlockingMove && _map.Tiles[left.ToIndex(_map.Width)].IsBlockingMove && !_map.Tiles[top.ToIndex(_map.Width)].IsBlockingMove && !_map.Tiles[bottom.ToIndex(_map.Width)].IsBlockingMove) {
+            if (_map._tiles[right.ToIndex(_map.Width)].Has<BlocksMovement>() && _map._tiles[left.ToIndex(_map.Width)].Has<BlocksMovement>() && !_map._tiles[top.ToIndex(_map.Width)].Has<BlocksMovement>() && !_map._tiles[bottom.ToIndex(_map.Width)].Has<BlocksMovement>()) {
                 return true;
             }
             return false;

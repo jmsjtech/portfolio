@@ -4,7 +4,7 @@ using SadConsole;
 using SadConsole.Components;
 using System.Collections.Generic;
 
-namespace Oasis {
+namespace CritterQuest {
     public struct Render {
         public SadConsole.Entities.Entity sce;
 
