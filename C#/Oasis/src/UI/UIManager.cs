@@ -1,4 +1,4 @@
-﻿using DefaultEcs;
+﻿using MonoGame.Extended.Entities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using SadConsole;
@@ -110,7 +110,7 @@ namespace Oasis.UI {
             if (GameLoop.World.players[GameLoop.NetworkManager.myUID].Get<Viewshed>().view == null) {
                 GameLoop.World.players[GameLoop.NetworkManager.myUID].Get<Viewshed>().view = new GoRogue.FOV(GameLoop.World.CurrentMap.sightMap);
             }
-            GameLoop.World.players[GameLoop.NetworkManager.myUID].Get<Viewshed>().view.Calculate(GameLoop.World.players[GameLoop.NetworkManager.myUID].Get<Render>().GetPosition(), GameLoop.World.players[GameLoop.NetworkManager.myUID].Get<Viewshed>().radius);
+            GameLoop.World.players[GameLoop.NetworkManager.myUID].Get<Viewshed>().view.Calculate(GameLoop.World.players[GameLoop.NetworkManager.myUID].Get<Render>().sce.Position, GameLoop.World.players[GameLoop.NetworkManager.myUID].Get<Viewshed>().radius);
 
             base.Update(timeElapsed);
         }
@@ -133,19 +133,19 @@ namespace Oasis.UI {
 
             if (Global.KeyboardState.IsKeyReleased(Keys.T)) {
                 GameLoop.UIManager.MessageLog.Add("space");
-                Entity newItem = GameLoop.gs.ecs.CreateEntity();
-                newItem.Set(new Render { sce = new SadConsole.Entities.Entity(1, 1) });
-                newItem.Set(new Item { condition = 100, weight = 2, glyph = 'L', fg = Color.Green, value = 2 });
-                newItem.Set(new Name { name = "Fancy Shirt" });
+                Entity newItem = GameLoop.ecs.CreateEntity();
+                newItem.Attach(new Render { sce = new SadConsole.Entities.Entity(1, 1) });
+                newItem.Attach(new Item { condition = 100, weight = 2, glyph = 'L', fg = Color.Green, value = 2 });
+                newItem.Attach(new Name { name = "Fancy Shirt" });
 
-                newItem.Get<Render>().Init(GameLoop.World.players[GameLoop.NetworkManager.myUID].Get<Render>().GetPosition(), 'L', Color.Green);
+                Helper.Render_Init(newItem.Get<Render>(), GameLoop.World.players[GameLoop.NetworkManager.myUID].Get<Render>().sce.Position, 'L', Color.Green);
                 SyncMapEntities(GameLoop.World.CurrentMap);
             }
 
 
             if (Global.KeyboardState.IsKeyPressed(Keys.G)) {
-                if (GameLoop.World.CurrentMap.GetEntityAt<Item>(GameLoop.World.players[GameLoop.NetworkManager.myUID].Get<Render>().GetPosition()) != null) {
-                    Entity item = GameLoop.World.CurrentMap.GetEntityAt<Item>(GameLoop.World.players[GameLoop.NetworkManager.myUID].Get<Render>().GetPosition()).Value;
+                if (GameLoop.World.CurrentMap.GetEntityAt<Item>(GameLoop.World.players[GameLoop.NetworkManager.myUID].Get<Render>().sce.Position) != null) {
+                    Entity item = GameLoop.World.CurrentMap.GetEntityAt<Item>(GameLoop.World.players[GameLoop.NetworkManager.myUID].Get<Render>().sce.Position).Value;
                     GameLoop.CommandManager.Pickup(GameLoop.World.players[GameLoop.NetworkManager.myUID], item);
                     SyncMapEntities(GameLoop.World.CurrentMap);
                     CenterOnActor(GameLoop.World.players[GameLoop.NetworkManager.myUID]);
@@ -205,7 +205,7 @@ namespace Oasis.UI {
         public void SyncMapEntities(Map map) {
             MapConsole.Children.Clear();
 
-            foreach (Entity entity in GameLoop.gs.ecs.GetEntities().With<Render>().AsEnumerable()) {
+            foreach (Entity entity in GameLoop.ecs.GetEntities().With<Render>().AsEnumerable()) {
                 MapConsole.Children.Add(entity.Get<Render>().sce);
             }
 

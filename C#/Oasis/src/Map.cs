@@ -1,5 +1,5 @@
 ﻿using System;
-using DefaultEcs;
+using MonoGame.Extended.Entities;
 using GoRogue.Pathing;
 using Microsoft.Xna.Framework;
 using SadConsole;
@@ -46,14 +46,14 @@ namespace Oasis {
 
 
         public Entity? GetEntityAt<T>(Point location) where T : struct {
-            foreach (Entity entity in GameLoop.gs.ecs.GetEntities().With<Render>().With<T>().AsEnumerable()) {
-                if (entity.Has<Render>() && entity.Get<Render>().GetPosition() == location) {
+            foreach (Entity entity in GameLoop.ecs.GetEntities().With<Render>().With<T>().AsEnumerable()) {
+                if (entity.Has<Render>() && entity.Get<Render>().sce.Position == location) {
                     return entity;
                 }
             }
 
-            foreach (Entity entity in GameLoop.gs.ecs.GetEntities().With<Tile>().With<T>().AsEnumerable()) {
-                if (entity.Get<Tile>().GetPosition() == location) {
+            foreach (Entity entity in GameLoop.ecs.GetEntities().With<Tile>().With<T>().AsEnumerable()) {
+                if (entity.Get<Tile>().pos == location) {
                     return entity;
                 }
             }

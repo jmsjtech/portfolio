@@ -1,7 +1,0 @@
-{ 
-  "name" : "Animal",
-  "drops" : [
-      { "name" : "Hide", "weight" : 10 },
-      { "name" : "Meat", "weight" : 10 }
-  ]
-}

@@ -181,8 +181,8 @@ namespace Discord
         PushToTalk,
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct User
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class User
     {
         public Int64 Id;
 
@@ -198,8 +198,8 @@ namespace Discord
         public bool Bot;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct OAuth2Token
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class OAuth2Token
     {
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
         public string AccessToken;
@@ -210,8 +210,8 @@ namespace Discord
         public Int64 Expires;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct ImageHandle
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class ImageHandle
     {
         public ImageType Type;
 
@@ -220,24 +220,24 @@ namespace Discord
         public UInt32 Size;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct ImageDimensions
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class ImageDimensions
     {
         public UInt32 Width;
 
         public UInt32 Height;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct ActivityTimestamps
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class ActivityTimestamps
     {
         public Int64 Start;
 
         public Int64 End;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct ActivityAssets
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class ActivityAssets
     {
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
         public string LargeImage;
@@ -252,16 +252,16 @@ namespace Discord
         public string SmallText;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct PartySize
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class PartySize
     {
         public Int32 CurrentSize;
 
         public Int32 MaxSize;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct ActivityParty
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class ActivityParty
     {
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
         public string Id;
@@ -269,8 +269,8 @@ namespace Discord
         public PartySize Size;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct ActivitySecrets
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class ActivitySecrets
     {
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
         public string Match;
@@ -282,8 +282,8 @@ namespace Discord
         public string Spectate;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct Activity
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class Activity
     {
         public ActivityType Type;
 
@@ -309,16 +309,16 @@ namespace Discord
         public bool Instance;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct Presence
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class Presence
     {
         public Status Status;
 
         public Activity Activity;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct Relationship
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class Relationship
     {
         public RelationshipType Type;
 
@@ -327,8 +327,8 @@ namespace Discord
         public Presence Presence;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct Lobby
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class Lobby
     {
         public Int64 Id;
 
@@ -344,8 +344,8 @@ namespace Discord
         public bool Locked;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct FileStat
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class FileStat
     {
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
         public string Filename;
@@ -355,8 +355,8 @@ namespace Discord
         public UInt64 LastModified;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct Entitlement
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class Entitlement
     {
         public Int64 Id;
 
@@ -365,8 +365,8 @@ namespace Discord
         public Int64 SkuId;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct SkuPrice
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class SkuPrice
     {
         public UInt32 Amount;
 
@@ -374,8 +374,8 @@ namespace Discord
         public string Currency;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct Sku
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class Sku
     {
         public Int64 Id;
 
@@ -387,8 +387,8 @@ namespace Discord
         public SkuPrice Price;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct InputMode
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class InputMode
     {
         public InputModeType Type;
 
@@ -396,8 +396,8 @@ namespace Discord
         public string Shortcut;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct UserAchievement
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class UserAchievement
     {
         public Int64 UserId;
 
@@ -409,11 +409,11 @@ namespace Discord
         public string UnlockedAt;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct LobbyTransaction
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class LobbyTransaction
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate Result SetTypeMethod(IntPtr methodsPtr, LobbyType type);
@@ -448,17 +448,17 @@ namespace Discord
 
         internal IntPtr MethodsPtr;
 
-        internal Object MethodsStructure;
+        internal Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -536,11 +536,11 @@ namespace Discord
         }
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct LobbyMemberTransaction
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class LobbyMemberTransaction
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate Result SetMetadataMethod(IntPtr methodsPtr, [MarshalAs(UnmanagedType.LPStr)]string key, [MarshalAs(UnmanagedType.LPStr)]string value);
@@ -555,17 +555,17 @@ namespace Discord
 
         internal IntPtr MethodsPtr;
 
-        internal Object MethodsStructure;
+        internal Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -595,11 +595,11 @@ namespace Discord
         }
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public partial struct LobbySearchQuery
+    [classLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public partial class LobbySearchQuery
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate Result FilterMethod(IntPtr methodsPtr, [MarshalAs(UnmanagedType.LPStr)]string key, LobbySearchComparison comparison, LobbySearchCast cast, [MarshalAs(UnmanagedType.LPStr)]string value);
@@ -624,17 +624,17 @@ namespace Discord
 
         internal IntPtr MethodsPtr;
 
-        internal Object MethodsStructure;
+        internal Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -699,14 +699,14 @@ namespace Discord
 
     public partial class Discord : IDisposable
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIEvents
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIEvents
         {
 
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void DestroyHandler(IntPtr MethodsPtr);
@@ -787,8 +787,8 @@ namespace Discord
             internal GetAchievementManagerMethod GetAchievementManager;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFICreateParams
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFICreateParams
         {
             internal Int64 ClientId;
 
@@ -932,17 +932,17 @@ namespace Discord
 
         private IntPtr MethodsPtr;
 
-        private Object MethodsStructure;
+        private Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -1018,7 +1018,7 @@ namespace Discord
 
         private void InitEvents(IntPtr eventsPtr, ref FFIEvents events)
         {
-            Marshal.StructureToPtr(events, eventsPtr, false);
+            Marshal.classureToPtr(events, eventsPtr, false);
         }
 
         public void Dispose()
@@ -1224,14 +1224,14 @@ namespace Discord
 
     public partial class ApplicationManager
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIEvents
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIEvents
         {
 
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void ValidateOrExitCallback(IntPtr ptr, Result result);
@@ -1276,17 +1276,17 @@ namespace Discord
 
         private IntPtr MethodsPtr;
 
-        private Object MethodsStructure;
+        private Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -1305,7 +1305,7 @@ namespace Discord
 
         private void InitEvents(IntPtr eventsPtr, ref FFIEvents events)
         {
-            Marshal.StructureToPtr(events, eventsPtr, false);
+            Marshal.classureToPtr(events, eventsPtr, false);
         }
 
         [MonoPInvokeCallback]
@@ -1370,8 +1370,8 @@ namespace Discord
 
     public partial class UserManager
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIEvents
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIEvents
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void CurrentUserUpdateHandler(IntPtr ptr);
@@ -1379,8 +1379,8 @@ namespace Discord
             internal CurrentUserUpdateHandler OnCurrentUserUpdate;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate Result GetCurrentUserMethod(IntPtr methodsPtr, ref User currentUser);
@@ -1412,17 +1412,17 @@ namespace Discord
 
         private IntPtr MethodsPtr;
 
-        private Object MethodsStructure;
+        private Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -1444,7 +1444,7 @@ namespace Discord
         private void InitEvents(IntPtr eventsPtr, ref FFIEvents events)
         {
             events.OnCurrentUserUpdate = OnCurrentUserUpdateImpl;
-            Marshal.StructureToPtr(events, eventsPtr, false);
+            Marshal.classureToPtr(events, eventsPtr, false);
         }
 
         public User GetCurrentUser()
@@ -1509,14 +1509,14 @@ namespace Discord
 
     public partial class ImageManager
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIEvents
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIEvents
         {
 
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void FetchCallback(IntPtr ptr, Result result, ImageHandle handleResult);
@@ -1541,17 +1541,17 @@ namespace Discord
 
         private IntPtr MethodsPtr;
 
-        private Object MethodsStructure;
+        private Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -1570,7 +1570,7 @@ namespace Discord
 
         private void InitEvents(IntPtr eventsPtr, ref FFIEvents events)
         {
-            Marshal.StructureToPtr(events, eventsPtr, false);
+            Marshal.classureToPtr(events, eventsPtr, false);
         }
 
         [MonoPInvokeCallback]
@@ -1611,8 +1611,8 @@ namespace Discord
 
     public partial class ActivityManager
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIEvents
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIEvents
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void ActivityJoinHandler(IntPtr ptr, [MarshalAs(UnmanagedType.LPStr)]string secret);
@@ -1635,8 +1635,8 @@ namespace Discord
             internal ActivityInviteHandler OnActivityInvite;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate Result RegisterCommandMethod(IntPtr methodsPtr, [MarshalAs(UnmanagedType.LPStr)]string command);
@@ -1709,17 +1709,17 @@ namespace Discord
 
         private IntPtr MethodsPtr;
 
-        private Object MethodsStructure;
+        private Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -1750,7 +1750,7 @@ namespace Discord
             events.OnActivitySpectate = OnActivitySpectateImpl;
             events.OnActivityJoinRequest = OnActivityJoinRequestImpl;
             events.OnActivityInvite = OnActivityInviteImpl;
-            Marshal.StructureToPtr(events, eventsPtr, false);
+            Marshal.classureToPtr(events, eventsPtr, false);
         }
 
         public void RegisterCommand(string command)
@@ -1893,8 +1893,8 @@ namespace Discord
 
     public partial class RelationshipManager
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIEvents
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIEvents
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void RefreshHandler(IntPtr ptr);
@@ -1907,8 +1907,8 @@ namespace Discord
             internal RelationshipUpdateHandler OnRelationshipUpdate;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate bool FilterCallback(IntPtr ptr, ref Relationship relationship);
@@ -1942,17 +1942,17 @@ namespace Discord
 
         private IntPtr MethodsPtr;
 
-        private Object MethodsStructure;
+        private Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -1977,7 +1977,7 @@ namespace Discord
         {
             events.OnRefresh = OnRefreshImpl;
             events.OnRelationshipUpdate = OnRelationshipUpdateImpl;
-            Marshal.StructureToPtr(events, eventsPtr, false);
+            Marshal.classureToPtr(events, eventsPtr, false);
         }
 
         [MonoPInvokeCallback]
@@ -2053,8 +2053,8 @@ namespace Discord
 
     public partial class LobbyManager
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIEvents
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIEvents
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void LobbyUpdateHandler(IntPtr ptr, Int64 lobbyId);
@@ -2097,8 +2097,8 @@ namespace Discord
             internal NetworkMessageHandler OnNetworkMessage;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate Result GetLobbyCreateTransactionMethod(IntPtr methodsPtr, ref IntPtr transaction);
@@ -2339,17 +2339,17 @@ namespace Discord
 
         private IntPtr MethodsPtr;
 
-        private Object MethodsStructure;
+        private Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -2392,7 +2392,7 @@ namespace Discord
             events.OnLobbyMessage = OnLobbyMessageImpl;
             events.OnSpeaking = OnSpeakingImpl;
             events.OnNetworkMessage = OnNetworkMessageImpl;
-            Marshal.StructureToPtr(events, eventsPtr, false);
+            Marshal.classureToPtr(events, eventsPtr, false);
         }
 
         public LobbyTransaction GetLobbyCreateTransaction()
@@ -2887,8 +2887,8 @@ namespace Discord
 
     public partial class NetworkManager
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIEvents
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIEvents
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void MessageHandler(IntPtr ptr, UInt64 peerId, byte channelId, IntPtr dataPtr, Int32 dataLen);
@@ -2901,8 +2901,8 @@ namespace Discord
             internal RouteUpdateHandler OnRouteUpdate;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void GetPeerIdMethod(IntPtr methodsPtr, ref UInt64 peerId);
@@ -2951,17 +2951,17 @@ namespace Discord
 
         private IntPtr MethodsPtr;
 
-        private Object MethodsStructure;
+        private Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -2986,7 +2986,7 @@ namespace Discord
         {
             events.OnMessage = OnMessageImpl;
             events.OnRouteUpdate = OnRouteUpdateImpl;
-            Marshal.StructureToPtr(events, eventsPtr, false);
+            Marshal.classureToPtr(events, eventsPtr, false);
         }
 
         /// <summary>
@@ -3110,8 +3110,8 @@ namespace Discord
 
     public partial class OverlayManager
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIEvents
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIEvents
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void ToggleHandler(IntPtr ptr, bool locked);
@@ -3119,8 +3119,8 @@ namespace Discord
             internal ToggleHandler OnToggle;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void IsEnabledMethod(IntPtr methodsPtr, ref bool enabled);
@@ -3177,17 +3177,17 @@ namespace Discord
 
         private IntPtr MethodsPtr;
 
-        private Object MethodsStructure;
+        private Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -3209,7 +3209,7 @@ namespace Discord
         private void InitEvents(IntPtr eventsPtr, ref FFIEvents events)
         {
             events.OnToggle = OnToggleImpl;
-            Marshal.StructureToPtr(events, eventsPtr, false);
+            Marshal.classureToPtr(events, eventsPtr, false);
         }
 
         public bool IsEnabled()
@@ -3300,14 +3300,14 @@ namespace Discord
 
     public partial class StorageManager
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIEvents
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIEvents
         {
 
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate Result ReadMethod(IntPtr methodsPtr, [MarshalAs(UnmanagedType.LPStr)]string name, byte[] data, Int32 dataLen, ref UInt32 read);
@@ -3382,17 +3382,17 @@ namespace Discord
 
         private IntPtr MethodsPtr;
 
-        private Object MethodsStructure;
+        private Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -3411,7 +3411,7 @@ namespace Discord
 
         private void InitEvents(IntPtr eventsPtr, ref FFIEvents events)
         {
-            Marshal.StructureToPtr(events, eventsPtr, false);
+            Marshal.classureToPtr(events, eventsPtr, false);
         }
 
         public UInt32 Read(string name, byte[] data)
@@ -3546,8 +3546,8 @@ namespace Discord
 
     public partial class StoreManager
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIEvents
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIEvents
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void EntitlementCreateHandler(IntPtr ptr, ref Entitlement entitlement);
@@ -3560,8 +3560,8 @@ namespace Discord
             internal EntitlementDeleteHandler OnEntitlementDelete;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void FetchSkusCallback(IntPtr ptr, Result result);
@@ -3635,17 +3635,17 @@ namespace Discord
 
         private IntPtr MethodsPtr;
 
-        private Object MethodsStructure;
+        private Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -3670,7 +3670,7 @@ namespace Discord
         {
             events.OnEntitlementCreate = OnEntitlementCreateImpl;
             events.OnEntitlementDelete = OnEntitlementDeleteImpl;
-            Marshal.StructureToPtr(events, eventsPtr, false);
+            Marshal.classureToPtr(events, eventsPtr, false);
         }
 
         [MonoPInvokeCallback]
@@ -3812,8 +3812,8 @@ namespace Discord
 
     public partial class VoiceManager
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIEvents
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIEvents
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void SettingsUpdateHandler(IntPtr ptr);
@@ -3821,8 +3821,8 @@ namespace Discord
             internal SettingsUpdateHandler OnSettingsUpdate;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate Result GetInputModeMethod(IntPtr methodsPtr, ref InputMode inputMode);
@@ -3884,17 +3884,17 @@ namespace Discord
 
         private IntPtr MethodsPtr;
 
-        private Object MethodsStructure;
+        private Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -3916,7 +3916,7 @@ namespace Discord
         private void InitEvents(IntPtr eventsPtr, ref FFIEvents events)
         {
             events.OnSettingsUpdate = OnSettingsUpdateImpl;
-            Marshal.StructureToPtr(events, eventsPtr, false);
+            Marshal.classureToPtr(events, eventsPtr, false);
         }
 
         public InputMode GetInputMode()
@@ -4039,8 +4039,8 @@ namespace Discord
 
     public partial class AchievementManager
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIEvents
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIEvents
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void UserAchievementUpdateHandler(IntPtr ptr, ref UserAchievement userAchievement);
@@ -4048,8 +4048,8 @@ namespace Discord
             internal UserAchievementUpdateHandler OnUserAchievementUpdate;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal partial struct FFIMethods
+        [classLayout(LayoutKind.Sequential)]
+        internal partial class FFIMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate void SetUserAchievementCallback(IntPtr ptr, Result result);
@@ -4091,17 +4091,17 @@ namespace Discord
 
         private IntPtr MethodsPtr;
 
-        private Object MethodsStructure;
+        private Object Methodsclassure;
 
         private FFIMethods Methods
         {
             get
             {
-                if (MethodsStructure == null)
+                if (Methodsclassure == null)
                 {
-                    MethodsStructure = Marshal.PtrToStructure(MethodsPtr, typeof(FFIMethods));
+                    Methodsclassure = Marshal.PtrToclassure(MethodsPtr, typeof(FFIMethods));
                 }
-                return (FFIMethods)MethodsStructure;
+                return (FFIMethods)Methodsclassure;
             }
 
         }
@@ -4123,7 +4123,7 @@ namespace Discord
         private void InitEvents(IntPtr eventsPtr, ref FFIEvents events)
         {
             events.OnUserAchievementUpdate = OnUserAchievementUpdateImpl;
-            Marshal.StructureToPtr(events, eventsPtr, false);
+            Marshal.classureToPtr(events, eventsPtr, false);
         }
 
         [MonoPInvokeCallback]

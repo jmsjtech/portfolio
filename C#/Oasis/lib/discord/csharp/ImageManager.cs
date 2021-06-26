@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Discord
 {
-	public partial struct ImageHandle
+	public partial class ImageHandle
     {
         static public ImageHandle User(Int64 id)
         {

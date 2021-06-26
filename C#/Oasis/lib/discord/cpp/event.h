@@ -47,7 +47,7 @@ public:
     }
 
 private:
-    struct Slot {
+    class Slot {
         Token token;
         std::function<void(Args...)> fn;
     };
