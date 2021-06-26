@@ -100,6 +100,8 @@
     <Compile Include="src\Map.cs" />
     <Compile Include="src\MapGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="src\NetworkManager.cs" />
+    <Compile Include="src\SaveManager.cs" />
     <Compile Include="src\Tiles\TileBase.cs" />
     <Compile Include="src\Tiles\TileFloor.cs" />
     <Compile Include="src\Tiles\TileWall.cs" />
@@ -122,6 +124,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="applicationid.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="discord_game_sdk.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="fonts\Cheepicus_12x12.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

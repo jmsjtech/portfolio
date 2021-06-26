@@ -1,15 +1,5 @@
-﻿>> AI Refinement
-    >> Need-based Goals
-        >> Hunger
-        >> Thirst
-        >> Sleep
-        >> Entertainment?
-        >> Store at least one known place to fill a need, go there to fill it, remove it if need can't be filled there anymore
-    >> Faction Data
-        >> Attach faction data to every NPC
-        >> Don't attack entities in the same faction
-        >> Variable reactions to other Factions
-        >> Killing NPCs lowers relationship with their faction
+﻿>> AI
+	>> Just make them run at the player if they're in sight
 >> Networking Stuff
     >> Differentiate between hosting and joining
     >> Establish and maintain connections

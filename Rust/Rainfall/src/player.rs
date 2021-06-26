@@ -85,7 +85,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
             let new_idx = map.xy_idx(pos.x, pos.y);
             entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
             crate::spatial::move_entity(entity, old_idx, new_idx);
-
+            
             viewshed.dirty = true;
             let mut ppos = ecs.write_resource::<Point>();
             ppos.x = pos.x;

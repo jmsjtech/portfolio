@@ -14,19 +14,23 @@ impl<'a> System<'a> for TriggerSystem {
                         ReadStorage<'a, AreaOfEffect>);
 
     fn run(&mut self, data : Self::SystemData) {
-        let (map, mut entity_moved, position, entry_trigger, 
-            names, entities, area_of_effect) = data;
+        let (map, mut entity_moved, position, entry_trigger, names, entities, area_of_effect) = data;
+        
         // Iterate the entities that moved and their final position
         for (entity, mut _entity_moved, pos) in (&entities, &mut entity_moved, &position).join() {
             let idx = map.xy_idx(pos.x, pos.y);
+            
             crate::spatial::for_each_tile_content(idx, |entity_id| {
                 if entity != entity_id { // Do not bother to check yourself for being a trap!
+                    
+                    crate::gamelog::Logger::new().append("Trigger 2").log();
                     let maybe_trigger = entry_trigger.get(entity_id);
                     match maybe_trigger {
                         None => { },
                         Some(_trigger) => {
                             // We triggered it
                             let name = names.get(entity_id);
+                            
                             if let Some(name) = name {
                                 crate::gamelog::Logger::new()
                                     .color(rltk::RED)

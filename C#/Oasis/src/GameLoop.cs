@@ -18,6 +18,8 @@ namespace Oasis {
         public static UIManager UIManager;
         public static World World;
         public static CommandManager CommandManager;
+        public static SaveManager SaveManager;
+        public static NetworkManager NetworkManager;
         public static Random GlobalRand = new Random();
 
 
@@ -30,17 +32,17 @@ namespace Oasis {
         };
 
 
-        static void Main(string[] args) {             
+        static void Main(string[] args) {
             SadConsole.Game.Create(GameWidth, GameHeight);
 
-            
+
             SadConsole.Game.OnInitialize = Init;
 
             SadConsole.Game.OnUpdate = Update;
 
             SadConsole.Game.Instance.Run();
 
-            
+
 
             SadConsole.Game.Instance.Dispose();
         }
@@ -64,10 +66,11 @@ namespace Oasis {
             SadConsole.Global.GraphicsDeviceManager.ApplyChanges();
 
 
-
+            NetworkManager = new NetworkManager();
             UIManager = new UIManager();
             World = new World();
             CommandManager = new CommandManager();
+            SaveManager = new SaveManager();
 
             UIManager.Init();
 

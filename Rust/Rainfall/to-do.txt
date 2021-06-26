@@ -72,7 +72,7 @@ The Old Mines
 
 
 Alchemy systems
-- Assign RYBW values to each potions
+- Assign RYBW values to each elixir
 - Assign RYBW values to ingredients
 - Combine any amount of ingredients into vial, heat to turn into a potions
 -- If the prospective potion RYBW matches a valid potion RYBW, you get that potions
@@ -81,6 +81,18 @@ Alchemy systems
 
 
 Item Use System: Separate zap/aim wands into their own menu
+
+
+
+Elites, Uniques, Wondrous Items, and Artifacts
+-Elites: Enhanced versions of monsters using generic templates that apply to any monster
+- Uniques: Named monsters that can only be killed once (they won't spawn if the player has already killed them)
+-- Uniques (maybe only some?) spawn in a prefab section customized to them
+- Wondrous Items: Enhanced items using templates fit to either specific item types or all items
+- Artifacts: Named items that can only spawn once (won't spawn if the player has already found them)
+
+
+
 
 
 

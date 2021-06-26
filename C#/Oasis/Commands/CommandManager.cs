@@ -4,9 +4,9 @@ using Microsoft.Xna.Framework;
 using System.Text;
 using GoRogue.DiceNotation;
 using SadConsole.Components;
-using CritterQuest;
+using Oasis;
 
-namespace CritterQuest.Commands {
+namespace Oasis.Commands {
     public class CommandManager {
         private Point _lastMoveEntityPoint;
         private Entity _lastMoveEntity;
