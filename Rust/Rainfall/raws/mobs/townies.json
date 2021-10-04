@@ -1,0 +1,255 @@
+{
+    "name" : "Barkeep",
+    "renderable": {
+        "glyph" : "☻",
+        "fg" : "#EE82EE",
+        "bg" : "#000000",
+        "order" : 1
+    },
+    "blocks_tile" : true,
+    "vision_range" : 4,
+    "movement" : "static",
+    "attributes" : {
+        "intelligence" : 13
+    },
+    "skills" : {
+        "Melee" : 2
+    },
+    "equipped" : [ "Cudgel", "Cloth Tunic", "Cloth Pants", "Slippers" ],
+    "faction" : "Townsfolk",
+    "gold" : "2d6",
+    "vendor" : [ "food" ]
+},
+
+{
+    "name" : "Shady Salesman",
+    "renderable": {
+        "glyph" : "h",
+        "fg" : "#EE82EE",
+        "bg" : "#000000",
+        "order" : 1
+    },
+    "blocks_tile" : true,
+    "vision_range" : 4,
+    "movement" : "static",
+    "attributes" : {},
+    "equipped" : [ "Cudgel", "Cloth Tunic", "Cloth Pants", "Slippers" ],
+    "faction" : "Townsfolk",
+    "gold" : "2d6",
+    "vendor" : [ "junk" ]
+},
+
+{
+    "name" : "Patron",
+    "renderable": {
+        "glyph" : "☻",
+        "fg" : "#AAAAAA",
+        "bg" : "#000000",
+        "order" : 1
+    },
+    "blocks_tile" : true,
+    "vision_range" : 4,
+    "movement" : "random",
+    "quips" : [ "Quiet down, it's too early!", "Oh my, I drank too much.", "Still saving the world, eh?" ],
+    "attributes" : {},
+    "equipped" : [ "Cudgel", "Cloth Tunic", "Cloth Pants", "Slippers" ],
+    "faction" : "Townsfolk",
+    "gold" : "1d4"
+},
+
+{
+    "name" : "Priest",
+    "renderable": {
+        "glyph" : "☻",
+        "fg" : "#EE82EE",
+        "bg" : "#000000",
+        "order" : 1
+    },
+    "blocks_tile" : true,
+    "vision_range" : 4,
+    "movement" : "static",
+    "attributes" : {},
+    "equipped" : [ "Cudgel", "Cloth Tunic", "Cloth Pants", "Slippers" ],
+    "faction" : "Townsfolk",
+    "gold" : "2d6"
+},
+
+{
+    "name" : "Parishioner",
+    "renderable": {
+        "glyph" : "☻",
+        "fg" : "#AAAAAA",
+        "bg" : "#000000",
+        "order" : 1
+    },
+    "blocks_tile" : true,
+    "vision_range" : 4,
+    "movement" : "random",
+    "quips" : [ "Great to see a new face here!", "I hear there's going to be a good sermon on tea", "Want some cake?" ],
+    "attributes" : {},
+    "equipped" : [ "Cudgel", "Cloth Tunic", "Cloth Pants", "Slippers" ],
+    "faction" : "Townsfolk",
+    "gold" : "1d4"
+},
+
+{
+    "name" : "Blacksmith",
+    "renderable": {
+        "glyph" : "☻",
+        "fg" : "#EE82EE",
+        "bg" : "#000000",
+        "order" : 1
+    },
+    "blocks_tile" : true,
+    "vision_range" : 4,
+    "movement" : "static",
+    "attributes" : {},
+    "equipped" : [ "Cudgel", "Cloth Tunic", "Cloth Pants", "Slippers" ],
+    "faction" : "Townsfolk",
+    "gold" : "2d6",
+    "vendor" : [ "armor", "weapon" ]
+},
+
+{
+    "name" : "Clothier",
+    "renderable": {
+        "glyph" : "☻",
+        "fg" : "#EE82EE",
+        "bg" : "#000000",
+        "order" : 1
+    },
+    "blocks_tile" : true,
+    "vision_range" : 4,
+    "movement" : "static",
+    "attributes" : {},
+    "equipped" : [ "Cudgel", "Cloth Tunic", "Cloth Pants", "Slippers" ],
+    "faction" : "Townsfolk",
+    "gold" : "2d6",
+    "vendor" : [ "clothes" ]
+},
+
+{
+    "name" : "Alchemist",
+    "renderable": {
+        "glyph" : "☻",
+        "fg" : "#EE82EE",
+        "bg" : "#000000",
+        "order" : 1
+    },
+    "blocks_tile" : true,
+    "vision_range" : 4,
+    "movement" : "static",
+    "attributes" : {},
+    "equipped" : [ "Cudgel", "Cloth Tunic", "Cloth Pants", "Slippers" ],
+    "faction" : "Townsfolk",
+    "gold" : "2d6",
+    "vendor" : [ "alchemy" ]
+},
+
+{
+    "name" : "Mom",
+    "renderable": {
+        "glyph" : "☻",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 1
+    },
+    "blocks_tile" : true,
+    "vision_range" : 4,
+    "movement" : "static",
+    "quips" : [ "Hello, dear", "Off saving the world again?", "Be careful in the dungeon!", "Your father would be so proud, were he here." ],
+    "attributes" : {},
+    "equipped" : [ "Cudgel", "Cloth Tunic", "Cloth Pants", "Slippers" ],
+    "faction" : "Townsfolk",
+    "gold" : "2d6"
+},
+
+{
+    "name" : "Peasant",
+    "renderable": {
+        "glyph" : "☻",
+        "fg" : "#999999",
+        "bg" : "#000000",
+        "order" : 1
+    },
+    "blocks_tile" : true,
+    "vision_range" : 4,
+    "movement" : "random_waypoint",
+    "quips" : [ "Why are you in my house?" ],
+    "attributes" : {},
+    "equipped" : [ "Cudgel", "Cloth Tunic", "Cloth Pants", "Slippers" ],
+    "faction" : "Townsfolk",
+    "gold" : "1d2"
+},
+
+{
+    "name" : "Dock Worker",
+    "renderable": {
+        "glyph" : "☻",
+        "fg" : "#999999",
+        "bg" : "#000000",
+        "order" : 1
+    },
+    "blocks_tile" : true,
+    "vision_range" : 4,
+    "movement" : "random_waypoint",
+    "quips" : [ "Lovely day, eh?", "Nice weather", "Hello" ],
+    "attributes" : {},
+    "equipped" : [ "Cudgel", "Cloth Tunic", "Cloth Pants", "Slippers" ],
+    "faction" : "Townsfolk",
+    "gold" : "1d2"
+},
+
+{
+    "name" : "Fisher",
+    "renderable": {
+        "glyph" : "☻",
+        "fg" : "#999999",
+        "bg" : "#000000",
+        "order" : 1
+    },
+    "blocks_tile" : true,
+    "vision_range" : 4,
+    "movement" : "random_waypoint",
+    "quips" : [ "They're biting today!", "I caught something, but it wasn't a fish!", "Looks like rain" ],
+    "attributes" : {},
+    "equipped" : [ "Cudgel", "Cloth Tunic", "Cloth Pants", "Slippers" ],
+    "faction" : "Townsfolk",
+    "gold" : "1d2"
+},
+
+{
+    "name" : "Wannabe Pirate",
+    "renderable": {
+        "glyph" : "☻",
+        "fg" : "#aa9999",
+        "bg" : "#000000",
+        "order" : 1
+    },
+    "blocks_tile" : true,
+    "vision_range" : 4,
+    "movement" : "random_waypoint",
+    "quips" : [ "Arrr", "Grog!", "Booze!" ],
+    "attributes" : {},
+    "equipped" : [ "Cudgel", "Cloth Tunic", "Cloth Pants", "Slippers" ],
+    "faction" : "Townsfolk",
+    "gold" : "2d6"
+},
+
+{
+    "name" : "Drunk",
+    "renderable": {
+        "glyph" : "☻",
+        "fg" : "#aa9999",
+        "bg" : "#000000",
+        "order" : 1
+    },
+    "blocks_tile" : true,
+    "vision_range" : 4,
+    "movement" : "random",
+    "quips" : [ "Hic", "Need... more... booze!", "Spare a copper?" ],
+    "attributes" : {},
+    "equipped" : [ "Cudgel", "Cloth Tunic", "Cloth Pants", "Slippers" ],
+    "faction" : "Townsfolk",
+    "gold" : "1d2"
+}

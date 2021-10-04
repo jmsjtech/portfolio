@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MonoGame.Extended.Entities;
+using DefaultEcs;
 using Microsoft.Xna.Framework;
 
 namespace Oasis {
@@ -66,12 +66,12 @@ namespace Oasis {
         // Fills the map with walls
         private void FloodWalls() {
             for (int i = 0; i < _map.Tiles.Length; i++) {
-                Entity newTile = GameLoop.ecs.CreateEntity();
-                newTile.Attach(new Tile { cell = new SadConsole.Cell(Color.White, Color.Transparent, '#') });
-                newTile.Get<Tile>().pos = i.ToPoint(_map.Width);
-                newTile.Attach(new BlocksMovement { });
-                newTile.Attach(new BlocksVisibility { });
-                newTile.Attach(new Name { name = "Wall" });
+                Entity newTile = GameLoop.gs.ecs.CreateEntity();
+                newTile.Set(new Tile { cell = new SadConsole.Cell(Color.White, Color.Transparent, '#') });
+                newTile.Get<Tile>().SetPosition(i, _map.Width);
+                newTile.Set(new BlocksMovement { });
+                newTile.Set(new BlocksVisibility { });
+                newTile.Set(new Name { name = "Wall" });
 
                 _map._tiles[i] = newTile;
                 _map.Tiles[i] = newTile.Get<Tile>().cell;
@@ -100,13 +100,13 @@ namespace Oasis {
         // Creates a Floor tile at the specified X/Y location
         private void CreateFloor(Point location) {
             if (_map._tiles[location.ToIndex(_map.Width)] != null) {
-                _map._tiles[location.ToIndex(_map.Width)].Destroy();
+                _map._tiles[location.ToIndex(_map.Width)].Dispose();
             }
 
-            Entity newTile = GameLoop.ecs.CreateEntity();
-            newTile.Attach(new Tile { cell = new SadConsole.Cell(Color.White, Color.Transparent, '.') });
-            newTile.Get<Tile>().pos = location;
-            newTile.Attach(new Name { name = "Floor" });
+            Entity newTile = GameLoop.gs.ecs.CreateEntity();
+            newTile.Set(new Tile { cell = new SadConsole.Cell(Color.White, Color.Transparent, '.') });
+            newTile.Get<Tile>().SetPosition(location);
+            newTile.Set(new Name { name = "Floor" });
 
             _map._tiles[location.ToIndex(_map.Width)] = newTile;
             _map.Tiles[location.ToIndex(_map.Width)] = newTile.Get<Tile>().cell;
@@ -115,15 +115,15 @@ namespace Oasis {
         // Creates a Wall tile at the specified X/Y location
         private void CreateWall(Point location) {
             if (_map._tiles[location.ToIndex(_map.Width)] != null) {
-                _map._tiles[location.ToIndex(_map.Width)].Destroy();
+                _map._tiles[location.ToIndex(_map.Width)].Dispose();
             }
 
-            Entity newTile = GameLoop.ecs.CreateEntity();
-            newTile.Attach(new Tile { cell = new SadConsole.Cell(Color.White, Color.Transparent, '#') });
-            newTile.Get<Tile>().pos = location;
-            newTile.Attach(new BlocksMovement { });
-            newTile.Attach(new BlocksVisibility { });
-            newTile.Attach(new Name { name = "Wall" });
+            Entity newTile = GameLoop.gs.ecs.CreateEntity();
+            newTile.Set(new Tile { cell = new SadConsole.Cell(Color.White, Color.Transparent, '#') });
+            newTile.Get<Tile>().SetPosition(location);
+            newTile.Set(new BlocksMovement { });
+            newTile.Set(new BlocksVisibility { });
+            newTile.Set(new Name { name = "Wall" });
 
             _map._tiles[location.ToIndex(_map.Width)] = newTile;
             _map.Tiles[location.ToIndex(_map.Width)] = newTile.Get<Tile>().cell;
@@ -137,17 +137,17 @@ namespace Oasis {
                 int locationIndex = location.ToIndex(_map.Width);
                 if (IsPotentialDoor(location)) {
                     if (_map._tiles[locationIndex] != null) {
-                        _map._tiles[locationIndex].Destroy();
+                        _map._tiles[locationIndex].Dispose();
                     }
 
                     // Create a new door that is closed and unlocked.
-                    Entity newDoor = GameLoop.ecs.CreateEntity();
-                    newDoor.Attach(new Door { is_locked = false, is_open = false });
-                    newDoor.Attach(new BlocksMovement { });
-                    newDoor.Attach(new BlocksVisibility { });
-                    newDoor.Attach(new Name { name = "Door" });
-                    newDoor.Attach(new Tile { cell = new SadConsole.Cell(Color.SaddleBrown, Color.Transparent, '+') });
-                    newDoor.Get<Tile>().pos = locationIndex.ToPoint(_map.Width);
+                    Entity newDoor = GameLoop.gs.ecs.CreateEntity();
+                    newDoor.Set(new Door { is_locked = false, is_open = false });
+                    newDoor.Set(new BlocksMovement { });
+                    newDoor.Set(new BlocksVisibility { });
+                    newDoor.Set(new Name { name = "Door" });
+                    newDoor.Set(new Tile { cell = new SadConsole.Cell(Color.SaddleBrown, Color.Transparent, '+') });
+                    newDoor.Get<Tile>().SetPosition(locationIndex, _map.Width);
 
                     _map._tiles[locationIndex] = newDoor;
                     _map.Tiles[locationIndex] = newDoor.Get<Tile>().cell;

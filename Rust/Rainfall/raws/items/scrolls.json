@@ -1,0 +1,160 @@
+{
+    "name" : "Magic Missile Scroll",
+    "renderable": {
+        "glyph" : ")",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : { 
+            "ranged" : "6",
+            "damage" : "20",
+            "particle_line" : "▓;#00FFFF;200.0"
+        }
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 50.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "scroll" }
+},
+
+{
+    "name" : "Web Scroll",
+    "renderable": {
+        "glyph" : ")",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : { 
+            "ranged" : "6",
+            "slow" : "10.0",
+            "area_of_effect" : "3",
+            "particle_line" : "☼;#FFFFFF;200.0"
+        }
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 500.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "scroll" }
+},
+
+{
+    "name" : "Fireball Scroll",
+    "renderable": {
+        "glyph" : ")",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : { 
+            "ranged" : "6",
+            "damage" : "20",
+            "area_of_effect" : "3",
+            "particle" : "▓;#FFA500;200.0"
+        }
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 100.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "scroll" }
+},
+
+{
+    "name" : "Confusion Scroll",
+    "renderable": {
+        "glyph" : ")",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : { 
+            "ranged" : "6",
+            "confusion" : "4"
+        }
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 75.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "scroll" }
+},
+
+{
+    "name" : "Magic Mapping Scroll",
+    "renderable": {
+        "glyph" : ")",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : {
+            "magic_mapping" : ""
+        }
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 50.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "scroll" }
+},
+
+{
+    "name" : "Town Portal Scroll",
+    "renderable": {
+        "glyph" : ")",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : {
+            "town_portal" : ""
+        }
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 20.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "scroll" }
+},
+
+{
+    "name" : "Remove Curse Scroll",
+    "renderable": {
+        "glyph" : ")",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : {
+            "remove_curse" : ""
+        }
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 50.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "scroll" }
+},
+
+{
+    "name" : "Identify Scroll",
+    "renderable": {
+        "glyph" : ")",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : {
+            "identify" : ""
+        }
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 50.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "scroll" }
+}

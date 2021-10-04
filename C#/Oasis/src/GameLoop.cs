@@ -3,12 +3,11 @@ using SadConsole;
 using Console = SadConsole.Console;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoGame.Extended.Entities;
+using DefaultEcs;
 using Microsoft.Xna.Framework.Input;
 using SadConsole.Components;
 using Oasis.UI;
 using Oasis.Commands;
-using System.Collections.Generic;
 
 namespace Oasis {
     class GameLoop {
@@ -17,15 +16,20 @@ namespace Oasis {
         public const int GameHeight = 50;
 
         public static UIManager UIManager;
-        public static GameWorld World;
+        public static World World;
         public static CommandManager CommandManager;
         public static SaveManager SaveManager;
         public static NetworkManager NetworkManager;
         public static Random GlobalRand = new Random();
-        public static World ecs;
-        public static List<int> entityIDs;
-        public static EntityManager Components;
 
+
+        public struct State {
+            public DefaultEcs.World ecs;
+        }
+
+        public static State gs = new State {
+            ecs = new DefaultEcs.World()
+        };
 
 
         static void Main(string[] args) {
@@ -44,7 +48,6 @@ namespace Oasis {
         }
 
         private static void Update(GameTime time) {
-            ecs.Update(time);
         }
 
         private static void Init() {
@@ -62,17 +65,10 @@ namespace Oasis {
             SadConsole.Global.GraphicsDeviceManager.IsFullScreen = false;
             SadConsole.Global.GraphicsDeviceManager.ApplyChanges();
 
-            ecs = new WorldBuilder()
-           //     .AddSystem(new PlayerSystem())
-                .Build();
-
-            
-
-            entityIDs = new List<int>();
 
             NetworkManager = new NetworkManager();
             UIManager = new UIManager();
-            World = new GameWorld();
+            World = new World();
             CommandManager = new CommandManager();
             SaveManager = new SaveManager();
 

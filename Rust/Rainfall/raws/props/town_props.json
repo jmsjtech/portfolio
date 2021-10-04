@@ -1,0 +1,330 @@
+{
+    "name" : "Keg",
+    "renderable": {
+        "glyph" : "φ",
+        "fg" : "#AAAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true
+},
+
+{
+    "name" : "Table",
+    "renderable": {
+        "glyph" : "╦",
+        "fg" : "#964B00",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true
+},
+
+{
+    "name" : "ChairL",
+    "renderable": {
+        "glyph" : "┌",
+        "fg" : "#964B00",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "display_name": "Chair"
+},
+
+{
+    "name" : "ChairR",
+    "renderable": {
+        "glyph" : "┐",
+        "fg" : "#964B00",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "display_name": "Chair"
+},
+
+{
+    "name" : "Stool",
+    "renderable": {
+        "glyph" : "°",
+        "fg" : "#964B00",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "display_name": "Stool"
+},
+
+{
+    "name" : "Countertop",
+    "renderable": {
+        "glyph" : "=",
+        "fg" : "#964B00",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "display_name": "Countertop",
+    "blocks_tile" : true
+},
+
+{
+    "name" : "Altar",
+    "renderable": {
+        "glyph" : "╫",
+        "fg" : "#5555FF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "entry_trigger" : {
+        "effects" : {
+            "provides_healing" : "100"
+        }
+    }
+},
+
+{
+    "name" : "Candle",
+    "renderable": {
+        "glyph" : "Ä",
+        "fg" : "#FFA500",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false
+},
+
+{
+    "name" : "Anvil",
+    "renderable": {
+        "glyph" : "╔",
+        "fg" : "#AAAAAA",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false
+},
+
+{
+    "name" : "Water Trough",
+    "renderable": {
+        "glyph" : "•",
+        "fg" : "#5555FF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false
+},
+
+{
+    "name" : "Weapon Rack",
+    "renderable": {
+        "glyph" : "π",
+        "fg" : "#FFD700",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true
+},
+
+{
+    "name" : "Armor Stand",
+    "renderable": {
+        "glyph" : "⌠",
+        "fg" : "#FFFFFF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true
+},
+
+{
+    "name" : "Chemistry Set",
+    "renderable": {
+        "glyph" : "δ",
+        "fg" : "#00FFFF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true
+},
+
+{
+    "name" : "Cabinet",
+    "renderable": {
+        "glyph" : "±",
+        "fg" : "#805A46",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true
+},
+
+{
+    "name" : "Bed",
+    "renderable": {
+        "glyph" : "8",
+        "fg" : "#805A46",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false
+},
+
+{
+    "name" : "Loom",
+    "renderable": {
+        "glyph" : "¢",
+        "fg" : "#805A46",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true
+},
+
+{
+    "name" : "Hide Rack",
+    "renderable": {
+        "glyph" : "π",
+        "fg" : "#805A46",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true
+},
+
+{
+    "name" : "Potted Plant",
+    "renderable": {
+        "glyph" : "£",
+        "fg" : "#00FF7F",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true
+},
+
+{
+    "name" : "Rose",
+    "renderable": {
+        "glyph" : "*",
+        "fg" : "#FF2200",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false
+},
+
+{
+    "name" : "Violet",
+    "renderable": {
+        "glyph" : "*",
+        "fg" : "#ee82ee",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false
+},
+
+{
+    "name" : "Daisy",
+    "renderable": {
+        "glyph" : "*",
+        "fg" : "#FFFF00",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false
+},
+
+{
+    "name" : "Quest Board",
+    "renderable": {
+        "glyph" : "¥",
+        "fg" : "#805A46",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true
+},
+
+{
+    "name" : "Bookshelf",
+    "renderable": {
+        "glyph" : "E",
+        "fg" : "#805A46",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true
+},
+
+{
+    "name" : "Stack of BooksB",
+    "renderable": {
+        "glyph" : "ñ",
+        "fg" : "#0088FF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true,
+    "display_name": "Stack of Books"
+},
+
+{
+    "name" : "Stack of BooksR",
+    "renderable": {
+        "glyph" : "ñ",
+        "fg" : "#FF0000",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "blocks_tile" : true,
+    "display_name": "Stack of Books"
+},
+
+{
+    "name" : "Teleporter CrystalU",
+    "renderable": {
+        "glyph" : "«",
+        "fg" : "#FF0000",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "hidden" : false,
+    "display_name": "Teleporter Crystal",
+    "entry_trigger" : {
+        "effects" : {
+            "damage" : "5"
+        }
+    }
+},
+
+{
+    "name" : "Wave",
+    "renderable": {
+        "glyph" : "}",
+        "fg" : "#FFFFFF",
+        "bg" : "#000000",
+        "order" : 2,
+        "x_size": 1,
+        "y_size": 3
+    },
+    "hidden" : false,
+    "wave": true
+}

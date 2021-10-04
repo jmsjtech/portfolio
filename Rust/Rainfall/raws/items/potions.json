@@ -1,0 +1,102 @@
+  {
+    "name" : "Poison Potion",
+    "renderable": {
+        "glyph" : "!",
+        "fg" : "#FF00FF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : { "damage_over_time" : "2" }
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 50.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "potion" }
+},
+
+{
+    "name" : "Slow Potion",
+    "renderable": {
+        "glyph" : "!",
+        "fg" : "#FF00FF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : { "slow" : "2.0" }
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 50.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "potion" }
+},
+
+{
+    "name" : "Haste Potion",
+    "renderable": {
+        "glyph" : "!",
+        "fg" : "#FF00FF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : { "slow" : "-2.0" }
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 100.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "potion" }
+},
+
+{
+    "name" : "Health Potion",
+    "renderable": {
+        "glyph" : "!",
+        "fg" : "#FF00FF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : { "provides_healing" : "8" }
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 50.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "potion" }
+},
+
+{
+    "name" : "Mana Potion",
+    "renderable": {
+        "glyph" : "!",
+        "fg" : "#FF00FF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : { "provides_mana" : "4" }
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 50.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "potion" }
+},
+
+{
+    "name" : "Strength Potion",
+    "renderable": {
+        "glyph" : "!",
+        "fg" : "#FF00FF",
+        "bg" : "#000000",
+        "order" : 2
+    },
+    "consumable" : {
+        "effects" : { "particle" : "!;#FF0000;200.0" }
+    },
+    "weight_lbs" : 0.5,
+    "base_value" : 50.0,
+    "vendor_category" : "alchemy",
+    "magic" : { "class" : "common", "naming" : "potion" },
+    "attributes" : { "might" : 5 }
+}
