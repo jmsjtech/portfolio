@@ -27,9 +27,11 @@ namespace NeonBot {
             if (message == null) return;
              
             int argPos = 0;
-             
-            if (!(message.HasCharPrefix('|', ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos)) ||  message.Author.IsBot)
+
+            if (!(message.HasCharPrefix('!', ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos)) || message.Author.IsBot) {
+                Console.WriteLine("test");
                 return;
+            }
 
 
 

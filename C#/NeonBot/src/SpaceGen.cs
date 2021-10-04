@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NeonBot.obj;
 
 namespace NeonBot {
@@ -66,61 +67,54 @@ namespace NeonBot {
         }
 
         public static string WorldType() {
-            int overallType = r3d6();
-            int worldType = r3d6();
+            string[] overallTypes = {
+                "Hostile", "Hostile", "Hostile", "Hostile", "Hostile",
+                "Barren", "Barren", "Barren", "Barren", "Barren", "Barren",
+                "Garden", "Garden", "Garden", "Garden", "Garden"
+            };
 
-            string category = "Hostile";
+            string[] hostileTypes = {
+                "Standard (Cthonian)", "Standard (Cthonian)", "Standard (Greenhouse)", "Standard (Greenhouse)",
+                "Tiny (Sulfur)", "Tiny (Sulfur)", "Tiny (Sulfur)", "Standard (Ammonia)", "Standard (Ammonia)", "Standard (Ammonia)",
+                "Large (Ammonia)", "Large (Ammonia)", "Large (Ammonia)", "Large (Greenhouse)", "Large (Greenhouse)", "Large (Cthonian)", "Large (Cthonian)"
+            };
 
-            if (overallType <= 7) { category = "Hostile"; }
-            else if (overallType > 7 && overallType <= 13) { category = "Barren"; }
-            else if (overallType > 13) { category = "Garden"; }
+            string[] barrenTypes = {
+                "Small (Hadean)", "Small (Ice)", "Small (Rock)", "Small (Rock)", "Tiny (Rock)", "Tiny (Rock)",
+                "Tiny (Ice)", "Tiny (Ice)", "Asteroid Belt", "Asteroid Belt", "Standard (Ocean)", "Standard (Ocean)",
+                "Standard (Ice)", "Standard (Hadean)", "Large (Ocean)", "Large (Ice)"
+            };
+
+            string[] gardenTypes = {
+                "Standard (Garden)", "Standard (Garden)", "Standard (Garden)", "Standard (Garden)", "Standard (Garden)", "Standard (Garden)",
+                "Standard (Garden)", "Standard (Garden)", "Standard (Garden)", "Standard (Garden)", "Standard (Garden)", "Standard (Garden)",
+                "Standard (Garden)", "Standard (Garden)", "Large (Garden)", "Large (Garden)"
+            };
+
+            string overallType = overallTypes[r3d6()];
+
+            if (overallType == "Hostile") { return hostileTypes[r3d6()]; }
+            if (overallType == "Barren") { return barrenTypes[r3d6()]; }
+            if (overallType == "Garden") { return gardenTypes[r3d6()]; }
 
 
-            if (category == "Hostile") {
-                if (worldType == 3 || worldType == 4) { return "Standard (Chthonian)"; }
-                if (worldType == 5 || worldType == 6) { return "Standard (Greenhouse)"; }
-                if (worldType == 7 || worldType == 8 || worldType == 9) { return "Tiny (Sulfur)"; }
-                if (worldType == 10 || worldType == 11 || worldType == 12) { return "Standard (Ammonia)";  }
-                if (worldType == 13 || worldType == 14) { return "Large (Ammonia)"; }
-                if (worldType == 15 || worldType == 16) { return "Large (Greenhouse)"; }
-                if (worldType == 17 || worldType == 18) { return "Large (Chthonian)"; }
-            }
 
-            if (category == "Barren") {
-                if (worldType == 3) { return "Small (Hadean)"; }
-                if (worldType == 4) { return "Small (Ice)"; }
-                if (worldType == 5 || worldType == 6) { return "Small (Rock)"; }
-                if (worldType == 7 || worldType == 8) { return "Tiny (Rock)"; }
-                if (worldType == 9 || worldType == 10) { return "Tiny (Ice)"; }
-                if (worldType == 11 || worldType == 12) { return "Asteroid Belt"; }
-                if (worldType == 13 || worldType == 14) { return "Standard (Ocean)"; }
-                if (worldType == 15) { return "Standard (Ice)"; }
-                if (worldType == 16) { return "Standard (Hadean)"; }
-                if (worldType == 17) { return "Large (Ocean)"; }
-                if (worldType == 18) { return "Large (Ice)"; }
-            }
-
-            if (category == "Garden") {
-                if (worldType < 17) { return "Standard (Garden)"; }
-                if (worldType == 17 || worldType == 18) { return "Large (Garden)"; }
-            }
 
 
             return "error";
         }
 
         public static string AtmosphericComposition(string worldType) {
-            if (worldType == "Asteroid Belt" || worldType == "Tiny (Ice)" || worldType == "Tiny (Rock)" || 
-                worldType == "Tiny (Sulfur)" || worldType == "Small (Hadean)" || worldType == "Small (Rock)" ||
-                worldType == "Standard (Hadean)" || worldType == "Standard (Chthonian)" || worldType == "Large (Chthonian)") {
+            if (new List<string> { "Asteroid Belt", "Tiny (Ice)", "Tiny (Rock)", "Tiny (Sulfur)", "Small (Hadean)", "Small (Rock)", 
+                "Standard (Hadean)", "Standard (Chthonian)", "Large (Chthonian)" }.Contains(worldType)) {
                 return "Effectively Vacuum";
             }
 
             if (worldType == "Small (Ice)") {
-
+                
             }
 
-            return "Error - World Type not found";
+            return "Error - World Type (" + worldType + ") not found";
         }
     
     

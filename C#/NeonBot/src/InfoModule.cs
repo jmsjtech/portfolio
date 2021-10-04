@@ -119,67 +119,6 @@ namespace NeonBot {
         }
     }
 
-
-
-
-    [Group("dndspeak")]
-    public class DNDSpeakModule : ModuleBase<SocketCommandContext> {
-        Random rand = new Random();
-
-        
-
-
-
-
-        [Command("")]
-        public async Task DNDSpeakAsync([Remainder] string url) {
-            string speakPost = "<@" + Context.User.Id + ">, output is:\n";
-
-
-
-            using (var client = new HttpClient()) {
-
-                if (url[0].ToString() == "<" && url[url.Length - 1].ToString() == ">") {
-                    url = url.Substring(1, url.Length - 2);
-                }
-
-
-                var content = await client.GetStringAsync("https://wrapapi.com/use/nanzington/dndspeak/listomatic/latest?wrapAPIKey=b3QnB6S54aWDpBv3ohbv5e2UBshhjuUe&listURL=" + url);
-                dynamic data = JObject.Parse(content);
-
-                //for (int i = 0; i < data.data.output.Count; i++) {
-                //    if (data.data.output[i].Count > 50) {
-                //        speakPost += data.data.output[i]
-                //    }
-                //}
-
-                string[] options = data.data.output[1].ToString().Split('\r');
-
-
-                speakPost += options[rand.Next(0, 100)];
-            }
-
-
-
-                await ReplyAsync(speakPost);
-        }
-
-
-
-        [Command("help")]
-        public async Task DNDSpeakDefaultAsync() {
-            string detailList = "<@" + Context.User.Id + ">, the possible commands for `!quest` are: .";
-            await ReplyAsync(detailList);
-        }
-    }
-
-
-
-
-
-
-
-
     [Group("set")]
     public class SettlementModule : ModuleBase<SocketCommandContext> {
         Random rand = new Random();
