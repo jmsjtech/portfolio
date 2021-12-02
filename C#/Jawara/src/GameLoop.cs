@@ -7,65 +7,60 @@ using System.IO;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Input;
 using SadConsole.Components;
+using Jawara.UI;
+using Jawara.Commands;
 
 namespace Jawara {
     class GameLoop {
-        public const int Width = 59;
-        public const int Height = 30;
+        public const int GameWidth = 80;
+        public const int GameHeight = 25;
         public static Font RegularSize;
         public static Color CyberBlue = new Color(51, 153, 255);
 
-        private static Player player;
-
-        public static Map GameMap;
-        private static int _mapWidth = 100;
-        private static int _mapHeight = 100;
-        private static int _maxRooms = 500;
-        private static int _minRoomSize = 4;
-        private static int _maxRoomSize = 15;
+        // Managers
+        public static UIManager UIManager;
+        public static World World;
+        public static CommandManager CommandManager;
 
         private static ScrollingConsole startingConsole;
 
         static void Main(string[] args) {
-            SadConsole.Game.Create(Width, Height);
+            // Setup the engine and create the main window.
+            SadConsole.Game.Create(GameWidth, GameHeight);
 
+            // Hook the start event so we can add consoles to the system.
             SadConsole.Game.OnInitialize = Init;
+
+            // Hook the update event that happens each frame so we can trap keys and respond.
             SadConsole.Game.OnUpdate = Update;
 
             // Start the game.
             SadConsole.Game.Instance.Run();
+
+            //
+            // Code here will not run until the game window closes.
+            //
+
             SadConsole.Game.Instance.Dispose();
         }
 
         private static void Update(GameTime time) {
-            CheckKeyboard();
 
-        }
-
-        private static void CheckKeyboard() {
-            if (Global.KeyboardState.IsKeyPressed(Keys.NumPad8) || Global.KeyboardState.IsKeyPressed(Keys.W)) { player.MoveBy(new Point(0, -1)); CenterOnActor(player); }
-            if (Global.KeyboardState.IsKeyPressed(Keys.NumPad2) || Global.KeyboardState.IsKeyPressed(Keys.S)) { player.MoveBy(new Point(0, 1)); CenterOnActor(player); }
-            if (Global.KeyboardState.IsKeyPressed(Keys.NumPad4) || Global.KeyboardState.IsKeyPressed(Keys.A)) { player.MoveBy(new Point(-1, 0)); CenterOnActor(player); }
-            if (Global.KeyboardState.IsKeyPressed(Keys.NumPad6) || Global.KeyboardState.IsKeyPressed(Keys.D)) { player.MoveBy(new Point(1, 0)); CenterOnActor(player); }
         }
 
         private static void Init() {
-            GameMap = new Map(_mapWidth, _mapHeight);
-            MapGenerator mapGen = new MapGenerator();
-            GameMap = mapGen.GenerateMap(_mapWidth, _mapHeight, _maxRooms, _minRoomSize, _maxRoomSize);
+            //Instantiate the UIManager
+            UIManager = new UIManager();
 
-            SetFonts();
-            startingConsole = new ScrollingConsole(GameMap.Width, GameMap.Height, Global.FontDefault, new Rectangle(0, 0, Width, Height), GameMap.Tiles);
+            // Build the world!
+            World = new World();
 
-            SadConsole.Global.CurrentScreen = startingConsole;
+            // Now let the UIManager create its consoles
+            // so they can use the World data
+            UIManager.Init();
 
-            //PrintJaCo("jahheemihloh jahjahtahroh", 4, 4, Color.White, Color.Transparent, startingConsole);
-            //PrintJaCo("fahbae", 4, 6, Color.White, Color.Transparent, startingConsole);
-            //PrintJaCo("sahsah kae", 4, 10, Color.White, Color.Transparent, startingConsole);
-
-
-            CreatePlayer();
-            startingConsole.Children.Add(player);
+            //Instantiate a new CommandManager
+            CommandManager = new CommandManager();
         }
 
 
@@ -129,18 +124,8 @@ namespace Jawara {
             SadConsole.Themes.Library.Default.Colors.ControlHostBack = Color.Black;
 
             SadConsole.Global.FontDefault = RegularSize;
-            Global.FontDefault.ResizeGraphicsDeviceManager(SadConsole.Global.GraphicsDeviceManager, Width, Height, 0, 0);
+            Global.FontDefault.ResizeGraphicsDeviceManager(SadConsole.Global.GraphicsDeviceManager, GameWidth, GameHeight, 0, 0);
             Global.ResetRendering();
-        }
-
-        private static void CreatePlayer() {
-            player = new Player(Color.Yellow, Color.Transparent);
-            player.Position = new Point(5, 5);
-            player.Components.Add(new EntityViewSyncComponent());
-        }
-
-        public static void CenterOnActor(Actor actor) {
-            startingConsole.CenterViewPortOnPoint(actor.Position);
         }
     }
 }

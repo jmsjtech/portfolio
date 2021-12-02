@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 
-namespace Jawara {
+namespace Jawara.Tiles {
     // TileFloor is based on TileBase
     // Floor tiles to be used in maps.
     public class TileFloor : TileBase {

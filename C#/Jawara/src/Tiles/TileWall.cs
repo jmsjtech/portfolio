@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 
-namespace Jawara {
+namespace Jawara.Tiles {
     // TileWall is based on TileBase
     public class TileWall : TileBase {
         // Default constructor

@@ -1,0 +1,30 @@
+Fix monster spawning
+- Invisible "Monster Spawners" that only spawn one at a time in a specific spot
+- Monster can't move more than X tiles away from spawn location (maybe 10-20 tiles)
+- When a monster is killed, notify the spawner so it can spawn another after a short delay
+- Monsters only automatically attack if your combat level is lower than theirs or if you attack them first
+
+Static map instead of randomly generated
+- Each area about the size of a screen without having to scroll
+- Bumping into an edge moves you to the map in that direction if it exists.
+- Easy in-game map editor
+- - If a map doesn't exist in a spot and the player is an admin/in edit mode, offer to make a map there.
+- - Place or change tiles and edit their info in-game, save for future loads
+
+
+UI Stuff
+- Minimap showing adjacent maps, hover over spots on the map to display a name
+- - Minimap mouse-look: Map name, contains monsters, contains players?
+- (DONE) Skills menu (Show skill names, level, current experience, and experience needed to level up)
+- Equipped item menu
+- Magic menu (Show all spells names, cost to cast in runes, level requirement)
+- (DONE) Switch between inventory/skills/equipped items/magic menus at will
+
+
+Magic
+- Spells have a level requirement, an experience amount that they grant, and required runes to cast
+- Runes
+- - Core Elemental: Water, Plant,    Fire,    Earth,   Air
+- - Super Elemental: Ice,   Wood,  Lightning, Metal,  Sound?
+- - Alignment: Chaotic, Lawful, Good, Evil
+- - Catalytic Runes: Space, Force, Internal, External

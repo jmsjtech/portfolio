@@ -1,3 +1,15 @@
+BUGS TO FIX:
+- Traps don't always trigger properly
+- Potion effects don't seem to wear off? Starting one doesn't at least
+
+
+Separate overworld from dungeon gen
+- Overworld map coordinates
+- Place town and dungeon at set coordinates
+- Add a second dungeon to make sure they work separately
+
+
+
 (DONE) Split spawns.json.
 (DONE) - Separate directories for each of mobs, props, items, factions, spells, spawn tables, loot tables, and weapon traits
 (DONE) - Load all files in each directory, with functionally no limit to how many individual files it can have.
@@ -68,7 +80,7 @@ The Old Mines
 - First X levels of mines before leading into other biomes at the bottom?
 - Spawns ore rocks as enemies (that can't fight back), destroying them drops the ore.
 -- Higher chance to get ore if you use a proper tool
-- Common enemies: Kobolds, Goblins, 
+- Common enemies: Kobolds, Goblins,
 
 
 Alchemy systems
@@ -90,9 +102,6 @@ Elites, Uniques, Wondrous Items, and Artifacts
 -- Uniques (maybe only some?) spawn in a prefab section customized to them
 - Wondrous Items: Enhanced items using templates fit to either specific item types or all items
 - Artifacts: Named items that can only spawn once (won't spawn if the player has already found them)
-
-
-
 
 
 

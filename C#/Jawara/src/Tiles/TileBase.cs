@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework;
 using SadConsole;
 
-namespace Jawara {
+namespace Jawara.Tiles {
     public abstract class TileBase : Cell {
         public bool IsBlockingMove;
         public bool IsBlockingLOS;
