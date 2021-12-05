@@ -2,6 +2,8 @@ class Gui {
 public:
 	const char* selected;
 	int selectScroll;
+	bool chatSelected = false;
+	std::string* chatBuffer;
 	Gui();
 	~Gui();
 	void render();

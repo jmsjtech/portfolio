@@ -95,6 +95,12 @@
     <ClInclude Include="src\Healer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\NetCommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Nanz_Net.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="TO-DO.txt" />

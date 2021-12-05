@@ -1,4 +1,4 @@
-#include "Main.h"
+#include "main.h"
 
 Actor::Actor(int x, int y, int mX, int mY, int ch, const char *name, float speed, const TCODColor& col) :
 	x(x), y(y), mX(mX), mY(mY), ch(ch), col(col), name(name), speed(speed), blocks(true), attacker(NULL), destructible(NULL), ai(NULL), pickable(NULL), container(NULL) {

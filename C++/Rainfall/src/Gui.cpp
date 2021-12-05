@@ -2,10 +2,11 @@
 #include <stdarg.h>
 #include "main.h"
 
+
 static const int PANEL_HEIGHT = 27;
 static const int BAR_WIDTH = 19;
 static const int MSG_X = BAR_WIDTH + 3;
-static const int MSG_HEIGHT = PANEL_HEIGHT - 1;
+static const int MSG_HEIGHT = PANEL_HEIGHT - 3;
 static const int INVENTORY_WIDTH = 40;
 static const int INVENTORY_HEIGHT = 28;
 static const int SIDEBAR_WIDTH = 40;
@@ -90,6 +91,8 @@ void Gui::render() {
 	inv->clear();
 	sidebar->setDefaultBackground(TCODColor::black);
 	sidebar->clear();
+	
+	con->setDefaultForeground(TCODColor::white);
 
 	// draw the health bar
 	if (engine.player->destructible) {
@@ -110,7 +113,14 @@ void Gui::render() {
 
 	// Frame the message log
 	con->setDefaultForeground(TCODColor(100, 100, 100));
-	con->printFrame(MSG_X - 1, 0, 59, 27, false, TCOD_BKGND_DEFAULT, "message log");
+	con->printFrame(MSG_X - 1, 0, 59, 27, false, TCOD_BKGND_DEFAULT);
+	con->printFrame(MSG_X - 1, 0, 59, 25, false, TCOD_BKGND_DEFAULT, "message log");
+	con->print(MSG_X, PANEL_HEIGHT - 2, "CHAT: ");
+	if (chatBuffer == NULL) {
+		chatBuffer = new std::string();
+	}
+	
+	con->print(MSG_X + 6, PANEL_HEIGHT - 2, chatBuffer->c_str());
 
 	// Frame the minimap area??
 	con->printFrame(0, 0, 21, 27, false, TCOD_BKGND_DEFAULT);

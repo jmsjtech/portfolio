@@ -1,4 +1,7 @@
 #include "libtcod.hpp"
+#include <iostream>
+#include "Nanz_Net.h"
+
 class Actor;
 #include "Destructible.h"
 #include "Attacker.h"

@@ -11,43 +11,75 @@ void PlayerAi::update(Actor* owner) {
 	}
 
 	int dx = 0, dy = 0;
-	switch (engine.lastKey.vk) {
-	case TCODK_UP:
-	case TCODK_KP8:
-		dy = -1;
-		break;
-	case TCODK_KP7: // UP-LEFT
-		dx = -1;
-		dy = -1;
-		break;
-	case TCODK_KP9: // UP-RIGHT
-		dx = 1;
-		dy = -1;
-		break;
-	case TCODK_DOWN:
-	case TCODK_KP2:
-		dy = 1;
-		break;
-	case TCODK_KP1: // DOWN-LEFT
-		dx = -1;
-		dy = 1;
-		break;
-	case TCODK_KP3: // DOWN-RIGHT
-		dx = 1;
-		dy = 1;
-		break;
-	case TCODK_LEFT:
-	case TCODK_KP4:
-		dx = -1;
-		break;
-	case TCODK_RIGHT:
-	case TCODK_KP6:
-		dx = 1;
-		break;
-	case TCODK_CHAR:
-		handleActionKey(owner, engine.lastKey.c);
-		break;
-	default: break;
+	if (!engine.gui->chatSelected) {
+		switch (engine.lastKey.vk) {
+		case TCODK_UP:
+		case TCODK_KP8:
+			dy = -1;
+			break;
+		case TCODK_KP7: // UP-LEFT
+			dx = -1;
+			dy = -1;
+			break;
+		case TCODK_KP9: // UP-RIGHT
+			dx = 1;
+			dy = -1;
+			break;
+		case TCODK_DOWN:
+		case TCODK_KP2:
+			dy = 1;
+			break;
+		case TCODK_KP1: // DOWN-LEFT
+			dx = -1;
+			dy = 1;
+			break;
+		case TCODK_KP3: // DOWN-RIGHT
+			dx = 1;
+			dy = 1;
+			break;
+		case TCODK_LEFT:
+		case TCODK_KP4:
+			dx = -1;
+			break;
+		case TCODK_RIGHT:
+		case TCODK_KP6:
+			dx = 1;
+			break;
+		case TCODK_CHAR:
+			handleActionKey(owner, engine.lastKey.c);
+			break;
+		default: break;
+		}
+	} else {
+		std::string concat;
+		switch (engine.lastKey.vk) {
+			case TCODK_ESCAPE:
+				engine.gui->chatSelected = false;
+				break;
+			case TCODK_SPACE:
+				engine.gui->chatBuffer->append(" ");
+				break;
+			case TCODK_BACKSPACE:
+				if (engine.gui->chatBuffer->length() > 0)
+					engine.gui->chatBuffer->pop_back();
+				break;
+			case TCODK_ENTER:
+				engine.gui->chatSelected = false;
+				if (!IsCommand()) {
+					engine.client.ChatMessage(*engine.gui->chatBuffer, engine.ownName.c_str());
+					concat = std::string(engine.ownName.c_str()) + ": " + std::string(*engine.gui->chatBuffer);
+					engine.gui->message(TCODColor::lightBlue, concat.c_str());
+				} else {
+
+				}
+
+				engine.gui->chatBuffer->clear();
+				break;
+			case TCODK_CHAR:
+				engine.gui->chatBuffer->push_back(engine.lastKey.c);
+				break;
+			default: break;
+		}
 	}
 
 	if (dx != 0 || dy != 0) {
@@ -86,10 +118,8 @@ void PlayerAi::update(Actor* owner) {
 					engine.gui->selectScroll = 0;
 				}
 			}
-
 			// Clicked somewhere in the sidebar
 			else if (engine.mouse.cy > 28) {
-				engine.gui->message(TCODColor::lightBlue, "Clicked at %d, %d", engine.mouse.cx, engine.mouse.cy);
 				if (engine.gui->selected == "Skills") { // Clicks in the skills menu
 
 				} else if (engine.gui->selected == "Magic") { // Clicks in the magic menu
@@ -105,6 +135,12 @@ void PlayerAi::update(Actor* owner) {
 			}
 		} 
 		
+		else if (engine.mouse.cx >= 27 && engine.mouse.cx <= 79) {
+			if (engine.mouse.cy >= 67 && engine.mouse.cy <= 69) {
+				engine.gui->chatSelected = true;
+				engine.gui->chatBuffer = new std::string;
+			}
+		}
 		
 		
 		
@@ -120,6 +156,25 @@ void PlayerAi::update(Actor* owner) {
 			engine.gui->selectScroll++;
 		}
 	}
+}
+
+
+bool PlayerAi::IsCommand() {
+	if (engine.gui->chatBuffer->front() == '/') {
+		if (engine.gui->chatBuffer->substr(1, 4) == std::string("nick")) {
+			std::string newName = engine.gui->chatBuffer->substr(6, engine.gui->chatBuffer->length() - 6);
+			engine.ownName = newName;
+
+			std::string concat = std::string("Changed your nickname to: ") + engine.ownName;
+
+			engine.gui->message(TCODColor::lightBlue, concat.c_str());
+			return true;
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
 
@@ -147,6 +202,12 @@ bool PlayerAi::moveOrAttack(Actor* owner, int targetx, int targety) {
 
 		owner->x = targetx;
 		owner->y = targety;
+
+		engine.ownDesc.x = owner->x;
+		engine.ownDesc.y = owner->y;
+
+		engine.client.MovePlayer(engine.ownDesc);
+
 		return true;
 	}
 }
@@ -198,6 +259,11 @@ void PlayerAi::handleActionKey(Actor* owner, int ascii) {
 		{
 			moveOrAttack(owner, owner->x + 1, owner->y);
 			break;
+		}
+
+		case 'p': // try to ping the connected server
+		{
+			engine.client.PingServer();
 		}
 	}
 }

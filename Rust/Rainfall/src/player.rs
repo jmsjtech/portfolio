@@ -314,6 +314,8 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
                 
                 VirtualKeyCode::D => return RunState::ShowDropItem,
                 VirtualKeyCode::T => return RunState::ShowRemoveItem,
+                VirtualKeyCode::J => return RunState::ConnectNet,
+                VirtualKeyCode::K => return RunState::HostNet,
                 
                 // Level changes
                 VirtualKeyCode::Period => {
