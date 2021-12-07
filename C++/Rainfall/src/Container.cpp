@@ -1,8 +1,6 @@
 #include "main.h"
 
-Container::Container(int size) : size(size) {
-
-}
+Container::Container(int size) : size(size) { }
 
 Container::~Container() {
 	inventory.clearAndDelete();

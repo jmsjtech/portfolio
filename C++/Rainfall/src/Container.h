@@ -1,7 +1,7 @@
 class Container {
 public:
-	int size;
-	TCODList<Actor*> inventory;
+	int size; // How many things it can hold
+	TCODList<Actor*> inventory; // Things in the container
 
 	Container(int size);
 	~Container();

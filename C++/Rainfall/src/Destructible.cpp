@@ -13,6 +13,7 @@ PlayerDestructible::PlayerDestructible(float maxHp, float defense, const char* c
 	Destructible(maxHp, defense, corpseName) {
 }
 
+// Take damage and return how much damage was actually taken
 float Destructible::takeDamage(Actor* owner, float damage) {
 	damage -= defense;
 	if (damage > 0) {
@@ -43,12 +44,12 @@ void MonsterDestructible::die(Actor* owner) {
 	Destructible::die(owner);
 }
 
-void PlayerDestructible::die(Actor* owner) {
+void PlayerDestructible::die(Actor* owner) { // If the player died, run some logic on it
 	engine.gui->message(TCODColor::red, "You died!\n");
 	Destructible::die(owner);
 }
 
-float Destructible::heal(float amount) {
+float Destructible::heal(float amount) { // Heal, then return how much was healed
 	hp += amount;
 	if (hp > maxHp) {
 		amount -= hp - maxHp;

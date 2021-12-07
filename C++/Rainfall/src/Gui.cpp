@@ -2,23 +2,26 @@
 #include <stdarg.h>
 #include "main.h"
 
-
+// A bunch of constants we need for various things
 static const int PANEL_HEIGHT = 27;
 static const int BAR_WIDTH = 19;
 static const int MSG_X = BAR_WIDTH + 3;
-static const int MSG_HEIGHT = PANEL_HEIGHT - 3;
+static const int MSG_HEIGHT = PANEL_HEIGHT - 4;
 static const int INVENTORY_WIDTH = 40;
 static const int INVENTORY_HEIGHT = 28;
 static const int SIDEBAR_WIDTH = 40;
 static const int SIDEBAR_HEIGHT = 42;
 
+
 Gui::Gui() {
+	// Initialize our display areas and the scroll position
 	con = new TCODConsole(engine.screenWidth, PANEL_HEIGHT);
 	inv = new TCODConsole(INVENTORY_WIDTH, INVENTORY_HEIGHT);
 	sidebar = new TCODConsole(SIDEBAR_WIDTH, SIDEBAR_HEIGHT);
 	selected = "Skills";
 	selectScroll = 0;
 
+	// Fill out some basic skill info for debug purposes
 	engine.skills.push("Attack");
 	engine.skills.push("Strength");
 	engine.skills.push("Defense");
@@ -27,53 +30,7 @@ Gui::Gui() {
 	engine.skills.push("Mining");
 	engine.skills.push("Smithing");
 
-	engine.quests.push("Sheep Shearer");
-	engine.quests.push("Romeo and Juliet");
-	engine.quests.push("Vampire Slayer");
-	engine.quests.push("The Restless Ghost");
-	engine.quests.push("Goblin Diplomacy");
-	engine.quests.push("Dragon Slayer");
-	engine.quests.push("Pirate's Treasure");
-	engine.quests.push("Dragon Slayer");
-	engine.quests.push("Lost City");
-	engine.quests.push("Imp Catcher");
-	engine.quests.push("Fight Arena");
-	engine.quests.push("Clock Tower");
-	engine.quests.push("Holy Grail");
-	engine.quests.push("Plague City");
-	engine.quests.push("The Grand Tree");
-	engine.quests.push("Dwarf Cannon");
-	engine.quests.push("Murder Mystery");
-	engine.quests.push("The Golem");
-	engine.quests.push("One Small Favor");
-	engine.quests.push("Monkey Madness");
-	engine.quests.push("Ghosts Ahoy");
-	engine.quests.push("Cabin Fever");
-	engine.quests.push("Devious Minds");
-	engine.quests.push("Rum Deal");
-	engine.quests.push("Lunar Diplomacy");
-	engine.quests.push("Cold War");
-	engine.quests.push("What Lies Below");
-	engine.quests.push("Tower of Life");
-	engine.quests.push("King's Ransom");
-	engine.quests.push("All Fired Up");
-	engine.quests.push("Summer's End");
-	engine.quests.push("Swept Away");
-	engine.quests.push("Glorious Memories");
-	engine.quests.push("The Blood Pact");
-	engine.quests.push("Love Story");
-	engine.quests.push("Do No Evil");
-	engine.quests.push("Deadliest Catch");
-	engine.quests.push("Salt in the Wound");
-	engine.quests.push("The Elder Kiln");
-	engine.quests.push("Some Like It Cold");
-	engine.quests.push("A Clockwork Syringe");
-	engine.quests.push("Rune Memories");
-	engine.quests.push("Demon Slayer");
-	engine.quests.push("One of a Kind");
-	engine.quests.push("The Mighty Fall");
-
-
+	engine.quests.push("No quests currently");
 }
 
 Gui::~Gui() {
@@ -84,7 +41,7 @@ Gui::~Gui() {
 }
 
 void Gui::render() {
-
+	// Clear all three display consoles
 	con->setDefaultBackground(TCODColor::black);
 	con->clear();
 	inv->setDefaultBackground(TCODColor::black);
@@ -99,6 +56,7 @@ void Gui::render() {
 		renderBar(1, 1, BAR_WIDTH, "HP", engine.player->destructible->hp, engine.player->destructible->maxHp, TCODColor::lightRed, TCODColor::darkerRed);
 	}
 
+	// Draw the message log messages
 	int y = 1;
 	float colorCoef = 0.4f;
 	for (Message** it = log.begin(); it != log.end(); it++) {
@@ -120,10 +78,36 @@ void Gui::render() {
 		chatBuffer = new std::string();
 	}
 	
+	// Also print the current chat buffer in the chat area
 	con->print(MSG_X + 6, PANEL_HEIGHT - 2, chatBuffer->c_str());
 
 	// Frame the minimap area??
 	con->printFrame(0, 0, 21, 27, false, TCOD_BKGND_DEFAULT);
+	con->printFrame(1, 3, 19, 19, false, TCOD_BKGND_DEFAULT, "[%d, %d]", engine.ownDesc.mX, engine.ownDesc.mY);
+
+	// Iterate through all the minimap tiles to display them
+	for (int y = 0; y < minimap::h; y++) {
+		for (int x = 0; x < minimap::w; x++) {
+			MapTile* mapTile = &engine.minimap[x][y];
+			// If a tile is called "Void" it hasn't been initialized yet, so don't bother displaying it
+			if (mapTile->name == "Void")
+				continue;
+
+			// Minimap Tile
+			con->setDefaultForeground(mapTile->fg);
+			con->setDefaultBackground(mapTile->bg);
+			con->print(2 + (mapTile->mX - engine.topleft_x), 4 + (mapTile->mY - engine.topleft_y), std::string(1, mapTile->ch).c_str());
+
+			// Set the middle of the minimap to the player icon, since that's where the player always is.
+			con->setDefaultForeground(TCODColor::white);
+			con->print(2 + 8, 4 + 8, std::string("@").c_str());
+
+			// If the player is hovering over the minimap with their mouse, display the name and location of the hovered tile
+			if (mapTile->mX - engine.topleft_x == miniX && mapTile->mY - engine.topleft_y == miniY) {
+				con->print(2, 23, "%s [%d, %d]", mapTile->name, engine.topleft_x + miniX, engine.topleft_y + miniY);
+			}
+		}
+	}
 
 	con->setDefaultForeground(TCODColor::white);
 
@@ -148,7 +132,7 @@ void Gui::render() {
 	// display the sidebar
 	sidebar->setDefaultForeground(TCODColor(100, 100, 100));
 	sidebar->printFrame(0, 0, SIDEBAR_WIDTH, SIDEBAR_HEIGHT, true, TCOD_BKGND_DEFAULT);
-	sidebar->print(1, 0, "<S>|<M>|<Q>|<E>");
+	sidebar->print(1, 0, "<S>|<M>|<Q>|<E>|<Z>");
 	sidebar->setDefaultForeground(TCODColor::white);
 
 	if (selected == "Skills") {
@@ -233,6 +217,52 @@ void Gui::render() {
 	} else if (selected == "Equipment") {
 		sidebar->print(13, 0, "<E>");
 		sidebar->print(1, 1, "Equipment");
+	} else if (selected == "Map Editor") {
+		// lock scrolling properly
+		if (selectScroll > engine.quests.size() - 19) {
+			selectScroll = engine.quests.size() - 19;
+		}
+		if (selectScroll < 0) { selectScroll = 0; }
+
+		// map editor header
+		sidebar->print(17, 0, "<Z>");
+		sidebar->print(1, 1, "--------------------------------------");
+		sidebar->print(1, 2, "               Map Editor             ");
+		sidebar->print(1, 3, "--------------------------------------");
+
+
+		// Tile to place
+		sidebar->print(1, 5, "Name: %s", engine.mapEdit_name);
+		TCODColor tileFG = TCODColor(engine.mapEdit_fg_r, engine.mapEdit_fg_g, engine.mapEdit_fg_b);
+		TCODColor tileBG = TCODColor(engine.mapEdit_bg_r, engine.mapEdit_bg_g, engine.mapEdit_bg_b);
+		sidebar->print(1, 7, "Appearance:");
+		sidebar->setDefaultForeground(tileFG);
+		sidebar->setDefaultBackground(tileBG);
+		sidebar->print(13, 7, std::string(1, engine.mapEdit_ch).c_str());
+		sidebar->setDefaultForeground(TCODColor::white);
+		sidebar->setDefaultBackground(TCODColor::black);
+		sidebar->print(1, 9, "Foreground: %dr, %dg, %db", engine.mapEdit_fg_r, engine.mapEdit_fg_g, engine.mapEdit_fg_b);
+		sidebar->print(1, 11, "Background: %dr, %dg, %db", engine.mapEdit_bg_r, engine.mapEdit_bg_g, engine.mapEdit_bg_b);
+		sidebar->print(1, 13, "Blocks Move: %s", engine.mapEdit_blocksMove ? "true" : "false");
+
+		// Minimap Tile
+		MapTile* tile = &engine.minimap[engine.topleft_x + 8][engine.topleft_y + 8];
+
+		sidebar->print(1, 17, "Minimap Tile:");
+		sidebar->print(1, 19, "Name: %s", tile->name);
+		sidebar->print(1, 21, "Appearance:");
+		sidebar->setDefaultForeground(tile->fg);
+		sidebar->setDefaultBackground(tile->bg);
+		sidebar->print(13, 21, std::string(1, tile->ch).c_str());
+		sidebar->setDefaultForeground(TCODColor::white);
+		sidebar->setDefaultBackground(TCODColor::black);
+		sidebar->print(1, 23, "Foreground: %dr, %dg, %db", tile->fg.r, tile->fg.g, tile->fg.b);
+		sidebar->print(1, 25, "Background: %dr, %dg, %db", tile->bg.r, tile->bg.g, tile->bg.b);
+
+
+		// The reset "button" to change the editor tile back to default grass
+		sidebar->print(1, SIDEBAR_HEIGHT - 3, "--------------------------------------");
+		sidebar->print(1, SIDEBAR_HEIGHT - 2, "                RESET                 ");
 	}
 
 
@@ -240,7 +270,12 @@ void Gui::render() {
 
 	// mouse look
 	renderMouseLook();
-	
+
+	// Frame the map
+	TCODConsole::root->setDefaultForeground(TCODColor(100, 100, 100));
+	TCODConsole::root->printFrame(0, 0, engine.map->getWidth() + 2, engine.map->getHeight() + 1, false, TCOD_BKGND_DEFAULT, "map");
+
+	// Ship all three consoles along to the main console for display
 	TCODConsole::blit(con, 0, 0, engine.screenWidth, PANEL_HEIGHT, TCODConsole::root, 0, engine.screenHeight - PANEL_HEIGHT);
 	TCODConsole::blit(inv, 0, 0, INVENTORY_WIDTH, INVENTORY_HEIGHT, TCODConsole::root, engine.screenWidth - INVENTORY_WIDTH, 0);
 	TCODConsole::blit(sidebar, 0, 0, SIDEBAR_WIDTH, SIDEBAR_HEIGHT, TCODConsole::root, engine.screenWidth - SIDEBAR_WIDTH, engine.screenHeight - SIDEBAR_HEIGHT);

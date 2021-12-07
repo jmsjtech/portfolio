@@ -101,6 +101,9 @@
     <ClInclude Include="src\Nanz_Net.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\json.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="TO-DO.txt" />

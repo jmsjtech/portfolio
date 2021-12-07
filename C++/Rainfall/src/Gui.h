@@ -1,17 +1,18 @@
 class Gui {
-public:
-	const char* selected;
-	int selectScroll;
-	bool chatSelected = false;
-	std::string* chatBuffer;
+public: 
+	const char* selected; // Which sidebar menu is selected
+	int selectScroll; // Where the scroll is for the current menu
+	bool chatSelected = false; // Whether or not the player has chat selected
+	int miniX, miniY = -1; // The hovered minimap tile, if any
+	std::string* chatBuffer; // What the player currently has typed in the chat bar
 	Gui();
 	~Gui();
 	void render();
 	void message(const TCODColor& col, const char* text, ...);
 protected:
-	TCODConsole* con;
-	TCODConsole* inv;
-	TCODConsole* sidebar;
+	TCODConsole* con; // The message log and minimap area
+	TCODConsole* inv; // The inventory window
+	TCODConsole* sidebar; // The sidebar menu
 	struct Message {
 		char* text;
 		TCODColor col;

@@ -177,6 +177,7 @@
     <ClCompile Include="src\Pickable.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\json.hpp" />
     <ClInclude Include="src\Nanz_Net.h" />
     <ClInclude Include="src\NetCommon.h" />
     <ClInclude Include="src\Actor.h" />

@@ -4,6 +4,8 @@
 #define NANZ_PGEX_NETWORK
 #include "Nanz_Net.h"
 
+
+// Possible message headers
 enum class GameMsg : uint32_t {
 	Server_GetStatus,
 	Server_GetPing,
@@ -18,8 +20,10 @@ enum class GameMsg : uint32_t {
 	Game_UpdatePlayer,
 
 	Chat_Message,
+	PlayersOnMapTile,
 };
 
+// Minimalist player information to exchange between clients
 struct sPlayerDescription {
 	uint32_t nUniqueID = 0;
 	uint32_t nAvatarID = 0;

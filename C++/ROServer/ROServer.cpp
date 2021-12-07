@@ -55,54 +55,86 @@ protected:
 
 
 		switch (msg.header.id) {
-		case GameMsg::Client_RegisterWithServer:
-		{
-			sPlayerDescription desc;
-			msg >> desc;
-			desc.nUniqueID = client->GetID();
-			m_mapPlayerRoster.insert_or_assign(desc.nUniqueID, desc);
+			case GameMsg::Client_RegisterWithServer:
+			{
+				sPlayerDescription desc;
+				msg >> desc;
+				desc.nUniqueID = client->GetID();
+				m_mapPlayerRoster.insert_or_assign(desc.nUniqueID, desc);
 
-			nanz::net::message<GameMsg> msgSendID;
-			msgSendID.header.id = GameMsg::Client_AssignID;
-			msgSendID << desc.nUniqueID;
-			MessageClient(client, msgSendID);
+				nanz::net::message<GameMsg> msgSendID;
+				msgSendID.header.id = GameMsg::Client_AssignID;
+				msgSendID << desc.nUniqueID;
+				MessageClient(client, msgSendID);
 
-			nanz::net::message<GameMsg> msgAddPlayer;
-			msgAddPlayer.header.id = GameMsg::Game_AddPlayer;
-			msgAddPlayer << desc;
-			MessageAllClients(msgAddPlayer);
+				nanz::net::message<GameMsg> msgAddPlayer;
+				msgAddPlayer.header.id = GameMsg::Game_AddPlayer;
+				msgAddPlayer << desc;
+				MessageAllClients(msgAddPlayer);
 
-			for (const auto& player : m_mapPlayerRoster) {
 				nanz::net::message<GameMsg> msgAddOtherPlayers;
-				msgAddOtherPlayers.header.id = GameMsg::Game_AddPlayer;
-				msgAddOtherPlayers << player.second;
+				msgAddOtherPlayers.header.id = GameMsg::PlayersOnMapTile;
+				int count = 0;
+
+				for (const auto& player : m_mapPlayerRoster) {
+					if (player.second.mX == desc.mX && player.second.mY == desc.mY) {
+
+						msgAddOtherPlayers.header.id = GameMsg::Game_AddPlayer;
+						msgAddOtherPlayers << player.second;
+					}
+				}
+				msgAddOtherPlayers << count;
 				MessageClient(client, msgAddOtherPlayers);
+				break;
 			}
 
-			break;
-		}
+			case GameMsg::Client_UnregisterWithServer:
+			{
+				break;
+			}
 
-		case GameMsg::Client_UnregisterWithServer:
-		{
-			break;
-		}
+			case GameMsg::Game_UpdatePlayer:
+			{
+				// Simply bounce update to everyone except incoming client
+				MessageAllClients(msg, client);
 
-		case GameMsg::Game_UpdatePlayer:
-		{
-			// Simply bounce update to everyone except incoming client
-			MessageAllClients(msg, client);
-			break;
-		}
+				sPlayerDescription desc;
+				msg >> desc;
+				m_mapPlayerRoster.insert_or_assign(desc.nUniqueID, desc);
 
-		case GameMsg::Chat_Message: {
-			MessageAllClients(msg, client);
-			break;
-		}
 
-		}
+				break;
+			}
 
+			case GameMsg::Chat_Message: {
+				MessageAllClients(msg, client);
+				break;
+			}
+
+			case GameMsg::PlayersOnMapTile:
+			{
+				int x, y;
+				msg >> y >> x;
+
+				nanz::net::message<GameMsg> msgSendList;
+				msgSendList.header.id = GameMsg::PlayersOnMapTile;
+
+				int count = 0;
+
+				for (auto& object : m_mapPlayerRoster) {
+					if (object.second.mX == x && object.second.mY == y) {
+						msgSendList << object.second;
+						count++;
+					}
+				}
+
+				msgSendList << count;
+
+				MessageClient(client, msgSendList);
+				break;
+			}
+		}
 	}
-
 };
 
 

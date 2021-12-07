@@ -5,20 +5,25 @@ Fix monster spawning
 - Monsters only automatically attack if your combat level is lower than theirs or if you attack them first
 
 Static map instead of randomly generated
-- Each area about the size of a screen without having to scroll
-- Bumping into an edge moves you to the map in that direction if it exists.
-- Easy in-game map editor
-- - If a map doesn't exist in a spot and the player is an admin/in edit mode, offer to make a map there.
-- - Place or change tiles and edit their info in-game, save for future loads
+- (DONE) Each area about the size of a screen without having to scroll
+- (DONE) Bumping into an edge moves you to the map in that direction if it exists.
+- (DONE) Save map to files?
+- (DONE) Load map from files if it already exists
+- (DONE) Easy in-game map editor
+- -  (DONE) If a map doesn't exist in a spot and the player is an admin/in edit mode, offer to make a map there.
+- -  (DONE) Place or change tiles and edit their info in-game, save for future loads
+- - Create an internal library of tiles to choose from. Save current tile to list with a button
 
 
 UI Stuff
 - Minimap showing adjacent maps, hover over spots on the map to display a name
-- - Minimap mouse-look: Map name, contains monsters, contains players?
+- - Minimap mouse-look: Map name, contains monsters
+- - Only refresh the minimap readout when the player changes overworld tile. Save the data to an easy to reference array in the meantime
 - (DONE) Skills menu (Show skill names, level, current experience, and experience needed to level up)
 - Equipped item menu
 - Magic menu (Show all spells names, cost to cast in runes, level requirement)
 - (DONE) Switch between inventory/skills/equipped items/magic menus at will
+- (DONE) Mouse move
 
 
 Magic
@@ -28,3 +33,32 @@ Magic
 - - Super Elemental: Ice,   Wood,  Lightning, Metal,  Sound?
 - - Alignment: Chaotic, Lawful, Good, Evil
 - - Catalytic Runes: Space, Force, Internal, External
+
+
+
+Multiplayer Syncing
+- (DONE) Only show players on the same map tile
+- (DONE) Allow players to move between map tiles
+- Sync item picking up and dropping. Players don't need to know what's in other players inventories
+- Sync monster positions across all clients on the same map tile.
+- Sync tile/monsters being depleted and respawned properly
+- (DONE) Sync and show all players immediately instead of waiting for them to move
+
+
+Skills
+- Combat Skills
+- - Attack
+- - Strength
+- - Health
+- - Magic
+- - Archery
+
+- Gathering Skills
+- - Mining
+- - Fishing
+- - Woodcutting
+
+- Processing Skills
+- - Metalworking
+- - Woodworking
+- - Cooking

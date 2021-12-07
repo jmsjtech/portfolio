@@ -1,16 +1,18 @@
 #include "main.h"
 
-static const int MAPTILE_WIDTH = 80;
-static const int MAPTILE_HEIGHT = 43;
+static const int MAPTILE_WIDTH = 78;
+static const int MAPTILE_HEIGHT = 42;
 static const int OVERWORLD_WIDTH = 5;
 static const int OVERWORLD_HEIGHT = 5;
 
 
 bool Map::canWalk(int x, int y) const {
+	// If the tile blocks move you definitely can't go there
 	if (tiles[x + y * MAPTILE_WIDTH].blocksMove) {
 		return false;
 	}
 
+	// Otherwise see if there's an actor on it that's blocking movement
 	for (Actor** i = engine.actors.begin(); i != engine.actors.end(); i++) {
 		Actor* actor = *i;
 		if (actor->blocks && actor->x == x && actor->y == y) {
@@ -19,28 +21,45 @@ bool Map::canWalk(int x, int y) const {
 		}
 	}
 
+	// If the tile doesn't block and there's no blocking actor, it must be walkable
 	return true;
 }
 
-Tile Map::tileAt(int x, int y) const {
-	return tiles[x + y * MAPTILE_WIDTH];
+// Get a tile at position or index
+Tile& Map::tileAt(int x, int y) const { return tiles[x + y * MAPTILE_WIDTH]; }
+Tile& Map::tileAtIndex(int index) const { return tiles[index]; }
+
+// Set the tile at a position
+void Map::SetTile(Tile& tile, int x, int y) const {
+	tiles[x + y * MAPTILE_WIDTH] = tile;
+	return;
 }
 
+// Set the tile at an index
+void Map::SetTileIndex(Tile& tile, int index) const {
+	tiles[index] = tile;
+	return;
+}
+
+// Return the dimension constants
+int Map::getWidth() const { return MAPTILE_WIDTH; }
+int Map::getHeight() const { return MAPTILE_HEIGHT; }
+
+// Render the whole tile array to the root console at the right position
 void Map::render() const {
 	for (int x = 0; x < MAPTILE_WIDTH; x++) {
 		for (int y = 0; y < MAPTILE_HEIGHT; y++) {
-			TCODConsole::root->setChar(x, y, tileAt(x, y).ch);
-			TCODConsole::root->setCharBackground(x, y, tileAt(x, y).bg);
-			TCODConsole::root->setCharForeground(x, y, tileAt(x, y).fg);
+			TCODConsole::root->setChar(x+1, y+1, tileAt(x, y).ch);
+			TCODConsole::root->setCharBackground(x+1, y+1, tileAt(x, y).bg);
+			TCODConsole::root->setCharForeground(x+1, y+1, tileAt(x, y).fg);
 		}
 	}
 }
 
 
-
+// Make the new map by initializing the tile array
 Map::Map()  {
 	tiles = new Tile[MAPTILE_WIDTH * MAPTILE_HEIGHT];
-	map = new TCODMap(MAPTILE_WIDTH, MAPTILE_HEIGHT);
 }
 
 Map::~Map() {
@@ -48,7 +67,7 @@ Map::~Map() {
 }
 
 
-
+// Create a new monster at the specified position and map coordinates, though it should pretty much never be creating monsters on other maps locally
 void Map::addMonster(int x, int y, int mX, int mY) {
 	TCODRandom* rng = TCODRandom::getInstance();
 	if (rng->getInt(0, 100) < 80) {
@@ -68,6 +87,7 @@ void Map::addMonster(int x, int y, int mX, int mY) {
 	}
 }
 
+// Create an item at the specified position and map coordinates, but it shouldn't be doing this unless you're on the map in the first place
 void Map::addItem(int x, int y, int mX, int mY) {
 	Actor* healthPotion = new Actor(x, y, mX, mY, '!', "health potion", 0, TCODColor::violet);
 	healthPotion->blocks = false;

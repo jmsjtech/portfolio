@@ -2,6 +2,11 @@
 #include <iostream>
 #include "Nanz_Net.h"
 
+enum minimap {
+	w = 17,
+	h = 17,
+};
+
 class Actor;
 #include "Destructible.h"
 #include "Attacker.h"
