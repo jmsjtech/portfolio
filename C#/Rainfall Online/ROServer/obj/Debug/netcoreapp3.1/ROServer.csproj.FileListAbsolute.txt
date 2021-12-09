@@ -1,0 +1,15 @@
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\bin\Debug\netcoreapp3.1\ROServer.exe
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\bin\Debug\netcoreapp3.1\ROServer.deps.json
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\bin\Debug\netcoreapp3.1\ROServer.runtimeconfig.json
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\bin\Debug\netcoreapp3.1\ROServer.runtimeconfig.dev.json
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\bin\Debug\netcoreapp3.1\ROServer.dll
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\bin\Debug\netcoreapp3.1\ROServer.pdb
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\obj\Debug\netcoreapp3.1\ROServer.csproj.AssemblyReference.cache
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\obj\Debug\netcoreapp3.1\ROServer.GeneratedMSBuildEditorConfig.editorconfig
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\obj\Debug\netcoreapp3.1\ROServer.AssemblyInfoInputs.cache
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\obj\Debug\netcoreapp3.1\ROServer.AssemblyInfo.cs
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\obj\Debug\netcoreapp3.1\ROServer.csproj.CoreCompileInputs.cache
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\obj\Debug\netcoreapp3.1\ROServer.dll
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\obj\Debug\netcoreapp3.1\ROServer.pdb
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\obj\Debug\netcoreapp3.1\ROServer.genruntimeconfig.cache
+D:\Desktop\portfolio\C#\Rainfall Online\ROServer\bin\Debug\netcoreapp3.1\Lidgren.Network.dll

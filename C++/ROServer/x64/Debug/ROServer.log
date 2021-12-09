@@ -1,25 +1,25 @@
 ﻿  ROServer.cpp
 D:\Desktop\portfolio\C++\Rainfall\src\Nanz_Net.h(80,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
-D:\Desktop\portfolio\C++\ROServer\ROServer.cpp(48): message : see reference to function template instantiation 'nanz::net::message<T> &nanz::net::operator <<<unsigned int>(nanz::net::message<T> &,const DataType &)' being compiled
+D:\Desktop\portfolio\C++\ROServer\ROServer.cpp(53): message : see reference to function template instantiation 'nanz::net::message<T> &nanz::net::operator <<<unsigned int>(nanz::net::message<T> &,const DataType &)' being compiled
           with
           [
               T=GameMsg,
               DataType=unsigned int
           ]
-D:\Desktop\portfolio\C++\ROServer\ROServer.cpp(48): message : see reference to function template instantiation 'nanz::net::message<T> &nanz::net::operator <<<unsigned int>(nanz::net::message<T> &,const DataType &)' being compiled
+D:\Desktop\portfolio\C++\ROServer\ROServer.cpp(53): message : see reference to function template instantiation 'nanz::net::message<T> &nanz::net::operator <<<unsigned int>(nanz::net::message<T> &,const DataType &)' being compiled
           with
           [
               T=GameMsg,
               DataType=unsigned int
           ]
 D:\Desktop\portfolio\C++\Rainfall\src\Nanz_Net.h(102,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
-D:\Desktop\portfolio\C++\ROServer\ROServer.cpp(61): message : see reference to function template instantiation 'nanz::net::message<T> &nanz::net::operator >><sPlayerDescription>(nanz::net::message<T> &,DataType &)' being compiled
+D:\Desktop\portfolio\C++\ROServer\ROServer.cpp(66): message : see reference to function template instantiation 'nanz::net::message<T> &nanz::net::operator >><sPlayerDescription>(nanz::net::message<T> &,DataType &)' being compiled
           with
           [
               T=GameMsg,
               DataType=sPlayerDescription
           ]
-D:\Desktop\portfolio\C++\ROServer\ROServer.cpp(61): message : see reference to function template instantiation 'nanz::net::message<T> &nanz::net::operator >><sPlayerDescription>(nanz::net::message<T> &,DataType &)' being compiled
+D:\Desktop\portfolio\C++\ROServer\ROServer.cpp(66): message : see reference to function template instantiation 'nanz::net::message<T> &nanz::net::operator >><sPlayerDescription>(nanz::net::message<T> &,DataType &)' being compiled
           with
           [
               T=GameMsg,

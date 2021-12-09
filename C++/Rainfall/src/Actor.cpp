@@ -3,13 +3,13 @@
 
 // Default Constructor
 Actor::Actor(int x, int y, int mX, int mY, int ch, const char *name, float speed, const TCODColor& col) :
-	x(x), y(y), mX(mX), mY(mY), ch(ch), col(col), name(name), speed(speed), blocks(true), attacker(NULL), destructible(NULL), ai(NULL), pickable(NULL), container(NULL) {
+	pos(x, y), worldPos(mX, mY), ch(ch), col(col), name(name), speed(speed), blocks(true), attacker(NULL), destructible(NULL), ai(NULL), pickable(NULL), container(NULL) {
 }
 
 // Render the actor onto the root console
 void Actor::render() const {
-	TCODConsole::root->setChar(x, y, ch);
-	TCODConsole::root->setCharForeground(x, y, col);
+	TCODConsole::root->setChar(pos.x, pos.y, ch);
+	TCODConsole::root->setCharForeground(pos.x, pos.y, col);
 }
 
 // Run the update code for things that can act

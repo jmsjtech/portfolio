@@ -7,14 +7,15 @@ class Map;
 // Prepare messages to be sent to the server, 
 class CustomClient : public nanz::net::client_interface<GameMsg> {
 public:
-	void MovePlayer(sPlayerDescription player) { // Player moved, send the new info to the server
+	void MovePlayerBy(sPlayerDescription player, int xchange, int ychange) { // Player wants to move, pass it to the server for logic
 		nanz::net::message<GameMsg> msg;
-		msg.header.id = GameMsg::Game_UpdatePlayer;
+		msg.header.id = GameMsg::Player_Move;
+		
+		msg << ychange << xchange << player;
 
-		msg << player;
 
 		Send(msg);
-	}
+	} 
 
 	void ChatMessage(std::string message, const char* name) { // Player sent a chat message, pass it along to the server
 		nanz::net::message<GameMsg> msg;
@@ -41,6 +42,7 @@ class Engine {
 public: 
 	TCODList<Actor*> actors; // All the actors the client is currently aware of
 	Actor* player; // The client's actor
+	//std::unordered_map<std::string, Tile> tileLibrary;
 	
 	Map* map; // The visible array of tiles
 	int screenWidth; // The window width
@@ -48,18 +50,14 @@ public:
 	Gui* gui; // The GUI
 
 	MapTile minimap[minimap::w][minimap::h]; // The two-dimensional minimap array
-	int topleft_x; // Where the topleft-most corner of the minimap currently is (x)
-	int topleft_y; // Where the topleft-most corner of the minimap currently is (y)
+	Position topleft; // Where the topleft-most corner of the minimap currently is 
 
 	// These are for setting each minimap tile as we iterate through the info
 	std::string mini_name; // Minimap tile name
 	int mini_ch; // Minimap tile symbol
 	TCODColor mini_fg; // Minimap tile foreground color
 	TCODColor mini_bg; // Minimap tile background color
-	int mini_mX; // Minimap X
-	int mini_mY; // Minimap Y
-
-
+	Position mini_pos; // Minimap tile position
 
 	TCODList<const char*> skills; // A list of all the skills - change this to a Skill object list in the future
 	TCODList<const char*> quests; // A list of all the quests - change this to a Quest object list in the future
@@ -94,11 +92,13 @@ public:
 	void update();
 	void render();
 	void sendToBack(Actor* actor);
+	void UpdateOwnPosition(sPlayerDescription desc);
 	
 	void SaveMap(int mX, int mY, Tile* tiles) const;
 	bool LoadMap(int mX, int mY, bool justHeader) const;
 	void NewMapAt(int mX, int mY) const;
 	void UpdateMinimap();
+	void InitTileDatabase();
 
 	// Multiplayer logic components
 	CustomClient client;

@@ -1,6 +1,7 @@
 #include "libtcod.hpp"
 #include <iostream>
 #include "Nanz_Net.h"
+#include "NetCommon.h"
 
 enum minimap {
 	w = 17,

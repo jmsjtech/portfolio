@@ -1,8 +1,12 @@
 #include <iostream>
 #include <unordered_map>
 
+#include "libtcod.hpp"
 #include "Nanz_Net.h"
 #include <NetCommon.h>
+#include <map>
+#include <filesystem>
+#include <fstream>
 
 class GameServer : public nanz::net::server_interface<GameMsg> {
 public:
@@ -11,6 +15,7 @@ public:
 
 	std::unordered_map<uint32_t, sPlayerDescription> m_mapPlayerRoster;
 	std::vector<uint32_t> m_vGarbageIDs;
+
 
 protected:
 	bool OnClientConnect(std::shared_ptr<nanz::net::connection<GameMsg>> client) override {
@@ -77,7 +82,7 @@ protected:
 				int count = 0;
 
 				for (const auto& player : m_mapPlayerRoster) {
-					if (player.second.mX == desc.mX && player.second.mY == desc.mY) {
+					if (player.second.worldPos.x == desc.worldPos.x && player.second.worldPos.y == desc.worldPos.y) {
 
 						msgAddOtherPlayers.header.id = GameMsg::Game_AddPlayer;
 						msgAddOtherPlayers << player.second;
@@ -103,6 +108,33 @@ protected:
 				m_mapPlayerRoster.insert_or_assign(desc.nUniqueID, desc);
 
 
+
+				break;
+			}
+
+			case GameMsg::Player_Move:
+			{
+				sPlayerDescription desc;
+				int xchange;
+				int ychange;
+
+				msg >> desc;
+				msg >> xchange;
+				msg >> ychange;
+				desc.pos.x += xchange;
+				desc.pos.y += ychange;
+
+				std::cout << "[SERVER] Movement logic\n";
+
+				m_mapPlayerRoster.insert_or_assign(desc.nUniqueID, desc);
+
+				nanz::net::message<GameMsg> msgMovePlayer;
+				msgMovePlayer.header.id = GameMsg::Player_Move;
+				msgMovePlayer << desc;
+
+				MessageAllClients(msgMovePlayer);
+
+
 				break;
 			}
 
@@ -122,7 +154,7 @@ protected:
 				int count = 0;
 
 				for (auto& object : m_mapPlayerRoster) {
-					if (object.second.mX == x && object.second.mY == y) {
+					if (object.second.worldPos.x == x && object.second.worldPos.y == y) {
 						msgSendList << object.second;
 						count++;
 					}
@@ -142,6 +174,7 @@ protected:
 int main() {
 	GameServer server(60000);
 	server.Start();
+
 
 	while (1) {
 		server.Update(-1, true);

@@ -16,9 +16,9 @@ Static map instead of randomly generated
 
 
 UI Stuff
-- Minimap showing adjacent maps, hover over spots on the map to display a name
-- - Minimap mouse-look: Map name, contains monsters
-- - Only refresh the minimap readout when the player changes overworld tile. Save the data to an easy to reference array in the meantime
+- (DONE) Minimap showing adjacent maps, hover over spots on the map to display a name
+- - (DONE) Minimap mouse-look: Map name, coords
+- - (DONE) Only refresh the minimap readout when the player changes overworld tile. Save the data to an easy to reference array in the meantime
 - (DONE) Skills menu (Show skill names, level, current experience, and experience needed to level up)
 - Equipped item menu
 - Magic menu (Show all spells names, cost to cast in runes, level requirement)
@@ -43,6 +43,9 @@ Multiplayer Syncing
 - Sync monster positions across all clients on the same map tile.
 - Sync tile/monsters being depleted and respawned properly
 - (DONE) Sync and show all players immediately instead of waiting for them to move
+- Send movement requests to the server, return whether successful instead of current method
+- Clients should request maps from the server rather than load from file themselves
+- Server should store all active maps constantly so files don't have to be read often
 
 
 Skills
