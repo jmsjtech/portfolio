@@ -1,7 +1,7 @@
 class Actor {
 public:
-	Position pos;
-	Position worldPos;
+	int x, y; // position on map
+	int mX, mY; // position in overworld
 	int ch; // ascii code
 	TCODColor col; // color
 	const char* name; // the actor's name

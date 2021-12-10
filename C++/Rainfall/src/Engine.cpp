@@ -14,10 +14,10 @@ Engine::Engine(int screenWidth, int screenHeight) : screenWidth(screenWidth), sc
 	engine.actors.push(player);
 
 	// Fill out the ownDesc variable to send it to the server later
-	ownDesc.pos.x = player->pos.x;
-	ownDesc.pos.y = player->pos.y;
-	ownDesc.worldPos.x = player->worldPos.x;
-	ownDesc.worldPos.y = player->worldPos.y;
+	ownDesc.x = player->x;
+	ownDesc.y = player->y;
+	ownDesc.mX = player->mX;
+	ownDesc.mY = player->mY;
 	ownDesc.ch = '@';
 	ownDesc.r = player->col.r;
 	ownDesc.g = player->col.g;
@@ -33,11 +33,10 @@ Engine::Engine(int screenWidth, int screenHeight) : screenWidth(screenWidth), sc
 	//client.Connect("18.219.35.213", 60000);
 
 
-	//InitTileDatabase();
-
+	LoadTiles();
 
 	// Load the current map tile from file, then update the minimap
-	//LoadMap(ownDesc.worldPos.x, ownDesc.worldPos.y, false);
+	LoadMap(ownDesc.mX, ownDesc.mY, false);
 	UpdateMinimap();
 }
 
@@ -83,7 +82,7 @@ void Engine::update() {
 
 					nanz::net::message<GameMsg> msg;
 					msg.header.id = GameMsg::PlayersOnMapTile;
-					msg << engine.ownDesc.worldPos.x << engine.ownDesc.worldPos.y;
+					msg << engine.ownDesc.mX << engine.ownDesc.mY;
 					engine.client.Send(msg);
 					
 					break;
@@ -112,19 +111,6 @@ void Engine::update() {
 					sPlayerDescription desc;
 					msg >> desc;
 					otherPlayers.insert_or_assign(desc.nUniqueID, desc);
-					break;
-				}
-
-				case GameMsg::Player_Move:
-				{ 
-					sPlayerDescription desc;
-					msg >> desc;
-					otherPlayers.insert_or_assign(desc.nUniqueID, desc);
-
-					if (desc.nUniqueID == engine.nPlayerID) {
-						UpdateOwnPosition(desc);
-					}
-
 					break;
 				}
 
@@ -168,18 +154,6 @@ void Engine::update() {
 	}
 }
 
-void Engine::UpdateOwnPosition(sPlayerDescription desc) {
-	engine.ownDesc.pos.x = desc.pos.x;
-	engine.ownDesc.pos.y = desc.pos.y;
-	engine.ownDesc.worldPos.x = desc.worldPos.x;
-	engine.ownDesc.worldPos.y = desc.worldPos.y;
-
-	engine.player->pos.x = desc.pos.x;
-	engine.player->pos.y = desc.pos.y;
-	engine.player->worldPos.x = desc.worldPos.x;
-	engine.player->worldPos.y = desc.worldPos.y;
-}
-
 void Engine::render() {
 	TCODConsole::root->clear();
 
@@ -188,7 +162,7 @@ void Engine::render() {
 	// Then all actors
 	for (Actor** i = engine.actors.begin(); i != engine.actors.end(); i++) {
 		Actor* actor = *i;
-		if (actor->worldPos.x == engine.player->worldPos.x && actor->worldPos.y == engine.player->worldPos.y)
+		if (actor->mX == engine.player->mX && actor->mY == engine.player->mY)
 			actor->render();
 	}
 
@@ -197,9 +171,9 @@ void Engine::render() {
 	for (auto& object: otherPlayers) {
 		sPlayerDescription p = object.second;
 
-		if (p.worldPos.x == ownDesc.worldPos.x && p.worldPos.y == ownDesc.worldPos.y && p.nUniqueID != engine.ownDesc.nUniqueID) {
-			TCODConsole::root->setChar(p.pos.x, p.pos.y, p.ch);
-			TCODConsole::root->setCharForeground(p.pos.x, p.pos.y, TCODColor(p.r, p.g, p.b));
+		if (p.mX == ownDesc.mX && p.mY == ownDesc.mY && p.nUniqueID != engine.ownDesc.nUniqueID) {
+			TCODConsole::root->setChar(p.x, p.y, p.ch);
+			TCODConsole::root->setCharForeground(p.x, p.y, TCODColor(p.r, p.g, p.b));
 		}
 	}
 	
@@ -218,14 +192,14 @@ void Engine::NewMapAt(int mX, int mY) const {
 
 	// Set all the minimap defaults - if we're making a new overworld tile, grass is a decent guess
 	MapTile* mapTile = &engine.minimap[mX][mY];
-	mapTile->worldPos.x = mX;
-	mapTile->worldPos.y = mY;
+	mapTile->mX = mX;
+	mapTile->mY = mY;
 	mapTile->name = "Grass";
 	mapTile->ch = ',';
 	mapTile->fg = TCODColor::darkerGreen;
 
 	// Print that the map was made successfully
-	engine.gui->message(TCODColor::cyan, "New map at %d, %d", engine.minimap[mX][mY].worldPos.x, engine.minimap[mX][mY].worldPos.y);
+	engine.gui->message(TCODColor::cyan, "New map at %d, %d", engine.minimap[mX][mY].mX, engine.minimap[mX][mY].mY);
 
 	// Just for posterity so we aren't making maps twice or having to manually save every time, save the map and then reload it
 	SaveMap(mX, mY, tiles);
@@ -240,7 +214,7 @@ void Engine::SaveMap(int mX, int mY, Tile* tiles) const {
 	file.open(fileName, std::fstream::out);
 	
 	// Write the header line to save the minimap tile details
-	MapTile tile = engine.minimap[engine.topleft.x + 8][engine.topleft.y + 8];
+	MapTile tile = engine.minimap[engine.topleft_x + 8][engine.topleft_y + 8];
 	file << tile.name << "|" << 
 		tile.ch << "|" << 
 		(int)tile.fg.r << "|" <<
@@ -255,7 +229,7 @@ void Engine::SaveMap(int mX, int mY, Tile* tiles) const {
 	// Write every tile to the file, one line at a time
 	for (int i = 0; i < engine.map->getWidth() * engine.map->getHeight(); i++) {
 		Tile tile = tiles[i];
-		file << tile.metadata.name << "|\n";
+		file << tile.metadata.id << "\n";
 	}
 
 	// Close out the file
@@ -267,9 +241,8 @@ bool Engine::LoadMap(int mX, int mY, bool justHeader) const {
 	std::string fileName = "./maps/" + std::to_string(mX) + "," + std::to_string(mY) + ".dat"; // Construct the file name from the coordinates
 	std::ifstream file(fileName);
 
-	if (!file.is_open()) { // If the file doesn't exist we can't load it, so just back out immediately
+	if (!file.is_open()) // If the file doesn't exist we can't load it, so just back out immediately
 		return false;
-	}
 
 	std::string line;
 	int index = -1;
@@ -301,26 +274,25 @@ bool Engine::LoadMap(int mX, int mY, bool justHeader) const {
 			int mX = atoi(fromLine[8].c_str());
 			int mY = atoi(fromLine[9].c_str());
 
-			engine.mini_pos.x = mX;
-			engine.mini_pos.y = mY;
+			engine.mini_mX = mX;
+			engine.mini_mY = mY;
 
 			if (justHeader) {
 				return true;
 			}
 			index++;
 		} else { // Then switch to regular tile reading for the rest of the file
-			std::string fromLine[1];
+			Tile* tile = &engine.map->tileAt(x, y);
 
-			for (int i = 0; i < 1; i++) {
-				fromLine[i] = line.substr(0, line.find('|'));
-				line.erase(0, line.find('|') + 1);
+			if (tileLibrary.find(atoi(line.c_str())) == tileLibrary.end()) {
+
+			} else {
+				engine.map->tiles[x * (y * engine.map->getWidth())] = tileLibrary.at(atoi(line.c_str()));
 			}
-
-			//engine.map->tiles[index] = Tile(tileLibrary.at(fromLine[0].c_str()));
-
+			
 			index++;
-			//x = index % engine.map->getWidth();
-			//y = index / engine.map->getWidth();
+			x = index % engine.map->getWidth();
+			y = index / engine.map->getWidth();
 		}
 	}
 
@@ -331,33 +303,42 @@ bool Engine::LoadMap(int mX, int mY, bool justHeader) const {
 	return true;
 }
 
+// Set all the map editor tile variables back to default grass
+void Engine::ResetMapEdit() const {
+	engine.mapEdit_ch = ',';
+	engine.mapEdit_name = "Grass";
+	engine.mapEdit_fg_r = TCODColor::darkerGreen.r;
+	engine.mapEdit_fg_g = TCODColor::darkerGreen.g;
+	engine.mapEdit_fg_b = TCODColor::darkerGreen.b;
+	engine.mapEdit_bg_r, engine.mapEdit_bg_g, engine.mapEdit_bg_b = 0;
+	engine.mapEdit_blocksMove = false;
+}
+
 // Reset the topleft-most tile to the right spot, then for every position load the map header and set the info
 void Engine::UpdateMinimap() {
-	topleft.x = ownDesc.worldPos.x - 8;
-	topleft.y = ownDesc.worldPos.y - 8;
+	topleft_x = ownDesc.mX - 8;
+	topleft_y = ownDesc.mY - 8;
 
-	for (int y = engine.topleft.y; y < engine.topleft.y + 17; y++) {
-		for (int x = engine.topleft.x; x < engine.topleft.x + 17; x++) {
+	for (int y = engine.topleft_y; y < engine.topleft_y + 17; y++) {
+		for (int x = engine.topleft_x; x < engine.topleft_x + 17; x++) {
 			if (LoadMap(x, y, true)) {
 				engine.minimap[x][y].name = mini_name;
 				engine.minimap[x][y].ch = mini_ch;
 				engine.minimap[x][y].fg = mini_fg;
 				engine.minimap[x][y].bg = mini_bg;
-				engine.minimap[x][y].worldPos.x = mini_pos.x;
-				engine.minimap[x][y].worldPos.y = mini_pos.y;
+				engine.minimap[x][y].mX = mini_mX;
+				engine.minimap[x][y].mY = mini_mY;
 			}
 		}
 	}
 }
 
 
-
-void Engine::InitTileDatabase() {
-	 
-	std::ifstream file("./tiles.dat");
+void Engine::LoadTiles() { 
+	std::ifstream file("./data/tiles.dat");
 
 	if (!file.is_open()) { // If the file doesn't exist we can't load it, so just back out immediately
-		engine.gui->message(TCODColor::cyan, "Failed to load tile file. %s", std::string("./tiles.dat"));
+		engine.gui->message(TCODColor::cyan, "Failed to load tiles from file");
 		return;
 	}
 
@@ -365,35 +346,35 @@ void Engine::InitTileDatabase() {
 	int index = -1;
 	int x = 0;
 	int y = 0;
-	while (std::getline(file, line)) {
-		Tile* tile = new Tile();
-		std::string fromLine[5];
+	while (std::getline(file, line)) { // Read all the lines at a time
+		std::string fromLine[10];
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 10; i++) {
 			fromLine[i] = line.substr(0, line.find('|'));
 			line.erase(0, line.find('|') + 1);
 		}
 
-		tile->metadata.name = fromLine[0];
-		tile->metadata.blocksMove = fromLine[1] == "true" ? true : false;
-		tile->ch = atoi(fromLine[2].c_str());
+		Tile* newTile = new Tile();
 
-		int fgR = atoi(fromLine[3].substr(0, fromLine[3].find(',')).c_str());
-		fromLine[3].erase(0, fromLine[3].find(',') + 1);
-		int fgG = atoi(fromLine[3].substr(0, fromLine[3].find(',')).c_str());
-		fromLine[3].erase(0, fromLine[3].find(',') + 1);
-		int fgB = atoi(fromLine[3].substr(0, fromLine[3].find(',')).c_str()); 
-		tile->fg = TCODColor(fgR, fgG, fgB);
+		newTile->metadata.id = atoi(fromLine[0].c_str());
+		newTile->metadata.name = fromLine[1].c_str();
+		newTile->metadata.blocksMove = fromLine[2] == "true" ? true : false;
+		newTile->ch = atoi(fromLine[3].c_str());
 
-		int bgR = atoi(fromLine[4].substr(0, fromLine[4].find(',')).c_str());
-		fromLine[4].erase(0, fromLine[4].find(',') + 1);
-		int bgG = atoi(fromLine[4].substr(0, fromLine[4].find(',')).c_str());
-		fromLine[4].erase(0, fromLine[4].find(',') + 1);
-		int bgB = atoi(fromLine[4].substr(0, fromLine[4].find(',')).c_str());
-		tile->bg = TCODColor(bgR, bgG, bgB);
-		
-	//	tileLibrary.insert_or_assign(tile->metadata.name, new Tile(tile));
-		
-		engine.gui->message(TCODColor::cyan, "Added %s to the tile library.", tile->metadata.name);
+		int fr = atoi(fromLine[4].c_str());
+		int fg = atoi(fromLine[5].c_str());
+		int fb = atoi(fromLine[6].c_str());
+
+		newTile->fg = TCODColor(fr, fg, fb);
+
+		int br = atoi(fromLine[7].c_str());
+		int bg = atoi(fromLine[8].c_str());
+		int bb = atoi(fromLine[9].c_str());
+
+		newTile->bg = TCODColor(br, bg, bb);
+
+		tileLibrary.insert_or_assign(newTile->metadata.id, Tile(*newTile));
 	}
+
+	engine.gui->message(TCODColor::cyan, "Loaded %d tiles.", tileLibrary.size());
 }

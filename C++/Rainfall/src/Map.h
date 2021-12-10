@@ -1,19 +1,21 @@
-// This is for the actual tiles in a map 
+// This is for the actual tiles in a map
 struct Tile {
-    int ch; // Symbol
-    TCODColor fg; // Foreground color
-    TCODColor bg; // Background color
+    TileMeta metadata = TileMeta(0, "Grass\0", false);
+    int ch = ',';
 
-    TileMeta metadata; // The metadata for the tile
+	TCODColor fg = TCODColor::darkerGreen; // Foreground color
+	TCODColor bg = TCODColor::black; // Background color
 
-    Tile() : ch(','), fg(TCODColor::darkerGreen), bg(TCODColor::black) {}
+	Tile() {}
 
-    Tile (const Tile* t1) { 
-        ch = t1->ch; 
-        fg = TCODColor(t1->fg.r, t1->fg.g, t1->fg.b);
-        bg = TCODColor(t1->bg.r, t1->bg.g, t1->bg.b);
-        metadata.name = t1->metadata.name;
-        metadata.blocksMove = t1->metadata.blocksMove;
+    void operator = (const Tile& copy) { 
+        metadata.name = copy.metadata.name;
+        metadata.id = copy.metadata.id;
+        metadata.blocksMove = copy.metadata.blocksMove;
+
+        ch = copy.ch;
+        fg = TCODColor(copy.fg.r, copy.fg.g, copy.fg.b);
+        bg = TCODColor(copy.bg.r, copy.bg.g, copy.bg.b);
     }
 };
 
@@ -25,31 +27,31 @@ struct MapTile {
     TCODColor fg; // Foreground color
     TCODColor bg; // Background color
 
-    Position worldPos;
+    int mX = -99; // Position in the overworld
+    int mY = -99; // Position in the overworld
 
     MapTile() : name("Void"), ch(' '), fg(TCODColor::black), bg(TCODColor::black) {}
 };
 
 class Map {
 public:
-    Map() { tiles = new Tile[MAPTILE_WIDTH * MAPTILE_HEIGHT]; }
-    ~Map() { delete[] tiles; }
-
-    static const int MAPTILE_WIDTH = 78;
-    static const int MAPTILE_HEIGHT = 42;
-
-    void SetTile(Tile& tile, int x, int y) const;
-    void SetTileIndex(Tile& tile, int index) const;
-
+    Map();
+    ~Map();
     // Two tile returning and setting functions based on what numbers you've got
     Tile& tileAt(int x, int y) const;
     Tile& tileAtIndex(int index) const;
 
-    void render() const;
+    void SetTile(Tile& tile, int x, int y) const;
+    void SetTileIndex(Tile& tile, int index) const;
 
-    int getWidth() { return MAPTILE_WIDTH; } // Return the Width constant for the map
-    int getHeight() { return MAPTILE_HEIGHT; } // Return the Height constant for the map
+    bool canWalk(int x, int y) const; // Is a tile solid?
+    void render() const; //  Render the tile to the console
+    int getWidth() const; // Return the Width constant for the map
+    int getHeight() const; // Return the Height constant for the map
 
     Tile* tiles;
-    MapTile* minimapTile;
+protected:
+
+    void addMonster(int x, int y, int mX, int mY);
+    void addItem(int x, int y, int mX, int mY);
 };

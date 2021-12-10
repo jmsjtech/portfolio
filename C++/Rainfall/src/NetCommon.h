@@ -21,35 +21,6 @@ enum class GameMsg : uint32_t {
 
 	Chat_Message,
 	PlayersOnMapTile,
-	Player_Move,
-};
-
-struct Position {
-	int x;
-	int y;
-
-	Position(int x, int y) : x(x), y(y) {}
-	Position() : x(0), y(0) {}
-
-	friend bool operator== (Position& first, Position& second) {
-		if (first.x == second.x && first.y == second.y)
-			return true;
-		return false;
-	}
-
-	Position operator+(const Position& pos) {
-		Position newPos;
-		newPos.x = this->x + pos.x;
-		newPos.y = this->y + pos.y;
-		return newPos;
-	}
-
-	bool operator <(const Position& rhs) const {
-		if (x != rhs.y) {
-			return y < rhs.y;
-		} 
-		return x < rhs.y;
-	}
 };
 
 // Minimalist player information to exchange between clients
@@ -60,15 +31,21 @@ struct sPlayerDescription {
 	int ch; // the character representing the player, almost always @
 	int r, g, b; // the color of the player's avatar
 
-	Position pos;
-	Position worldPos;
-
-	sPlayerDescription() {}
+	int x = 0;
+	int y = 0;
+	int mX = 0;
+	int mY = 0;
 };
 
-struct TileMeta {
-	std::string name;
-	bool blocksMove;
 
-	TileMeta() : name("Grass"), blocksMove(false) {}
+// All the data the server needs for calculations
+struct TileMeta { 
+	int id = 0;
+	std::string name = "Grass";
+	bool blocksMove = false;
+
+	TileMeta() {}
+	TileMeta(int idIn, const char* nameIn, bool blockIn) : id(idIn), blocksMove(blockIn) {
+		name = nameIn;
+	}
 };

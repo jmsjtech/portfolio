@@ -97,7 +97,7 @@ void PlayerAi::update(Actor* owner) {
 
 	if (dx != 0 || dy != 0) { // If the player pressed a movement key, send it along
 		engine.pathing = false;
-		moveOrAttack(owner, dx, dy);
+		moveOrAttack(owner, owner->x + dx, owner->y + dy);
 	}
 
 	// Left-click handling
@@ -150,7 +150,8 @@ void PlayerAi::update(Actor* owner) {
 				} else if (engine.gui->selected == "Equipment") { // Clicks in the equipment menu
 
 				} else if (engine.gui->selected == "Map Editor") { // Clicks in the equipment menu
-					if (engine.mouse.cy == 68) {}
+					if (engine.mouse.cy == 68)
+						engine.ResetMapEdit();
 				}
 			}
 		}
@@ -175,6 +176,13 @@ void PlayerAi::update(Actor* owner) {
 		}
 	}
 
+	// Right-click handling
+	if (engine.mouse.rbutton_pressed) {
+		// Clicked in the sidebar
+		if (engine.mouse.cx >= 0 && engine.mouse.cx <= 79 && engine.mouse.cy >= 0 && engine.mouse.cy <= 42) {
+			
+		}
+	}
 
 	// If you're hovering over the sidebar area and scroll, either change the scroll position or the map editor character value
 	if (engine.mouse.cx > 80 && engine.mouse.cy > 28) {
@@ -196,24 +204,35 @@ void PlayerAi::update(Actor* owner) {
 
 	// Get the position hovered on the map if you're hovering over the map
 	if (engine.mouse.cx >= 2 && engine.mouse.cx <= 18 && engine.mouse.cy >= 47 && engine.mouse.cy <= 64) {
-		engine.gui->miniHover.x = engine.mouse.cx - 2;
-		engine.gui->miniHover.y = engine.mouse.cy - 47;
+		engine.gui->miniX = engine.mouse.cx - 2;
+		engine.gui->miniY = engine.mouse.cy - 47;
 	} else {
-		engine.gui->miniHover.x = -1;
-		engine.gui->miniHover.y = -1;
+		engine.gui->miniX = -1;
+		engine.gui->miniY = -1;
 	}
 
 	// If you clicked to path, move towards the clicked point a step at a time
 	if (engine.pathing) {
-		int dx = engine.pathToX - engine.player->pos.x;
-		int dy = engine.pathToY - engine.player->pos.y;
+		int dx = engine.pathToX - engine.player->x;
+		int dy = engine.pathToY - engine.player->y;
 		int stepdx = (dx > 0 ? 1 : -1);
 		int stepdy = (dy > 0 ? 1 : -1);
 		float distance = sqrtf(dx * dx + dy * dy);
-		
-		dx = (int)(round(dx / distance));
-		dy = (int)(round(dy / distance));
-		moveOrAttack(engine.player, dx, dy);
+		if (distance >= 2) {
+			dx = (int)(round(dx / distance));
+			dy = (int)(round(dy / distance));
+			if (engine.map->canWalk(engine.player->x + dx, engine.player->y + dy)) {
+				moveOrAttack(engine.player, (engine.player->x + dx), (engine.player->y + dy));
+			} else if (engine.map->canWalk(engine.player->x + stepdx, engine.player->y)) {
+				moveOrAttack(engine.player, (engine.player->x + stepdx), (engine.player->y));
+			} else if (engine.map->canWalk(engine.player->x, engine.player->y + stepdy)) {
+				moveOrAttack(engine.player, (engine.player->x), (engine.player->y + stepdy));
+			}
+		} else {
+			if (engine.map->canWalk(owner->x + dx, owner->y + dy)) {
+				moveOrAttack(engine.player, (engine.player->x + dx), (engine.player->y + dy));
+			}
+		}
 	}
 }
 
@@ -226,7 +245,7 @@ bool PlayerAi::IsCommand() { // Command handling
 		std::string commandToken = engine.gui->chatBuffer->substr(1, pos-1);
 		std::string restOfMessage = engine.gui->chatBuffer->substr(pos + 1, engine.gui->chatBuffer->length() - (pos + 1));
 
-		MapTile* mapTile = &engine.minimap[engine.topleft.x + 8][engine.topleft.y + 8];
+		MapTile* mapTile = &engine.minimap[engine.topleft_x + 8][engine.topleft_y + 8];
 
 		if (commandToken == "nick") { // Change your nickname
 			std::string newName = restOfMessage;
@@ -235,6 +254,11 @@ bool PlayerAi::IsCommand() { // Command handling
 			std::string concat = std::string("Changed your nickname to: ") + engine.ownName;
 
 			engine.gui->message(TCODColor::lightBlue, concat.c_str());
+			return true;
+		}  else if (commandToken == "m-name") { // Change the minimap tile name
+			std::string newTileName = restOfMessage;
+			mapTile->name = newTileName;
+
 			return true;
 		} else if (commandToken == "m-ch") { // Change the minimap tile character
 			std::string newTileCh;
@@ -270,7 +294,7 @@ bool PlayerAi::IsCommand() { // Command handling
 			int y = atoi(restOfMessage.c_str());
 
 			MapTile* debugTile = &engine.minimap[x][y];
-			engine.gui->message(TCODColor::celadon, "Name: %s, mX: %d, mY: %d", debugTile->name, debugTile->worldPos.x, debugTile->worldPos.y);
+			engine.gui->message(TCODColor::celadon, "Name: %s, mX: %d, mY: %d", debugTile->name, debugTile->mX, debugTile->mY);
 			return true;
 
 		}
@@ -287,10 +311,6 @@ bool PlayerAi::moveOrAttack(Actor* owner, int targetx, int targety) { // Player 
 	} else {
 		owner->lastActed = TCODSystem::getElapsedMilli(); // Update the last time they moved
 
-		engine.client.MovePlayerBy(engine.ownDesc, targetx, targety);
-
-		return true;
-		/*
 		for (Actor** iterator = engine.actors.begin(); iterator != engine.actors.end(); iterator++) { // If there's a live attackable actor at the target pos, attack it
 			Actor* actor = *iterator;
 			if (actor->destructible && !actor->destructible->isDead() && actor->x == targetx && actor->y == targety) {
@@ -386,8 +406,8 @@ bool PlayerAi::moveOrAttack(Actor* owner, int targetx, int targety) { // Player 
 		// Update the position in the ownDesc variable for messages to other players
 		engine.ownDesc.x = owner->x;
 		engine.ownDesc.y = owner->y;
-		engine.ownDesc.worldPos.x = owner->mX;
-		engine.ownDesc.worldPos.y = owner->mY;
+		engine.ownDesc.mX = owner->mX;
+		engine.ownDesc.mY = owner->mY;
 
 		if (movedMaps) { // If the player switched maps, update the minimap to reflect the new center
 			engine.UpdateMinimap();
@@ -398,7 +418,6 @@ bool PlayerAi::moveOrAttack(Actor* owner, int targetx, int targety) { // Player 
 		engine.client.MovePlayer(engine.ownDesc);
 
 		return true;
-		*/
 	}
 }
 
@@ -410,7 +429,7 @@ void PlayerAi::handleActionKey(Actor* owner, int ascii) {
 			bool found = false;
 			for (Actor** iterator = engine.actors.begin(); iterator != engine.actors.end(); iterator++) {
 				Actor* actor = *iterator;
-				if (actor->pickable && actor->pos.x == owner->pos.x && actor->pos.y == owner->pos.y) {
+				if (actor->pickable && actor->x == owner->x && actor->y == owner->y) {
 					if (actor->pickable->pick(actor, owner)) {
 						found = true;
 						engine.gui->message(TCODColor::lightGrey, "You pick up the %s.", actor->name);
@@ -431,42 +450,42 @@ void PlayerAi::handleActionKey(Actor* owner, int ascii) {
 		case 'w': // move up
 		{
 			engine.pathing = false;
-			moveOrAttack(owner, owner->pos.x, owner->pos.y - 1);
+			moveOrAttack(owner, owner->x, owner->y - 1);
 			break;
 		}
 
 		case 's': // move down
 		{
 			engine.pathing = false;
-			moveOrAttack(owner, owner->pos.x, owner->pos.y + 1);
+			moveOrAttack(owner, owner->x, owner->y + 1);
 			break;
 		}
 
 		case 'a': // move left
 		{
 			engine.pathing = false;
-			moveOrAttack(owner, owner->pos.x - 1, owner->pos.y);
+			moveOrAttack(owner, owner->x - 1, owner->y);
 			break;
 		}
 
 		case 'd': // move right
 		{
 			engine.pathing = false;
-			moveOrAttack(owner, owner->pos.x + 1, owner->pos.y);
+			moveOrAttack(owner, owner->x + 1, owner->y);
 			break;
 		}
 		
 
 		case 'p': // save the current map to file
 		{
-			engine.SaveMap(engine.ownDesc.worldPos.x, engine.ownDesc.worldPos.y, engine.map->tiles);
+			engine.SaveMap(engine.ownDesc.mX, engine.ownDesc.mY, engine.map->tiles);
 			engine.gui->message(TCODColor::purple, "Saved current map to file.");
 			break;
 		}
 
 		case 'o' : // reload the current map from file
 		{
-			engine.LoadMap(engine.ownDesc.worldPos.x, engine.ownDesc.worldPos.y, false);
+			engine.LoadMap(engine.ownDesc.mX, engine.ownDesc.mY, false);
 		}
 	}
 }
@@ -477,7 +496,7 @@ void MonsterAi::update(Actor* owner) {
 		return;
 	}
 
-	moveOrAttack(owner, engine.player->pos.x, engine.player->pos.y);
+	moveOrAttack(owner, engine.player->x, engine.player->y);
 }
 
 
@@ -487,8 +506,8 @@ void MonsterAi::moveOrAttack(Actor* owner, int targetx, int targety) {
 
 	owner->lastActed = TCODSystem::getElapsedMilli(); // Update their last move time
 
-	int dx = targetx - owner->pos.x;
-	int dy = targety - owner->pos.y;
+	int dx = targetx - owner->x;
+	int dy = targety - owner->y;
 	int stepdx = (dx > 0 ? 1 : -1);
 	int stepdy = (dy > 0 ? 1 : -1);
 	float distance = sqrtf(dx * dx + dy * dy);
@@ -497,6 +516,14 @@ void MonsterAi::moveOrAttack(Actor* owner, int targetx, int targety) {
 		dx = (int)(round(dx / distance));
 		dy = (int)(round(dy / distance));
 		
+		if (engine.map->canWalk(owner->x + dx, owner->y + dy)) {
+			owner->x += dx;
+			owner->y += dy;
+		} else if (engine.map->canWalk(owner->x + stepdx, owner->y)) {
+			owner->x += stepdx;
+		} else if (engine.map->canWalk(owner->x, owner->y + stepdy)) {
+			owner->y += stepdy;
+		}
 	} else if (owner->attacker) { // If the monster is next to the target player, try to attack
 		owner->attacker->attack(owner, engine.player);
 	}

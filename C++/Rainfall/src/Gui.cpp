@@ -83,28 +83,28 @@ void Gui::render() {
 
 	// Frame the minimap area??
 	con->printFrame(0, 0, 21, 27, false, TCOD_BKGND_DEFAULT);
-	con->printFrame(1, 3, 19, 19, false, TCOD_BKGND_DEFAULT, "[%d, %d]", engine.ownDesc.worldPos.x, engine.ownDesc.worldPos.y);
+	con->printFrame(1, 3, 19, 19, false, TCOD_BKGND_DEFAULT, "[%d, %d]", engine.ownDesc.mX, engine.ownDesc.mY);
 
 	// Iterate through all the minimap tiles to display them
 	for (int y = 0; y < minimap::h; y++) {
 		for (int x = 0; x < minimap::w; x++) {
-			MapTile* mapTile = &engine.minimap[x][y];
+			MapTile mapTile = engine.minimap[x][y];
 			// If a tile is called "Void" it hasn't been initialized yet, so don't bother displaying it
-			if (mapTile->name == "Void")
+			if (mapTile.name == "Void")
 				continue;
 
 			// Minimap Tile
-			con->setDefaultForeground(mapTile->fg);
-			con->setDefaultBackground(mapTile->bg);
-			con->print(2 + (mapTile->worldPos.x - engine.topleft.x), 4 + (mapTile->worldPos.y - engine.topleft.y), std::string(1, mapTile->ch).c_str());
+			con->setDefaultForeground(mapTile.fg);
+			con->setDefaultBackground(mapTile.bg);
+			con->print(2 + (mapTile.mX - engine.topleft_x), 4 + (mapTile.mY - engine.topleft_y), std::string(1, mapTile.ch).c_str());
 
 			// Set the middle of the minimap to the player icon, since that's where the player always is.
 			con->setDefaultForeground(TCODColor::white);
 			con->print(2 + 8, 4 + 8, std::string("@").c_str());
 
 			// If the player is hovering over the minimap with their mouse, display the name and location of the hovered tile
-			if (mapTile->worldPos.x - engine.topleft.x == miniHover.x && mapTile->worldPos.y - engine.topleft.y == miniHover.y) {
-				con->print(2, 23, "%s [%d, %d]", mapTile->name, mapTile->worldPos.x, mapTile->worldPos.y);
+			if (mapTile.mX - engine.topleft_x == miniX && mapTile.mY - engine.topleft_y == miniY) {
+				con->print(2, 23, "%s [%d, %d]", mapTile.name.c_str(), engine.topleft_x + miniX, engine.topleft_y + miniY);
 			}
 		}
 	}
@@ -232,7 +232,7 @@ void Gui::render() {
 
 
 		// Tile to place
-		sidebar->print(1, 5, "Name: %s", engine.mapEdit_name);
+		sidebar->print(1, 5, "Name: %s", engine.mapEdit_name.c_str());
 		TCODColor tileFG = TCODColor(engine.mapEdit_fg_r, engine.mapEdit_fg_g, engine.mapEdit_fg_b);
 		TCODColor tileBG = TCODColor(engine.mapEdit_bg_r, engine.mapEdit_bg_g, engine.mapEdit_bg_b);
 		sidebar->print(1, 7, "Appearance:");
@@ -246,10 +246,10 @@ void Gui::render() {
 		sidebar->print(1, 13, "Blocks Move: %s", engine.mapEdit_blocksMove ? "true" : "false");
 
 		// Minimap Tile
-		MapTile* tile = &engine.minimap[engine.topleft.x + 8][engine.topleft.y + 8];
+		MapTile* tile = &engine.minimap[engine.topleft_x + 8][engine.topleft_y + 8];
 
 		sidebar->print(1, 17, "Minimap Tile:");
-		sidebar->print(1, 19, "Name: %s", tile->name);
+		sidebar->print(1, 19, "Name: %s", tile->name.c_str());
 		sidebar->print(1, 21, "Appearance:");
 		sidebar->setDefaultForeground(tile->fg);
 		sidebar->setDefaultBackground(tile->bg);
@@ -343,7 +343,7 @@ void Gui::renderMouseLook() {
 	for (Actor** it = engine.actors.begin(); it != engine.actors.end(); it++) {
 		Actor* actor = *it;
 
-		if (actor->pos.x == engine.mouse.cx && actor->pos.y == engine.mouse.cy) {
+		if (actor->x == engine.mouse.cx && actor->y == engine.mouse.cy) {
 			if (!first) {
 				strcat_s(buf, ", ");
 			} else {

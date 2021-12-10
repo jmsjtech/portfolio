@@ -3,7 +3,7 @@ public:
 	const char* selected; // Which sidebar menu is selected
 	int selectScroll; // Where the scroll is for the current menu
 	bool chatSelected = false; // Whether or not the player has chat selected
-	Position miniHover; // Position hovered over on the minimap
+	int miniX, miniY = -1; // The hovered minimap tile, if any
 	std::string* chatBuffer; // What the player currently has typed in the chat bar
 	Gui();
 	~Gui();
