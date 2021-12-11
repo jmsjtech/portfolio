@@ -7,14 +7,16 @@ class Map;
 // Prepare messages to be sent to the server, 
 class CustomClient : public nanz::net::client_interface<GameMsg> {
 public:
-	void MovePlayer(sPlayerDescription player) { // Player moved, send the new info to the server
+	void MovePlayer(sPlayerDescription player, int xchange, int ychange) { // Player moved, send the new info to the server
 		nanz::net::message<GameMsg> msg;
-		msg.header.id = GameMsg::Game_UpdatePlayer;
+		msg.header.id = GameMsg::Player_Move;
 
-		msg << player;
+		msg << player << xchange << ychange;
 
 		Send(msg);
 	}
+
+
 
 	void ChatMessage(std::string message, const char* name) { // Player sent a chat message, pass it along to the server
 		nanz::net::message<GameMsg> msg;
@@ -34,6 +36,7 @@ public:
 
 		Send(msg);
 	}
+
 };
 
 
@@ -47,7 +50,7 @@ public:
 	int screenHeight; // The window height
 	Gui* gui; // The GUI
 
-	MapTile minimap[minimap::w][minimap::h]; // The two-dimensional minimap array
+	std::array<MapTile, 17*17> mini;
 	int topleft_x; // Where the topleft-most corner of the minimap currently is (x)
 	int topleft_y; // Where the topleft-most corner of the minimap currently is (y)
 
@@ -95,10 +98,6 @@ public:
 	void render();
 	void sendToBack(Actor* actor);
 	
-	void SaveMap(int mX, int mY, Tile* tiles) const;
-	bool LoadMap(int mX, int mY, bool justHeader) const;
-	void NewMapAt(int mX, int mY) const;
-	void UpdateMinimap();
 	void LoadTiles();
 
 	// Multiplayer logic components

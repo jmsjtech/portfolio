@@ -4,6 +4,8 @@
 #define NANZ_PGEX_NETWORK
 #include "Nanz_Net.h"
 
+static const int MAP_WIDTH = 78;
+static const int MAP_HEIGHT = 42;
 
 // Possible message headers
 enum class GameMsg : uint32_t {
@@ -21,6 +23,9 @@ enum class GameMsg : uint32_t {
 
 	Chat_Message,
 	PlayersOnMapTile,
+	Player_Move,
+	Send_Map,
+	Send_Minimap,
 };
 
 // Minimalist player information to exchange between clients
@@ -41,11 +46,12 @@ struct sPlayerDescription {
 // All the data the server needs for calculations
 struct TileMeta { 
 	int id = 0;
-	std::string name = "Grass";
+	char name[20] = "Grass";
 	bool blocksMove = false;
 
+	int fgR = 0, fgG = 127, fgB = 0;
+	int bgR = 0, bgG = 0, bgB = 0;
+	int ch = 44;
+
 	TileMeta() {}
-	TileMeta(int idIn, const char* nameIn, bool blockIn) : id(idIn), blocksMove(blockIn) {
-		name = nameIn;
-	}
 };

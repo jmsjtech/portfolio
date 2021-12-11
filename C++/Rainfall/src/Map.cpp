@@ -1,7 +1,5 @@
 #include "main.h"
 
-static const int MAPTILE_WIDTH = 78;
-static const int MAPTILE_HEIGHT = 42;
 static const int OVERWORLD_WIDTH = 5;
 static const int OVERWORLD_HEIGHT = 5;
 
@@ -26,17 +24,17 @@ bool Map::canWalk(int x, int y) const {
 }
 
 // Get a tile at position or index
-Tile& Map::tileAt(int x, int y) const { return tiles[x + y * MAPTILE_WIDTH]; }
-Tile& Map::tileAtIndex(int index) const { return tiles[index]; }
+Tile Map::tileAt(int x, int y) { return tiles[x + y * MAPTILE_WIDTH]; }
+Tile Map::tileAtIndex(int index) { return tiles[index]; }
 
 // Set the tile at a position
-void Map::SetTile(Tile& tile, int x, int y) const {
+void Map::SetTile(Tile tile, int x, int y) {
 	tiles[x + y * MAPTILE_WIDTH] = tile;
 	return;
 }
 
 // Set the tile at an index
-void Map::SetTileIndex(Tile& tile, int index) const {
+void Map::SetTileIndex(Tile tile, int index) {
 	tiles[index] = tile;
 	return;
 }
@@ -46,10 +44,10 @@ int Map::getWidth() const { return MAPTILE_WIDTH; }
 int Map::getHeight() const { return MAPTILE_HEIGHT; }
 
 // Render the whole tile array to the root console at the right position
-void Map::render() const {
+void Map::render() {
 	for (int x = 0; x < MAPTILE_WIDTH; x++) {
 		for (int y = 0; y < MAPTILE_HEIGHT; y++) {
-			TCODConsole::root->setChar(x+1, y+1, tileAt(x, y).ch);
+			TCODConsole::root->setChar(x+1, y+1, tileAt(x, y).metadata.ch);
 			TCODConsole::root->setCharBackground(x+1, y+1, tileAt(x, y).bg);
 			TCODConsole::root->setCharForeground(x+1, y+1, tileAt(x, y).fg);
 		}
@@ -59,11 +57,10 @@ void Map::render() const {
 
 // Make the new map by initializing the tile array
 Map::Map()  {
-	tiles = new Tile[MAPTILE_WIDTH * MAPTILE_HEIGHT];
 }
 
 Map::~Map() {
-	delete[] tiles;
+	
 }
 
 

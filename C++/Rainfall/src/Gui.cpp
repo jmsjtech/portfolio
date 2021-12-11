@@ -88,7 +88,7 @@ void Gui::render() {
 	// Iterate through all the minimap tiles to display them
 	for (int y = 0; y < minimap::h; y++) {
 		for (int x = 0; x < minimap::w; x++) {
-			MapTile mapTile = engine.minimap[x][y];
+			MapTile mapTile = engine.mini[x + (y*17)];
 			// If a tile is called "Void" it hasn't been initialized yet, so don't bother displaying it
 			if (mapTile.name == "Void")
 				continue;
@@ -100,7 +100,7 @@ void Gui::render() {
 
 			// Set the middle of the minimap to the player icon, since that's where the player always is.
 			con->setDefaultForeground(TCODColor::white);
-			con->print(2 + 8, 4 + 8, std::string("@").c_str());
+			con->print(10, 12, std::string("@").c_str());
 
 			// If the player is hovering over the minimap with their mouse, display the name and location of the hovered tile
 			if (mapTile.mX - engine.topleft_x == miniX && mapTile.mY - engine.topleft_y == miniY) {
@@ -246,18 +246,18 @@ void Gui::render() {
 		sidebar->print(1, 13, "Blocks Move: %s", engine.mapEdit_blocksMove ? "true" : "false");
 
 		// Minimap Tile
-		MapTile* tile = &engine.minimap[engine.topleft_x + 8][engine.topleft_y + 8];
+		MapTile tile = engine.mini[8 + (8 * 17)];
 
 		sidebar->print(1, 17, "Minimap Tile:");
-		sidebar->print(1, 19, "Name: %s", tile->name.c_str());
+		sidebar->print(1, 19, "Name: %s", tile.name.c_str());
 		sidebar->print(1, 21, "Appearance:");
-		sidebar->setDefaultForeground(tile->fg);
-		sidebar->setDefaultBackground(tile->bg);
-		sidebar->print(13, 21, std::string(1, tile->ch).c_str());
+		sidebar->setDefaultForeground(tile.fg);
+		sidebar->setDefaultBackground(tile.bg);
+		sidebar->print(13, 21, std::string(1, tile.ch).c_str());
 		sidebar->setDefaultForeground(TCODColor::white);
 		sidebar->setDefaultBackground(TCODColor::black);
-		sidebar->print(1, 23, "Foreground: %dr, %dg, %db", tile->fg.r, tile->fg.g, tile->fg.b);
-		sidebar->print(1, 25, "Background: %dr, %dg, %db", tile->bg.r, tile->bg.g, tile->bg.b);
+		sidebar->print(1, 23, "Foreground: %dr, %dg, %db", tile.fg.r, tile.fg.g, tile.fg.b);
+		sidebar->print(1, 25, "Background: %dr, %dg, %db", tile.bg.r, tile.bg.g, tile.bg.b);
 
 
 		// The reset "button" to change the editor tile back to default grass

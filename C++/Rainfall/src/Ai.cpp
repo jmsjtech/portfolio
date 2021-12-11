@@ -97,7 +97,7 @@ void PlayerAi::update(Actor* owner) {
 
 	if (dx != 0 || dy != 0) { // If the player pressed a movement key, send it along
 		engine.pathing = false;
-		moveOrAttack(owner, owner->x + dx, owner->y + dy);
+		moveOrAttack(owner, dx, dy);
 	}
 
 	// Left-click handling
@@ -222,15 +222,15 @@ void PlayerAi::update(Actor* owner) {
 			dx = (int)(round(dx / distance));
 			dy = (int)(round(dy / distance));
 			if (engine.map->canWalk(engine.player->x + dx, engine.player->y + dy)) {
-				moveOrAttack(engine.player, (engine.player->x + dx), (engine.player->y + dy));
+				moveOrAttack(engine.player, dx, dy);
 			} else if (engine.map->canWalk(engine.player->x + stepdx, engine.player->y)) {
-				moveOrAttack(engine.player, (engine.player->x + stepdx), (engine.player->y));
+				moveOrAttack(engine.player, stepdx, 0);
 			} else if (engine.map->canWalk(engine.player->x, engine.player->y + stepdy)) {
-				moveOrAttack(engine.player, (engine.player->x), (engine.player->y + stepdy));
+				moveOrAttack(engine.player, 0, stepdy);
 			}
 		} else {
 			if (engine.map->canWalk(owner->x + dx, owner->y + dy)) {
-				moveOrAttack(engine.player, (engine.player->x + dx), (engine.player->y + dy));
+				moveOrAttack(engine.player, dx, dy);
 			}
 		}
 	}
@@ -245,7 +245,7 @@ bool PlayerAi::IsCommand() { // Command handling
 		std::string commandToken = engine.gui->chatBuffer->substr(1, pos-1);
 		std::string restOfMessage = engine.gui->chatBuffer->substr(pos + 1, engine.gui->chatBuffer->length() - (pos + 1));
 
-		MapTile* mapTile = &engine.minimap[engine.topleft_x + 8][engine.topleft_y + 8];
+		MapTile* mapTile = &engine.mini[8 + (8 *17)];
 
 		if (commandToken == "nick") { // Change your nickname
 			std::string newName = restOfMessage;
@@ -293,7 +293,7 @@ bool PlayerAi::IsCommand() { // Command handling
 			restOfMessage.erase(0, restOfMessage.find(',') + 1);
 			int y = atoi(restOfMessage.c_str());
 
-			MapTile* debugTile = &engine.minimap[x][y];
+			MapTile* debugTile = &engine.mini[x + (y*17)];
 			engine.gui->message(TCODColor::celadon, "Name: %s, mX: %d, mY: %d", debugTile->name, debugTile->mX, debugTile->mY);
 			return true;
 
@@ -311,6 +311,10 @@ bool PlayerAi::moveOrAttack(Actor* owner, int targetx, int targety) { // Player 
 	} else {
 		owner->lastActed = TCODSystem::getElapsedMilli(); // Update the last time they moved
 
+		engine.client.MovePlayer(engine.ownDesc, targetx, targety);
+
+		return true;
+
 		for (Actor** iterator = engine.actors.begin(); iterator != engine.actors.end(); iterator++) { // If there's a live attackable actor at the target pos, attack it
 			Actor* actor = *iterator;
 			if (actor->destructible && !actor->destructible->isDead() && actor->x == targetx && actor->y == targety) {
@@ -319,105 +323,6 @@ bool PlayerAi::moveOrAttack(Actor* owner, int targetx, int targety) { // Player 
 			}
 		}
 
-		if (!engine.map->canWalk(targetx - 1, targety - 1)) // If you can't walk there, return false
-			return false;
-
-		for (Actor** iterator = engine.actors.begin(); iterator != engine.actors.end(); iterator++) { // If there's items on the tile, print all of them to the log
-			Actor* actor = *iterator;
-			bool corpseOrItem = (actor->destructible && actor->destructible->isDead()) || actor->pickable;
-			if (corpseOrItem && actor->x == targetx && actor->y == targety) {
-				engine.gui->message(TCODColor::lightGrey, "There's a %s here\n", actor->name);
-			}
-		}
-
-		owner->x = targetx;
-		owner->y = targety;
-
-		bool movedMaps = false;
-		
-		if (owner->x < 1) { // If the player moves off the left side of the map
-			engine.pathing = false;
-			if (engine.LoadMap(owner->mX - 1, owner->mY, false)) { // Load the map there if it exists
-				owner->x = engine.map->getWidth();
-				owner->mX -= 1;
-				movedMaps = true;
-			} else if (engine.gui->selected == "Map Editor") { // Create a map there if the player is in map editor mode and it doesn't already exist
-				engine.NewMapAt(owner->mX - 1, owner->mY);
-				owner->x = engine.map->getWidth();
-				owner->mX -= 1;
-				movedMaps = true;
-			} else { // Otherwise print out a generic message indicating that map isn't available
-				owner->x = 1;
-				engine.gui->message(TCODColor::brass, "You feel like you can't go there yet...");
-			}
-		}
-
-		if (owner->x > engine.map->getWidth()) { // If the player moves off the right side of the map
-			engine.pathing = false;
-			if (engine.LoadMap(owner->mX + 1, owner->mY, false)) { // Load the map there if it exists
-				owner->x = 1;
-				owner->mX += 1;
-				movedMaps = true;
-			} else if (engine.gui->selected == "Map Editor") { // Create a map there if the player is in map editor mode and it doesn't already exist
-				engine.NewMapAt(owner->mX + 1, owner->mY);
-				owner->x = 1;
-				owner->mX += 1;
-				movedMaps = true;
-			} else { // Otherwise print out a generic message indicating that map isn't available
-				owner->x = engine.map->getWidth();
-				engine.gui->message(TCODColor::brass, "You feel like you can't go there yet...");
-			}
-		}
-
-		if (owner->y < 1) {
-			engine.pathing = false;
-			if (engine.LoadMap(owner->mX, owner->mY - 1, false)) { // Load the map there if it exists
-				owner->y = engine.map->getHeight() - 1;
-				owner->mY -= 1;
-				movedMaps = true;
-			} else if (engine.gui->selected == "Map Editor") { // Create a map there if the player is in map editor mode and it doesn't already exist
-				engine.NewMapAt(owner->mX, owner->mY - 1);
-				owner->y = engine.map->getHeight() - 1;
-				owner->mY -= 1;
-				movedMaps = true;
-			} else { // Otherwise print out a generic message indicating that map isn't available
-				owner->y = 1;
-				engine.gui->message(TCODColor::brass, "You feel like you can't go there yet...");
-			}
-		}
-
-		if (owner->y > engine.map->getHeight() - 1) {
-			engine.pathing = false;
-			if (engine.LoadMap(owner->mX, owner->mY + 1, false)) { // Load the map there if it exists
-				owner->y = 1;
-				owner->mY += 1;
-				movedMaps = true;
-			} else if (engine.gui->selected == "Map Editor") { // Create a map there if the player is in map editor mode and it doesn't already exist
-				engine.NewMapAt(owner->mX, owner->mY + 1);
-				owner->y = 1;
-				owner->mY += 1;
-				movedMaps = true;
-			} else { // Otherwise print out a generic message indicating that map isn't available
-				owner->y = engine.map->getHeight() - 1;
-				engine.gui->message(TCODColor::brass, "You feel like you can't go there yet...");
-			}
-		}
-
-		// Update the position in the ownDesc variable for messages to other players
-		engine.ownDesc.x = owner->x;
-		engine.ownDesc.y = owner->y;
-		engine.ownDesc.mX = owner->mX;
-		engine.ownDesc.mY = owner->mY;
-
-		if (movedMaps) { // If the player switched maps, update the minimap to reflect the new center
-			engine.UpdateMinimap();
-			engine.gui->message(TCODColor::blue, "Updated minimap. New start %d, %d", engine.topleft_x, engine.topleft_y);
-		}
-
-		// Send a message to the server saying you moved
-		engine.client.MovePlayer(engine.ownDesc);
-
-		return true;
 	}
 }
 
@@ -473,19 +378,6 @@ void PlayerAi::handleActionKey(Actor* owner, int ascii) {
 			engine.pathing = false;
 			moveOrAttack(owner, owner->x + 1, owner->y);
 			break;
-		}
-		
-
-		case 'p': // save the current map to file
-		{
-			engine.SaveMap(engine.ownDesc.mX, engine.ownDesc.mY, engine.map->tiles);
-			engine.gui->message(TCODColor::purple, "Saved current map to file.");
-			break;
-		}
-
-		case 'o' : // reload the current map from file
-		{
-			engine.LoadMap(engine.ownDesc.mX, engine.ownDesc.mY, false);
 		}
 	}
 }

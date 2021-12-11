@@ -43,16 +43,19 @@ Multiplayer Syncing
 - Sync monster positions across all clients on the same map tile.
 - Sync tile/monsters being depleted and respawned properly
 - (DONE) Sync and show all players immediately instead of waiting for them to move
-- Movement Code + Map Sync
-- - Server only needs to be aware of the name, blocksMove, and location of tiles
-- - Player sends a move message -> Server evaluates if they can move -> Sends back a message if they can -> player position updates based on message
-- - Create a tile library that is used to place tiles
-- - Tile library definitions exist on server and get sent to clients when they connect
-- - Map files are stored on the server and only store the ID of each tile
-- - Send maps to players when they need them
-- - Only keep maps that have players on them actively in memory
-- - When the last player leaves a map, save it to file and drop it from memory
-- - When a player enters a map that's unloaded, load it and store it
+- (DONE) Movement Code + Map Sync
+- - (DONE) Server only needs to be aware of the name, blocksMove, and location of tiles
+- - (DONE) Player sends a move message -> Server evaluates if they can move -> Sends back a message if they can -> player position updates based on message
+- - (DONE) Create a tile library that is used to place tiles
+- - (SHELVED) Tile library definitions exist on server and get sent to clients when they connect
+- - (DONE) Map files are stored on the server and only store the ID of each tile
+- - (DONE) Send maps to players when they need them
+- - (UNNECESSARY) Only keep maps that have players on them actively in memory
+- - (UNNECESSARY) When the last player leaves a map, save it to file and drop it from memory
+- - (UNNECESSARY) When a player enters a map that's unloaded, load it and store it
+- - (DONE) When a player changes overworld location, send them the updated minimap too
+- - (DONE) Make it so players don't store maps locally at all - it's pointless if they get the data every time they move maps anyways.
+- - (DONE) Only send the map to the required player after they don't store locally anymore
 
 
 Skills
@@ -72,3 +75,8 @@ Skills
 - - Metalworking
 - - Woodworking
 - - Cooking
+- - Alchemy
+
+- Social? Skills
+- - Homemaking (Player-owned House)
+- - Farming (Player-owned Farm)
