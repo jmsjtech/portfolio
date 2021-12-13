@@ -172,11 +172,13 @@
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Gui.cpp" />
     <ClCompile Include="src\Healer.cpp" />
+    <ClCompile Include="src\Item.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Map.cpp" />
     <ClCompile Include="src\Pickable.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Item.h" />
     <ClInclude Include="src\json.hpp" />
     <ClInclude Include="src\Nanz_Net.h" />
     <ClInclude Include="src\NetCommon.h" />

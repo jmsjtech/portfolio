@@ -26,6 +26,34 @@ UI Stuff
 - (DONE) Mouse move
 
 
+
+The Item Rework
+- (DONE) Item Definitions
+- - (DONE) Everything needs a name and ID. Maybe if it's stackable? Item category, equippable slot
+- - (DONE) Item Categories: Hatchet, Pickaxe, Potion, Food, Rune, Fishing, Hammer, Knife
+- - (DONE) Equippable slots: Hand, Off-hand, Head, Torso, Legs, Hands, Feet, Ring1, Ring2, Amulet, Cape
+- - - Cape could be a cosmetic-type slot instead of an actual equipment slot, set the color of the player avatar
+- (DONE) Build a server-side database of item definitions loaded from file
+- (DONE) Send item definitions to player on connect
+- (DONE) Player inventory stored in sPlayerDescription to be passed around for quick logic
+- (DONE) Player inventory is just an array of 28 pairs (int item id and int quantity)
+- (DONE) Server keeps track of what items are on each map and where they are on the map.
+- - (DONE) Send all items on a map to a player when they move there
+- When a player drops an item, update their inventory on the server and make the item appear for other players
+- When a player picks up an item, update their inventory on the server and make the item disappear for other players
+- Minimap numbers seem to be getting garbled on the way to the player
+
+
+
+NPC Dialogue
+- Differentiate between NPCs and monsters - maybe all NPCs use the same symbol
+- NPCs probably don't need to move around much
+- Bump into NPCs to talk to them
+- - Open a dialogue menu
+- - Generic dialogue, quest dialogue, shop dialogue
+
+
+
 Magic
 - Spells have a level requirement, an experience amount that they grant, and required runes to cast
 - Runes
@@ -76,6 +104,7 @@ Skills
 - - Woodworking
 - - Cooking
 - - Alchemy
+- - Enchanting (Make runes/scrolls/wands? and enchant weapons/armor);
 
 - Social? Skills
 - - Homemaking (Player-owned House)

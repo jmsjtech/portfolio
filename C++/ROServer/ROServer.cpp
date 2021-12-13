@@ -8,7 +8,8 @@
 #include <NetCommon.h>
 
 typedef std::pair<int, int> pairKey;
-typedef std::pair < TileMeta, std::array<int, MAP_WIDTH* MAP_HEIGHT>> pairMap;
+typedef std::pair<std::array<int, MAP_WIDTH* MAP_HEIGHT>, std::array<int, MAP_WIDTH* MAP_HEIGHT>> pairItemsTiles; // first is items, second is tiles
+typedef std::pair<MapMeta, pairItemsTiles> pairMap;
 
 struct comp {
 	template<typename T>
@@ -23,6 +24,8 @@ struct comp {
 
 bool IsTileWalkable(int mX, int mY, int x, int y);
 bool EnsureMapExists(int mX, int mY);
+EquipSlot slotFromID(int id);
+ItemCategory catFromID(int id);
 
 class GameServer : public nanz::net::server_interface<GameMsg> {
 public:
@@ -31,21 +34,36 @@ public:
 
 	std::unordered_map<uint32_t, sPlayerDescription> m_mapPlayerRoster;
 	std::unordered_map<int, TileMeta> tileLibrary;
+	std::unordered_map<int, ItemMeta> itemLibrary;
 	std::vector<uint32_t> m_vGarbageIDs;
 
 	std::map<pairKey, pairMap, comp> maps;
 
 protected:
+	void MessageAllOnMap(int mX, int mY, nanz::net::message<GameMsg> msg) {
+		for (auto& client : m_deqConnections) {
+			if (m_mapPlayerRoster.find(client->GetID()) == m_mapPlayerRoster.end()) {
+				 // Client not found
+			} else {
+				sPlayerDescription desc = m_mapPlayerRoster.at(client->GetID());
+				if (desc.mX == mX && desc.mY == mY) {
+					MessageClient(client, msg);
+				}
+			}
+		}
+	}
+
 	void SendMap(int mX, int mY, std::shared_ptr<nanz::net::connection<GameMsg>> client) {
 		nanz::net::message<GameMsg> msg;
 		msg.header.id = GameMsg::Send_Map;
 
-		TileMeta mapIcon = maps.at(std::make_pair(mX, mY)).first;
+		MapMeta mapIcon = maps.at(std::make_pair(mX, mY)).first;
 
 		//msg << mapIcon.name << mapIcon.ch << mapIcon.fgR << mapIcon.fgG << mapIcon.fgB << mapIcon.bgR << mapIcon.bgG << mapIcon.bgB;
 		msg << mY << mX;
 		msg << mapIcon;
-		msg << maps.at(std::make_pair(mX, mY)).second;
+		msg << maps.at(std::make_pair(mX, mY)).second.second;
+		msg << maps.at(std::make_pair(mX, mY)).second.first;
 
 		MessageClient(client, msg);
 		 
@@ -64,7 +82,7 @@ protected:
 					// There's no map there already, just skip it
 				} else {
 					// There's a map there, load up all the data
-					TileMeta mapIcon = maps.at(std::make_pair(x, y)).first;
+					MapMeta mapIcon = maps.at(std::make_pair(x, y)).first;
 					msg << y << x;
 					msg << mapIcon;
 					num++;
@@ -176,8 +194,57 @@ protected:
 				break;
 			}
 
+			case GameMsg::ItemRequest:
+			{ 
+				nanz::net::message<GameMsg> msgItems;
+				msgItems.header.id = GameMsg::ItemRequest;
+
+				int number = 0;
+
+				for (auto& item : itemLibrary) {
+					msgItems << item.second;
+					number++;
+				}
+
+				msgItems << number;
+				MessageClient(client, msgItems);
+
+				break;
+			}
+
 			case GameMsg::Chat_Message: {
 				MessageAllClients(msg, client);
+				break;
+			}
+
+			case GameMsg::Add_Item:
+			{
+				int id, x, y, mX, mY;
+				msg >> id >> mY >> mX >> y >> x;
+
+				auto item = itemLibrary.find(id);
+
+				if (item == itemLibrary.end()) {
+					std::cout << "[SERVER] Client tried to spawn an item that doesn't exist.\n";
+				} else {
+					if (maps.find(std::make_pair(mX, mY)) == maps.end()) {
+						std::cout << "[SERVER] Client tried to spawn an item on nonexistant map.\n";
+					} else {
+						if (maps.at(std::make_pair(mX, mY)).second.first[x + y * MAP_WIDTH] == -1) {
+							maps.at(std::make_pair(mX, mY)).second.first[x + y * MAP_WIDTH] = id;
+
+							nanz::net::message<GameMsg> msgItem;
+							msgItem.header.id = GameMsg::Add_Item;
+
+							msgItem << x << y << mX << mY << id;
+
+							MessageAllOnMap(mX, mY, msgItem);
+						} else {
+							// There's already an item there, try to find the closest adjacent tile that doesn't have an item
+						}
+					}
+				}
+
 				break;
 			}
 
@@ -320,6 +387,50 @@ int main() {
 
 
 
+	std::ifstream itemFile("./data/items.dat");
+
+	if (!itemFile.is_open()) { // If the file doesn't exist we can't load it, so just back out immediately
+		std::cout << "[SERVER] Failed to load items from file.\n";
+	} else {
+		std::string line;
+		int index = -1;
+		int x = 0;
+		int y = 0;
+		while (std::getline(itemFile, line)) { // Read all the lines at a time
+			std::string fromLine[12];
+
+			for (int i = 0; i < 12; i++) {
+				fromLine[i] = line.substr(0, line.find('|'));
+				line.erase(0, line.find('|') + 1);
+			}
+
+			ItemMeta newItem = *new ItemMeta();
+
+			newItem.id = atoi(fromLine[0].c_str());
+			strcpy_s(newItem.name, fromLine[1].c_str());
+			newItem.cat = catFromID(atoi(fromLine[2].c_str()));
+			newItem.equip = slotFromID(atoi(fromLine[3].c_str()));
+			newItem.catID = atoi(fromLine[4].c_str());
+
+			newItem.ch = atoi(fromLine[5].c_str());
+
+			newItem.fgR = atoi(fromLine[6].c_str());
+			newItem.fgG = atoi(fromLine[7].c_str());
+			newItem.fgB = atoi(fromLine[8].c_str());
+
+			newItem.bgR = atoi(fromLine[9].c_str());
+			newItem.bgG = atoi(fromLine[10].c_str());
+			newItem.bgB = atoi(fromLine[11].c_str());
+
+
+			server.itemLibrary.insert_or_assign(newItem.id, newItem);
+		}
+
+		std::cout << "[SERVER] Loaded " << server.itemLibrary.size() << " items.\n";
+	}
+
+
+
 	int mX;
 	int mY;
 	const std::filesystem::path mapsDir{ "./maps/" };
@@ -328,7 +439,7 @@ int main() {
 	for (auto const& dir_entry : std::filesystem::directory_iterator{ mapsDir }) {
 		std::ifstream file(dir_entry);
 
-		TileMeta newMap = *new TileMeta;
+		MapMeta newMap = *new MapMeta;
 		std::array<int, MAP_WIDTH* MAP_HEIGHT> tiles;
 
 		if (!file.is_open()) // If the file doesn't exist we can't load it, so just back out immediately
@@ -367,7 +478,13 @@ int main() {
 			}
 		}
 
-		server.maps.insert_or_assign(std::make_pair(mX, mY), std::make_pair(newMap, tiles));
+		std::array<int, MAP_WIDTH* MAP_HEIGHT> items;
+
+		for (int i = 0; i < items.size(); i++) {
+			items[i] = -1;
+		}
+
+		server.maps.insert_or_assign(std::make_pair(mX, mY), std::make_pair(newMap, std::make_pair(items, tiles)));
 
 		// Close the file
 		file.close();
@@ -388,7 +505,7 @@ int main() {
 
 
 bool IsTileWalkable(int mX, int mY, int x, int y) {
-	auto it = server.tileLibrary.find(server.maps[std::make_pair(mX, mY)].second[x + (y * MAP_WIDTH)]);
+	auto it = server.tileLibrary.find(server.maps[std::make_pair(mX, mY)].second.second[x + (y * MAP_WIDTH)]);
 	if (it == server.tileLibrary.end()) {
 		std::cout << "[SERVER] Failed to find tile in library.\n";
 	} else {
@@ -399,8 +516,13 @@ bool IsTileWalkable(int mX, int mY, int x, int y) {
 bool EnsureMapExists(int mX, int mY) {
 	if (server.maps.find(std::make_pair(mX, mY)) == server.maps.end()) {
 		// Map doesn't exist, let's make it
-		TileMeta newMap = *new TileMeta;
+		MapMeta newMap = *new MapMeta;
 		std::array<int, MAP_WIDTH* MAP_HEIGHT> tiles;
+		std::array<int, MAP_WIDTH* MAP_HEIGHT> items;
+
+		for (int i = 0; i < items.size(); i++) {
+			items[i] = -1;
+		}
 
 		for (auto& v : tiles)
 			v = 0;
@@ -409,7 +531,7 @@ bool EnsureMapExists(int mX, int mY) {
 		newMap.ch = ',';
 		newMap.fgG = 127;
 		 
-		server.maps.insert_or_assign(std::make_pair(mX, mY), std::make_pair(newMap, tiles));
+		server.maps.insert_or_assign(std::make_pair(mX, mY), std::make_pair(newMap, std::make_pair(items, tiles)));
 
 
 		std::ofstream file;
@@ -443,4 +565,80 @@ bool EnsureMapExists(int mX, int mY) {
 	}
 
 	return false; // We should never reach this point but just in case we somehow do, we'll return false
+}
+
+
+
+
+
+
+EquipSlot slotFromID(int id) {
+	switch (id) {
+		case 0:
+			return MAIN_HAND;
+			break;
+		case 1:
+			return OFF_HAND;
+			break;
+		case 2:
+			return HEAD;
+			break;
+		case 3:
+			return TORSO;
+			break;
+		case 4:
+			return LEGS;
+			break;
+		case 5:
+			return HANDS;
+			break;
+		case 6:
+			return FEET;
+			break;
+		case 7:
+			return RING;
+			break;
+		case 8:
+			return AMULET;
+			break;
+		case 9:
+			return CAPE;
+			break;
+		default:
+			return NOT_EQUIPPABLE;
+			break;
+	}
+}
+
+
+ItemCategory catFromID(int id) {
+	switch (id) {
+		case 0:
+			return ItemCategory::HATCHET;
+			break;
+		case 1:
+			return ItemCategory::PICKAXE;
+			break;
+		case 2:
+			return ItemCategory::KNIFE;
+			break;
+		case 3:
+			return ItemCategory::HAMMER;
+			break;
+		case 4:
+			return ItemCategory::FISHING;
+			break;
+		case 5:
+			return ItemCategory::POTION;
+			break;
+		case 6:
+			return ItemCategory::FOOD;
+			break;
+		case 7:
+			return ItemCategory::RUNE;
+			break;
+		default:
+			return ItemCategory::ERROR_ITEM;
+			break;
+	}
 }

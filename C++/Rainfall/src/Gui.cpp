@@ -90,21 +90,21 @@ void Gui::render() {
 		for (int x = 0; x < minimap::w; x++) {
 			MapTile mapTile = engine.mini[x + (y*17)];
 			// If a tile is called "Void" it hasn't been initialized yet, so don't bother displaying it
-			if (mapTile.name == "Void")
+			if (mapTile.metadata.name == "Void")
 				continue;
 
 			// Minimap Tile
 			con->setDefaultForeground(mapTile.fg);
 			con->setDefaultBackground(mapTile.bg);
-			con->print(2 + (mapTile.mX - engine.topleft_x), 4 + (mapTile.mY - engine.topleft_y), std::string(1, mapTile.ch).c_str());
+			con->print(2 + (mapTile.metadata.mX - engine.topleft_x), 4 + (mapTile.metadata.mY - engine.topleft_y), std::string(1, mapTile.metadata.ch).c_str());
 
 			// Set the middle of the minimap to the player icon, since that's where the player always is.
 			con->setDefaultForeground(TCODColor::white);
 			con->print(10, 12, std::string("@").c_str());
 
 			// If the player is hovering over the minimap with their mouse, display the name and location of the hovered tile
-			if (mapTile.mX - engine.topleft_x == miniX && mapTile.mY - engine.topleft_y == miniY) {
-				con->print(2, 23, "%s [%d, %d]", mapTile.name.c_str(), engine.topleft_x + miniX, engine.topleft_y + miniY);
+			if (mapTile.metadata.mX - engine.topleft_x == miniX && mapTile.metadata.mY - engine.topleft_y == miniY) {
+				con->print(2, 23, "%s [%d, %d]", mapTile.metadata.name, engine.topleft_x + miniX, engine.topleft_y + miniY);
 			}
 		}
 	}
@@ -249,11 +249,11 @@ void Gui::render() {
 		MapTile tile = engine.mini[8 + (8 * 17)];
 
 		sidebar->print(1, 17, "Minimap Tile:");
-		sidebar->print(1, 19, "Name: %s", tile.name.c_str());
+		sidebar->print(1, 19, "Name: %s", tile.metadata.name);
 		sidebar->print(1, 21, "Appearance:");
 		sidebar->setDefaultForeground(tile.fg);
 		sidebar->setDefaultBackground(tile.bg);
-		sidebar->print(13, 21, std::string(1, tile.ch).c_str());
+		sidebar->print(13, 21, std::string(1, tile.metadata.ch).c_str());
 		sidebar->setDefaultForeground(TCODColor::white);
 		sidebar->setDefaultBackground(TCODColor::black);
 		sidebar->print(1, 23, "Foreground: %dr, %dg, %db", tile.fg.r, tile.fg.g, tile.fg.b);

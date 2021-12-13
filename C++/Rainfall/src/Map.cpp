@@ -85,9 +85,17 @@ void Map::addMonster(int x, int y, int mX, int mY) {
 }
 
 // Create an item at the specified position and map coordinates, but it shouldn't be doing this unless you're on the map in the first place
-void Map::addItem(int x, int y, int mX, int mY) {
-	Actor* healthPotion = new Actor(x, y, mX, mY, '!', "health potion", 0, TCODColor::violet);
-	healthPotion->blocks = false;
-	healthPotion->pickable = new Healer(4);
-	engine.actors.push(healthPotion);
+void Map::addItem(int x, int y, int id) {
+	ItemMeta item;
+
+	auto it = engine.itemLibrary.find(id);
+
+	if (engine.itemLibrary.find(id) == engine.itemLibrary.end()) {
+
+	}
+
+
+	if (engine.mini[8 + (8 * 17)].itemsOnMap.find(std::make_pair(x, y)) == engine.mini[8 + (8 * 17)].itemsOnMap.end()) {
+		engine.mini[8 + (8 * 17)].itemsOnMap.emplace(std::make_pair(x, y), item);
+	}
 }

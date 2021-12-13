@@ -257,7 +257,7 @@ bool PlayerAi::IsCommand() { // Command handling
 			return true;
 		}  else if (commandToken == "m-name") { // Change the minimap tile name
 			std::string newTileName = restOfMessage;
-			mapTile->name = newTileName;
+			strcpy_s(mapTile->metadata.name, newTileName.c_str());
 
 			return true;
 		} else if (commandToken == "m-ch") { // Change the minimap tile character
@@ -268,7 +268,7 @@ bool PlayerAi::IsCommand() { // Command handling
 				newTileCh = restOfMessage;
 			}
 
-			mapTile->ch = newTileCh.c_str()[0];
+			mapTile->metadata.ch = newTileCh.c_str()[0];
 			return true;
 		} else if (commandToken == std::string("m-fg")) {  // Change the minimap tile foreground
 			int fgR = atoi(restOfMessage.substr(0, restOfMessage.find(',')).c_str());
@@ -294,7 +294,7 @@ bool PlayerAi::IsCommand() { // Command handling
 			int y = atoi(restOfMessage.c_str());
 
 			MapTile* debugTile = &engine.mini[x + (y*17)];
-			engine.gui->message(TCODColor::celadon, "Name: %s, mX: %d, mY: %d", debugTile->name, debugTile->mX, debugTile->mY);
+			engine.gui->message(TCODColor::celadon, "Name: %s, mX: %d, mY: %d", debugTile->metadata.name, debugTile->metadata.mX, debugTile->metadata.mY);
 			return true;
 
 		}
@@ -355,29 +355,34 @@ void PlayerAi::handleActionKey(Actor* owner, int ascii) {
 		case 'w': // move up
 		{
 			engine.pathing = false;
-			moveOrAttack(owner, owner->x, owner->y - 1);
+			moveOrAttack(owner, 0, -1);
 			break;
 		}
 
 		case 's': // move down
 		{
 			engine.pathing = false;
-			moveOrAttack(owner, owner->x, owner->y + 1);
+			moveOrAttack(owner, 0, 1);
 			break;
 		}
 
 		case 'a': // move left
 		{
 			engine.pathing = false;
-			moveOrAttack(owner, owner->x - 1, owner->y);
+			moveOrAttack(owner, -1, 0);
 			break;
 		}
 
 		case 'd': // move right
 		{
 			engine.pathing = false;
-			moveOrAttack(owner, owner->x + 1, owner->y);
+			moveOrAttack(owner, 1, 0);
 			break;
+		}
+
+		case 'p':
+		{
+			engine.client.SpawnItem(owner->x, owner->y, owner->mX, owner->mY, 0);
 		}
 	}
 }

@@ -70,6 +70,10 @@ void Engine::update() {
 					msg.header.id = GameMsg::Client_RegisterWithServer;
 					msg << engine.ownDesc;
 					engine.client.Send(msg);
+
+					nanz::net::message<GameMsg> itemsMsg;
+					itemsMsg.header.id = GameMsg::ItemRequest;
+					engine.client.Send(itemsMsg);
 					
 					break;
 				}
@@ -129,8 +133,10 @@ void Engine::update() {
 				case GameMsg::Send_Map:
 				{ // When a player needs updating, update their entry
 					std::array<int, MAP_WIDTH* MAP_HEIGHT> map;
+					std::array<int, MAP_WIDTH* MAP_HEIGHT> items;
 					TileMeta minimap;
 					int mX, mY;
+					msg >> items;
 					msg >> map;
 					msg >> minimap;
 					msg >> mX >> mY;
@@ -146,6 +152,22 @@ void Engine::update() {
 						}
 					}
 
+					engine.mini[8 + (8 * 17)].itemsOnMap.clear();
+
+					for (int i = 0; i < items.size(); i++) {
+						if (items[i] != -1) {
+							auto it = itemLibrary.find(items[i]);
+							if (it == itemLibrary.end()) {
+								std::cout << "Failed to find item in library.\n";
+							} else {
+								int x, y;
+								x = i % MAP_WIDTH;
+								y = i / MAP_WIDTH;
+								engine.mini[8 + (8 * 17)].itemsOnMap.insert_or_assign(std::make_pair(x, y), itemLibrary.at(items[i]));
+							}
+						}
+					}
+					
 					break;
 				}
 
@@ -156,7 +178,7 @@ void Engine::update() {
 					msg >> amountMaps;
 
 					for (auto m : mini) {
-						m.name = "Void";
+						strcpy_s(m.metadata.name, "Void");
 					}
 
 					for (int i = 0; i < amountMaps; i++) {
@@ -166,14 +188,18 @@ void Engine::update() {
 						msg >> mX >> mY;
 
 						MapTile mapTile = *new MapTile();
-						mapTile.name = minimap.name;
-						mapTile.ch = minimap.ch;
-						mapTile.mX = mX;
-						mapTile.mY = mY;
+						strcpy_s(mapTile.metadata.name, minimap.name);
+						mapTile.metadata.ch = minimap.ch;
+						mapTile.metadata.mX = mX;
+						mapTile.metadata.mY = mY;
 						mapTile.fg = TCODColor(minimap.fgR, minimap.fgG, minimap.fgB);
 						mapTile.bg = TCODColor(minimap.bgR, minimap.bgG, minimap.bgB);
-						 
-						mini[(mX - engine.topleft_x) + ((mY - engine.topleft_y) * 17)] = mapTile;
+						
+						int index = (mX - engine.topleft_x) + ((mY - engine.topleft_y) * 17);
+
+						if (index < 289 && index >= 0) {
+							mini[(mX - engine.topleft_x) + ((mY - engine.topleft_y) * 17)] = mapTile;
+						}
 					}
 
 					break;
@@ -212,6 +238,38 @@ void Engine::update() {
 
 					break;
 				}
+
+				case GameMsg::Add_Item: // Receive the list of all players on a map tile
+				{
+					int id, x, y, mX, mY;
+
+					msg >> id >> mY >> mX >> y >> x;
+
+					if (itemLibrary.find(id) != itemLibrary.end()) {
+						engine.mini[8 + (8 * 17)].itemsOnMap.insert_or_assign(std::make_pair(x, y), itemLibrary.at(id));
+					} 
+
+					break;
+				}
+
+				case GameMsg::ItemRequest:
+				{ // Remove a disconnected player from the list
+					int amount;
+					msg >> amount;
+
+					itemLibrary.clear();
+
+					for (int i = 0; i < amount; i++) {
+						ItemMeta newItem;
+						msg >> newItem;
+
+
+						itemLibrary.insert_or_assign(newItem.id, newItem);
+					}
+					
+
+					break;
+				}
 			}
 		}
 	} else {
@@ -224,6 +282,19 @@ void Engine::render() {
 
 	map->render(); // Render the map
 	
+
+	// Then all items
+	for (auto& item : mini[8 + (8 * 17)].itemsOnMap) {
+		TCODColor fg = TCODColor(item.second.fgR, item.second.fgG, item.second.fgB);
+		TCODColor bg = TCODColor(item.second.bgR, item.second.bgG, item.second.bgB);
+
+		TCODConsole::root->setChar(item.first.first, item.first.second, item.second.ch);
+		TCODConsole::root->setCharForeground(item.first.first, item.first.second, fg);
+		TCODConsole::root->setCharBackground(item.first.first, item.first.second, bg);
+	}
+
+
+
 	// Then all actors
 	for (Actor** i = engine.actors.begin(); i != engine.actors.end(); i++) {
 		Actor* actor = *i;
@@ -303,5 +374,76 @@ void Engine::LoadTiles() {
 		newTile->bg = TCODColor(br, bg, bb);
 
 		tileLibrary.insert_or_assign(newTile->metadata.id, Tile(*newTile));
+	}
+}
+
+EquipSlot Engine::slotFromID(int id) {
+	switch (id) {
+		case 0:
+			return MAIN_HAND;
+			break;
+		case 1:
+			return OFF_HAND;
+			break;
+		case 2:
+			return HEAD;
+			break;
+		case 3:
+			return TORSO;
+			break;
+		case 4:
+			return LEGS;
+			break;
+		case 5:
+			return HANDS;
+			break;
+		case 6:
+			return FEET;
+			break;
+		case 7:
+			return RING;
+			break;
+		case 8:
+			return AMULET;
+			break;
+		case 9:
+			return CAPE;
+			break;
+		default:
+			return NOT_EQUIPPABLE;
+			break;
+	}
+}
+
+
+ItemCategory Engine::catFromID(int id) {
+	switch (id) {
+		case 0:
+			return ItemCategory::HATCHET;
+			break;
+		case 1:
+			return ItemCategory::PICKAXE;
+			break;
+		case 2:
+			return ItemCategory::KNIFE;
+			break;
+		case 3:
+			return ItemCategory::HAMMER;
+			break;
+		case 4:
+			return ItemCategory::FISHING;
+			break;
+		case 5:
+			return ItemCategory::POTION;
+			break;
+		case 6:
+			return ItemCategory::FOOD;
+			break;
+		case 7:
+			return ItemCategory::RUNE;
+			break;
+		default:
+			return ItemCategory::ERROR_ITEM;
+			break;
 	}
 }

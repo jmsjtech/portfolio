@@ -28,16 +28,20 @@ struct Tile {
 
 // Minimap tiles specifically
 struct MapTile {
-    std::string name; // Tile name
-    int ch; // Symbol
-
+    MapMeta metadata;
     TCODColor fg; // Foreground color
     TCODColor bg; // Background color
 
-    int mX = -99; // Position in the overworld
-    int mY = -99; // Position in the overworld
+    std::map<std::pair<int, int>, ItemMeta> itemsOnMap;
 
-    MapTile() : name("Void"), ch(' '), fg(TCODColor::black), bg(TCODColor::black) {}
+
+    MapTile() : fg(TCODColor::black), bg(TCODColor::black) {}
+
+    MapTile(MapMeta meta) {
+        metadata = meta;
+        fg = TCODColor(meta.fgR, meta.fgG, meta.fgB);
+        bg = TCODColor(meta.bgR, meta.bgG, meta.bgB);
+    }
 };
 
 class Map {
@@ -60,5 +64,5 @@ public:
 protected:
 
     void addMonster(int x, int y, int mX, int mY);
-    void addItem(int x, int y, int mX, int mY);
+    void addItem(int x, int y, int id);
 };

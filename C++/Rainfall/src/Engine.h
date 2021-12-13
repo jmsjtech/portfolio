@@ -1,7 +1,6 @@
 class Actor;
 class Map;
 
-#include <map>
 #include "NetCommon.h"
 
 // Prepare messages to be sent to the server, 
@@ -13,6 +12,13 @@ public:
 
 		msg << player << xchange << ychange;
 
+		Send(msg);
+	}
+
+	void SpawnItem(int x, int y, int mX, int mY, int id) {
+		nanz::net::message<GameMsg> msg;
+		msg.header.id = GameMsg::Add_Item;
+		msg << x << y << mX << mY << id;
 		Send(msg);
 	}
 
@@ -109,6 +115,10 @@ public:
 
 	std::unordered_map<uint32_t, sPlayerDescription> otherPlayers;
 	std::map<int, Tile> tileLibrary;
+	std::map<int, ItemMeta> itemLibrary;
+
+	EquipSlot slotFromID(int id);
+	ItemCategory catFromID(int id);
 };
 
 extern Engine engine;

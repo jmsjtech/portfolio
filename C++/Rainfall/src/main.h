@@ -9,6 +9,7 @@ enum minimap {
 };
 
 class Actor;
+#include "Item.h"
 #include "Destructible.h"
 #include "Attacker.h"
 #include "Ai.h"
