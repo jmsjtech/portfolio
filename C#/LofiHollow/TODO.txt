@@ -1,0 +1,62 @@
+﻿Tiles
+
+
+
+Items
+- Tools: Watering Can, Pickaxe, Axe, Hoe, Hammer
+- - Hammer: Construct tiles/furniture/anything that exists in the world, what you can make depends on construction level
+- Equippable item slots: Hand, Off-hand, Head, Torso, Legs, Ring1, Ring2, Amulet
+
+
+
+
+
+NPCs
+- Daily Route they follow - Time + Map Location + World Location (teleport to nodes they should already be at when out of the players sight)
+- Dialogue system
+- - Chit-chat: 3 random options for different topics, each NPC has specific things they like and dislike talking about
+- - Gift: Give the NPC an item
+- - Quest: Only shows up if the NPC has something they want done. Differentiate between full quests and simple tasks
+- - Nevermind: Exit the chat without saying anything
+
+
+
+
+UI
+- Time, Day, Season, Year. 
+- - (DONE) Time should pass at 1 in-game minute per real life second.
+- - 28 days per month (four 7 day weeks), 10 normal months, then a week-long festival-month at the end of the area outside of the normal time.
+- - 2 Spring months, 3 summer months, 3 fall months, 2 winter months (Maybe let player decide the season lengths by selecting a "climate" they're in?)
+- (DONE) Stats - Energy, Health, Mana?
+- Attributes
+- - Strength: Damage dealt with melee attacks and maximum wieldable weapon weight
+- - Vitality: Hit points and poison/disease resistance
+- - Intelligence: Magical power and mana capacity
+- - Dexterity: Speed and (accuracy with ranged weapons)?
+- Inventory
+- - Openable menu - upgradable backpack mechanic
+- - Hotbar (visible in sidebar) - Top 9 slots of inventory
+- - While inventory is open, let the user move where in their inventory their items are
+- - Initialize inventory slots to Empty
+- Equipment Menu
+- Skill Menu
+- - Melee: Accuracy with melee attacks and what tier of weapon you can use
+- - Construction: Build things that get placed in the world (walls, floors, furniture, etc)
+- - Crafting: Craft items that can't be placed
+- - Mining: 
+
+
+
+
+Map Editor:
+- (DONE) Load tile definitions from file
+- Let the user place any already defined tile
+- Let the user edit the minimap tile freely
+- Only generate new maps in empty spots if in map editing mode, otherwise say you can't go there in message log
+
+
+Map
+- Make a minimap that displays the surrounding map tiles
+- Primary small towm
+- Far away large city, technically reachable on foot but not likely
+- Easily extensible for much larger overworld expansions later
