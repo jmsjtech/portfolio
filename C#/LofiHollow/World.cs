@@ -30,7 +30,7 @@ namespace LofiHollow {
             LoadExistingMaps();
             CreatePlayer(); 
             CreateMap(Player.MapPos);
-            CreateMonsters();
+           // CreateMonsters();
         }
 
         public void LoadTileDefinitions() {
@@ -40,7 +40,7 @@ namespace LofiHollow {
                 TileBase tile = new TileBase(Color.Green, Color.Black, ',');
 
                 string[] header = line.Split('|');
-                int id = Int32.Parse(header[0]);
+                tile.TileID = Int32.Parse(header[0]);
                 tile.Name = header[1];
                 tile.IsBlockingMove = header[2] == "true" ? true : false;
 
@@ -58,7 +58,7 @@ namespace LofiHollow {
                 tile.Foreground = new Color(fgR, fgG, fgB);
                 tile.Background = new Color(bgR, bgG, bgB);
 
-                tileLibrary.Add(id, tile);
+                tileLibrary.Add(tile.TileID, tile);
             }
         }
 
@@ -95,6 +95,7 @@ namespace LofiHollow {
                             newMap.MinimapTile.fg = new Color(fgR, fgG, fgB);
                             newMap.MinimapTile.bg = new Color(bgR, bgG, bgB);
 
+                            newMap.PlayerCanBuild = header[8] == "true" ? true : false;
                         } else {
                             tile = tileLibrary[Int32.Parse(line)];
 
@@ -103,8 +104,6 @@ namespace LofiHollow {
                         index++;
 
                     }
-
-                    System.Console.WriteLine("Loaded a map");
 
                     maps.Add(new Point(x, y), newMap);
                 }
@@ -118,7 +117,7 @@ namespace LofiHollow {
 
             using (StreamWriter output = new StreamWriter(path)) {
                 MinimapTile minimap = map.MinimapTile;
-                output.WriteLine(minimap.name + "|" + minimap.ch + "|" + minimap.fg.R + "|" + minimap.fg.G + "|" + minimap.fg.B + "|" + minimap.bg.R + "|" + minimap.bg.G + "|" + minimap.bg.B);
+                output.WriteLine(minimap.name + "|" + minimap.ch + "|" + minimap.fg.R + "|" + minimap.fg.G + "|" + minimap.fg.B + "|" + minimap.bg.R + "|" + minimap.bg.G + "|" + minimap.bg.B + "|" + map.PlayerCanBuild.ToString().ToLower());
                 foreach (TileBase tile in map.Tiles) {
                     output.WriteLine(tile.TileID);
                 }
@@ -134,7 +133,8 @@ namespace LofiHollow {
 
         private void CreatePlayer() {
             Player = new Player(Color.Yellow, Color.Transparent);
-            Player.Position = new Point(5, 5); 
+            Player.Position = new Point(5, 5);
+            Player.MapPos = new Point(0, 1);
             Player.Components.Add(new EntityViewSyncComponent());
         }
 

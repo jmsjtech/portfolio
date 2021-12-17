@@ -1,6 +1,22 @@
 ﻿Tiles
 
 
+Monsters / Combat
+- Combat is turn based, you vs one monster
+- Monsters encountered by walking in dangerous areas (ie forests, caves) or in tall grass on otherwise safe maps
+- Stats: Health, Speed, Attack, Defense, M.Atk, M.Def. Level, experience, current/max health
+- - Health: HP growth per level 
+- - Speed: Faster unit goes first in combat (tie goes to player)
+- - Attack: Determines damage with physical attacks
+- - Defense: Physical damage reduction
+- - Magic Attack: Damage with magical attacks
+- - Magic Defense: Magical damage reduction
+- Monster definitions from file
+- - Level 0 base stats (When monster is generated in-game, add random amounts to each based on generated level)
+- - Stat growth per level per stat (On level, add between 0 and max points)
+- - Monster character
+- - Name
+
 
 Items
 - Tools: Watering Can, Pickaxe, Axe, Hoe, Hammer
@@ -28,11 +44,6 @@ UI
 - - 28 days per month (four 7 day weeks), 10 normal months, then a week-long festival-month at the end of the area outside of the normal time.
 - - 2 Spring months, 3 summer months, 3 fall months, 2 winter months (Maybe let player decide the season lengths by selecting a "climate" they're in?)
 - (DONE) Stats - Energy, Health, Mana?
-- Attributes
-- - Strength: Damage dealt with melee attacks and maximum wieldable weapon weight
-- - Vitality: Hit points and poison/disease resistance
-- - Intelligence: Magical power and mana capacity
-- - Dexterity: Speed and (accuracy with ranged weapons)?
 - Inventory
 - - Openable menu - upgradable backpack mechanic
 - - Hotbar (visible in sidebar) - Top 9 slots of inventory
@@ -50,13 +61,26 @@ UI
 
 Map Editor:
 - (DONE) Load tile definitions from file
-- Let the user place any already defined tile
-- Let the user edit the minimap tile freely
+- (DONE) Let the user place any already defined tile
+- (DONE) Let the user edit the minimap tile freely
 - Only generate new maps in empty spots if in map editing mode, otherwise say you can't go there in message log
 
 
 Map
-- Make a minimap that displays the surrounding map tiles
+- (DONE) Make a minimap that displays the surrounding map tiles
 - Primary small towm
 - Far away large city, technically reachable on foot but not likely
 - Easily extensible for much larger overworld expansions later
+- Signs - Probably gonna have to be hardcoded for now
+- Ocean coast to the east, starter town is right on the coast
+- Desert blocking off the north
+- Dense forest blocking the south
+- Mountain blocking the west?
+
+
+
+City
+- At least 9x9
+- Lots of flavor buildings - Restaurants, shops, etc
+- Rentable apartment - have to pay a certain amount each month
+- Minigame jobs to earn money

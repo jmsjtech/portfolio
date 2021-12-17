@@ -15,8 +15,11 @@ namespace LofiHollow {
         public int Width { get { return _width; } set { _width = value; } }
         public int Height { get { return _height; } set { _height = value; } }
 
+        public bool PlayerCanBuild = false;
+
         public GoRogue.MultiSpatialMap<Entity> Entities;  
         public static GoRogue.IDGenerator IDGenerator = new GoRogue.IDGenerator();  
+        
 
         public Map(int width, int height) {
             _width = width;
@@ -35,7 +38,23 @@ namespace LofiHollow {
                 return false; 
             return !_tiles[location.Y * Width + location.X].IsBlockingMove;
         }
-         
+
+        public bool ToggleDoor(Point location, bool open) {
+            if (location.X < 0 || location.Y < 0 || location.X >= Width || location.Y >= Height)
+                return false;
+            if (_tiles[location.Y * Width + location.X].TileID == 7 && open) {
+                _tiles[location.Y * Width + location.X] = GameLoop.World.tileLibrary[8];
+                GameLoop.UIManager.MapConsole.SetRenderCells();
+            }
+
+            if (_tiles[location.Y * Width + location.X].TileID == 8 && !open) {
+                _tiles[location.Y * Width + location.X] = GameLoop.World.tileLibrary[7];
+                GameLoop.UIManager.MapConsole.SetRenderCells();
+            }
+
+            return false;
+        }
+
         public T GetEntityAt<T>(Point location) where T : Entity {
             return Entities.GetItems(location).OfType<T>().FirstOrDefault();
         }

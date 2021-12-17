@@ -19,6 +19,8 @@ namespace LofiHollow {
         public static World World;
         public static CommandManager CommandManager;
 
+        public static UInt32 TimeSinceLaunch = 0;
+
         public static void Main(string[] args) {
             // Setup the engine and create the main window.
             SadConsole.Game.Create(GameWidth, GameHeight);
@@ -33,6 +35,7 @@ namespace LofiHollow {
         }
 
         private static void Update(GameTime time) {
+            TimeSinceLaunch++;
             World.TimeLastTicked++;
             if (World.TimeLastTicked >= 60) {
                 World.TimeLastTicked = 0;

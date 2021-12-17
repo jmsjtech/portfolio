@@ -19,6 +19,8 @@ namespace LofiHollow.Entities {
 
         public int Gold = 0;
 
+        public UInt32 TimeLastActed = 0;
+
 
         public Point MapPos = new Point(0, 0);
 
@@ -29,11 +31,17 @@ namespace LofiHollow.Entities {
         }
 
         public bool MoveBy(Point positionChange) {
+            if (TimeLastActed + 3 > GameLoop.TimeSinceLaunch) {
+                return false;
+            }
+
+            TimeLastActed = GameLoop.TimeSinceLaunch; 
+
             if (GameLoop.World.maps.TryGetValue(MapPos, out Map map)) {
-                if (GameLoop.World.maps[MapPos].IsTileWalkable(Position + positionChange)) {
+                if (map.IsTileWalkable(Position + positionChange)) {
                     // if there's a monster here,
                     // do a bump attack
-                    Monster monster = GameLoop.World.maps[MapPos].GetEntityAt<Monster>(Position + positionChange);
+                    Monster monster = map.GetEntityAt<Monster>(Position + positionChange);
                     if (monster != null) {
                         GameLoop.CommandManager.Attack(this, monster);
                         return true;
@@ -43,45 +51,46 @@ namespace LofiHollow.Entities {
                     return true;
                 }
 
+                if (map.ToggleDoor(Position + positionChange, true)) { 
+                    return true;
+                }
+
                 Point newPos = Position + positionChange;
                 bool movedMaps = false;
-              
+                
                 if (newPos.X < 0) {
                     if (!GameLoop.World.maps.ContainsKey(MapPos + new Point(-1, 0))) { GameLoop.World.CreateMap(MapPos + new Point(-1, 0)); }
 
                     MapPos += new Point(-1, 0);
-                    Position = new Point(GameLoop.World._mapWidth, newPos.Y);
+                    Position = new Point(GameLoop.World._mapWidth-1, newPos.Y);
                     movedMaps = true;
                 }
-
+                
                 if (newPos.X >= GameLoop.World._mapWidth) {
                     if (!GameLoop.World.maps.ContainsKey(MapPos + new Point(1, 0))) { GameLoop.World.CreateMap(MapPos + new Point(1, 0)); }
 
                     MapPos += new Point(1, 0);
                     Position = new Point(0, newPos.Y);
                     movedMaps = true;
-                }
-
+                } 
                 if (newPos.Y < 0) {
                     if (!GameLoop.World.maps.ContainsKey(MapPos + new Point(0, -1))) { GameLoop.World.CreateMap(MapPos + new Point(0, -1)); }
 
                     MapPos += new Point(0, -1);
-                    Position = new Point(newPos.X, GameLoop.World._mapHeight);
+                    Position = new Point(newPos.X, GameLoop.World._mapHeight-1);
                     movedMaps = true;
-                }
-
+                } 
+                
                 if (newPos.Y >= GameLoop.World._mapHeight) {
                     if (!GameLoop.World.maps.ContainsKey(MapPos + new Point(0, 1))) { GameLoop.World.CreateMap(MapPos + new Point(0, 1)); }
 
                     MapPos += new Point(0, 1);
                     Position = new Point(newPos.X, 0);
                     movedMaps = true;
-                }
+                } 
 
                 if (movedMaps && ID == GameLoop.World.Player.ID) {
-                    GameLoop.UIManager.LoadMap(GameLoop.World.maps[MapPos]);
-                   // GameLoop.UIManager.SyncMapEntities(GameLoop.World.maps[MapPos]);
-                    GameLoop.UIManager.MessageLog.Add("Moved maps to " + MapPos.X + ", " + MapPos.Y);
+                    GameLoop.UIManager.LoadMap(GameLoop.World.maps[MapPos], false);
                     return true;
                 }
             }

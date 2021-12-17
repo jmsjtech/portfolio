@@ -16,6 +16,8 @@ namespace LofiHollow.UI {
         public SadConsole.Console SidebarConsole;
         public SadConsole.Controls.TextBox minimapNameBox;
 
+        public Point targetDir = new Point(0, 0);
+        public string targetType = "None";
         public string selectedMenu = "None";
         public int tileIndex = 0;
 
@@ -35,7 +37,7 @@ namespace LofiHollow.UI {
             RenderSidebar();
 
             base.Update(timeElapsed);
-        }
+        } 
 
         public void Init() {
             SetupCustomColors();
@@ -50,23 +52,47 @@ namespace LofiHollow.UI {
             MessageLog.Add("Testing 123");
 
 
-            LoadMap(GameLoop.World.maps[GameLoop.World.Player.MapPos]);
+            LoadMap(GameLoop.World.maps[GameLoop.World.Player.MapPos], true);
 
            // CreateMapWindow(72, 42, "Game Map");
             UseMouse = true;
         }
 
         private void CheckKeyboard() {
-            if (selectedMenu != "Map Editor") {
-                if (Global.KeyboardState.IsKeyDown(Key.W) || Global.KeyboardState.IsKeyDown(Key.NumPad8)) { GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(0, -1)); }
-                if (Global.KeyboardState.IsKeyDown(Key.S) || Global.KeyboardState.IsKeyDown(Key.NumPad2)) { GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(0, 1)); }
-                if (Global.KeyboardState.IsKeyDown(Key.A) || Global.KeyboardState.IsKeyDown(Key.NumPad4)) { GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(-1, 0)); }
-                if (Global.KeyboardState.IsKeyDown(Key.D) || Global.KeyboardState.IsKeyDown(Key.NumPad6)) { GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(1, 0)); }
+            if (Global.KeyboardState.IsKeyPressed(Key.NumPad8)) { GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(0, -1)); }
+            if (Global.KeyboardState.IsKeyPressed(Key.NumPad2)) { GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(0, 1)); }
+            if (Global.KeyboardState.IsKeyPressed(Key.NumPad4)) { GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(-1, 0)); }
+            if (Global.KeyboardState.IsKeyPressed(Key.NumPad6)) { GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(1, 0)); }
+            if (Global.KeyboardState.IsKeyReleased(Key.F9)) {
+                GameLoop.World.SaveMapToFile(GameLoop.World.maps[GameLoop.World.Player.MapPos], GameLoop.World.Player.MapPos);
+            }
 
-                if (Global.KeyboardState.IsKeyReleased(Key.P)) {
-                    GameLoop.World.SaveMapToFile(GameLoop.World.maps[GameLoop.World.Player.MapPos], GameLoop.World.Player.MapPos);
+            if (selectedMenu != "Map Editor" && selectedMenu != "Targeting") {
+                
+                if (Global.KeyboardState.IsKeyReleased(Key.C)) {
+                    selectedMenu = "Targeting";
+                    targetType = "Door";
+                    MessageLog.Add("Close door where?");
+                } 
+            } else if (selectedMenu == "Targeting") {
+                if (Global.KeyboardState.IsKeyReleased(Key.NumPad1)) { targetDir = new Point(-1, 1); }
+                if (Global.KeyboardState.IsKeyReleased(Key.NumPad2)) { targetDir = new Point(0, 1); }
+                if (Global.KeyboardState.IsKeyReleased(Key.NumPad3)) { targetDir = new Point(1, 1); }
+                if (Global.KeyboardState.IsKeyReleased(Key.NumPad4)) { targetDir = new Point(-1, 0); } 
+                if (Global.KeyboardState.IsKeyReleased(Key.NumPad6)) { targetDir = new Point(1, 0); }
+                if (Global.KeyboardState.IsKeyReleased(Key.NumPad7)) { targetDir = new Point(-1, -1); }
+                if (Global.KeyboardState.IsKeyReleased(Key.NumPad8)) { targetDir = new Point(0, -1); }
+                if (Global.KeyboardState.IsKeyReleased(Key.NumPad9)) { targetDir = new Point(1, -1); }
+
+                if (targetType == "Door" && targetDir != new Point(0, 0)) { 
+                    GameLoop.World.maps[GameLoop.World.Player.MapPos].ToggleDoor(GameLoop.World.Player.Position + targetDir, false);
+                    targetType = "Done";
+                } else if (targetType != "Door") {
+                    targetType = "None";
+                    targetDir = new Point(0, 0);
+                    selectedMenu = "None";
                 }
-            } else {
+            } else if (selectedMenu == "Map Editor") {
                 MinimapTile thisMap = GameLoop.World.maps[GameLoop.World.Player.MapPos].MinimapTile;
 
                 foreach (var key in Global.KeyboardState.KeysReleased) {
@@ -80,32 +106,87 @@ namespace LofiHollow.UI {
                     thisMap.name += " ";
                 }
 
-                if (Global.MouseState.ScrollWheelValueChange < 0) {
-                    tileIndex++;
-                } else if (Global.MouseState.ScrollWheelValueChange > 0) {
-                    if (tileIndex > 0)
-                        tileIndex--;
+                if (Global.KeyboardState.IsKeyReleased(Key.F3)) {
+                    thisMap.name = "Mountain";
+                    thisMap.fg = new Color(127, 127, 127);
+                    thisMap.ch = (char) 30;
                 }
 
-                if (Global.MouseState.LeftButtonDown) {
-                    Point mousePos = Global.MouseState.ScreenPosition.PixelLocationToConsole(12, 12);
-                    // 1,1 to 70,40 is game map
+                if (Global.KeyboardState.IsKeyReleased(Key.F4)) {
+                    thisMap.name = "Forest";
+                    thisMap.fg = new Color(0, 127, 0);
+                    thisMap.ch = (char)6;
+                }
 
-                    if (mousePos.X >= 1 && mousePos.X <= 70 && mousePos.Y >= 1 && mousePos.Y <= 40) {
-                        Point mapPos = mousePos - new Point(1, 1);
-                        if (GameLoop.World.tileLibrary.ContainsKey(tileIndex)) {
-                            TileBase tile = GameLoop.World.tileLibrary[tileIndex];
-                            GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[mapPos.ToIndex(GameLoop.World._mapWidth)] = tile;
-                            MapConsole.Print(mapPos.X, mapPos.Y, tile.AsColoredGlyph());
-                            MapConsole.IsDirty = true;
-                        } else {
-                            MessageLog.Add("No tile found");
-                        }
+                if (Global.KeyboardState.IsKeyReleased(Key.F6)) {
+                    thisMap.name = "Town";
+                    thisMap.fg = new Color(100, 100, 100);
+                    thisMap.ch = (char)127;
+                } 
+
+
+                if (!Global.KeyboardState.IsKeyDown(Key.LeftShift)) {
+                    if (Global.MouseState.ScrollWheelValueChange < 0) {
+                        tileIndex++;
+                    } else if (Global.MouseState.ScrollWheelValueChange > 0) {
+                        if (tileIndex > 0)
+                            tileIndex--;
+                    }
+                } else {
+                    if (Global.MouseState.ScrollWheelValueChange < 0) {
+                        thisMap.ch++;
+                    } else if (Global.MouseState.ScrollWheelValueChange > 0) {
+                        if (thisMap.ch > 0)
+                            thisMap.ch--;
                     }
                 }
 
-                if (Global.MouseState.LeftClicked) {
-                    LoadMap(GameLoop.World.maps[GameLoop.World.Player.MapPos]);
+                Point mousePos = Global.MouseState.ScreenPosition.PixelLocationToConsole(12, 12);
+                if (mousePos.X < 72) {
+                    if (Global.MouseState.LeftButtonDown) {
+                        var mouse = new SadConsole.Input.MouseConsoleState(MapConsole, Global.MouseState);
+
+                        if (mouse.IsOnConsole) {
+                            if (GameLoop.World.tileLibrary.ContainsKey(tileIndex)) {
+                                TileBase tile = GameLoop.World.tileLibrary[tileIndex];
+                                tile.TileID = tileIndex;
+                                GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[mouse.CellPosition.ToIndex(GameLoop.World._mapWidth)] = tile;
+                                MapConsole.SetRenderCells();
+                            } else {
+                                MessageLog.Add("No tile found");
+                            }
+                        }
+                    }
+
+                    if (Global.MouseState.LeftClicked) {
+                        LoadMap(GameLoop.World.maps[GameLoop.World.Player.MapPos], false);
+                    }
+                } else {
+                    if (Global.MouseState.LeftButtonDown) {
+                        var mouse = new SadConsole.Input.MouseConsoleState(SidebarConsole, Global.MouseState);
+
+                        if (mouse.IsOnConsole) {
+                            if (mouse.CellPosition == new Point(8, 14)) { thisMap.fg.R--; }
+                            if (mouse.CellPosition == new Point(14, 14)) { thisMap.fg.R++; }
+                            if (mouse.CellPosition == new Point(8, 15)) { thisMap.fg.G--; }
+                            if (mouse.CellPosition == new Point(14, 15)) { thisMap.fg.G++; }
+                            if (mouse.CellPosition == new Point(8, 16)) { thisMap.fg.B--; }
+                            if (mouse.CellPosition == new Point(14, 16)) { thisMap.fg.B++; }
+                        }
+                    }
+
+                    if (Global.MouseState.RightClicked) {
+                        var mouse = new SadConsole.Input.MouseConsoleState(SidebarConsole, Global.MouseState);
+
+                        if (mouse.IsOnConsole) {
+                            if (mouse.CellPosition == new Point(8, 14)) { thisMap.fg.R--; }
+                            if (mouse.CellPosition == new Point(14, 14)) { thisMap.fg.R++; }
+                            if (mouse.CellPosition == new Point(8, 15)) { thisMap.fg.G--; }
+                            if (mouse.CellPosition == new Point(14, 15)) { thisMap.fg.G++; }
+                            if (mouse.CellPosition == new Point(8, 16)) { thisMap.fg.B--; }
+                            if (mouse.CellPosition == new Point(14, 16)) { thisMap.fg.B++; }
+                        }
+                    }
                 }
             }
 
@@ -118,9 +199,17 @@ namespace LofiHollow.UI {
             }
         }
 
-        public void LoadMap(Map map) {
-            MapConsole = new SadConsole.Console(GameLoop.World._mapWidth, GameLoop.World._mapHeight, Global.FontDefault, map.Tiles);
-            CreateMapWindow(72, 42, "Game Map");
+        public void LoadMap(Map map, bool firstLoad) {
+            if (firstLoad) {
+                MapConsole = new SadConsole.Console(GameLoop.World._mapWidth, GameLoop.World._mapHeight, Global.FontDefault, map.Tiles);
+                CreateMapWindow(72, 42, map.MinimapTile.name);
+            } else {
+                MapConsole.SetSurface(map.Tiles, GameLoop.World._mapWidth, GameLoop.World._mapHeight);
+                MapConsole.SetRenderCells();
+                MapWindow.Title = GameLoop.World.maps[GameLoop.World.Player.MapPos].MinimapTile.name.Align(HorizontalAlignment.Center, GameLoop.World._mapWidth - 2, (char)205);
+            }
+            
+           
             SyncMapEntities(map);
         }
 
@@ -209,20 +298,31 @@ namespace LofiHollow.UI {
                 SidebarConsole.Print(0, 11, "Map Icon: ");
                 SidebarConsole.Print(10, 11, thisMap.AsColoredGlyph());
                 SidebarConsole.Print(0, 13, "Position: " + GameLoop.World.Player.MapPos.ToString());
-                SidebarConsole.Print(0, 17, "Tile Index: " + tileIndex);
+
+                SidebarConsole.Print(0, 14, "Map fR: - " + thisMap.fg.R);
+                SidebarConsole.Print(14, 14, "+");
+                SidebarConsole.Print(0, 15, "Map fG: - " + thisMap.fg.G);
+                SidebarConsole.Print(14, 15, "+");
+                SidebarConsole.Print(0, 16, "Map fB: - " + thisMap.fg.B);
+                SidebarConsole.Print(14, 16, "+");
+
+
+                SidebarConsole.Print(0, 19, "Tile Index: " + tileIndex);
+                
 
                 if (GameLoop.World.tileLibrary.ContainsKey(tileIndex)) {
                     TileBase tile = GameLoop.World.tileLibrary[tileIndex];
 
-                    SidebarConsole.Print(0, 18, "Tile Name: " + tile.Name);
-                    SidebarConsole.Print(0, 19, "Tile Appearance: ");
-                    SidebarConsole.Print(17, 19, tile.AsColoredGlyph());
+                    SidebarConsole.Print(0, 20, "Tile Name: " + tile.Name);
+                    SidebarConsole.Print(0, 21, "Tile Appearance: ");
+                    SidebarConsole.Print(17, 21, tile.AsColoredGlyph());
+
                 }
             }  
         }
 
         public void CreateConsoles() {
-            MapConsole = new SadConsole.ScrollingConsole(GameLoop.World._mapWidth, GameLoop.World._mapHeight, Global.FontDefault);
+            MapConsole = new SadConsole.Console(GameLoop.World._mapWidth, GameLoop.World._mapHeight, Global.FontDefault);
             SidebarConsole = new SadConsole.Console(28, GameLoop.GameHeight, Global.FontDefault);
         }
 
@@ -249,7 +349,7 @@ namespace LofiHollow.UI {
             SidebarWindow.Position = new Point(72, 0);
 
             int sidebarConsoleWidth = width - 2;
-            int sidebarCOnsoleHeight = height - 2;
+            int sidebarConsoleHeight = height - 2;
              
             SidebarConsole.Position = new Point(1, 1);
             SidebarWindow.Title = title.Align(HorizontalAlignment.Center, sidebarConsoleWidth, (char)205);
