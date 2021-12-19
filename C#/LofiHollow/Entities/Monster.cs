@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.Xna.Framework;
+using SadRogue.Primitives;
 
 namespace LofiHollow.Entities {
     public class Monster : Actor {

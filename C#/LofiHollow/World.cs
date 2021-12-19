@@ -1,6 +1,6 @@
 ﻿using System;
 using SadConsole.Components;
-using Microsoft.Xna.Framework;
+using SadRogue.Primitives;
 using System.Collections.Generic;
 
 using LofiHollow.Entities;
@@ -9,10 +9,9 @@ using System.IO;
 namespace LofiHollow {
     public class World { 
         public Dictionary<int, TileBase> tileLibrary = new Dictionary<int, TileBase>();
-        public int _mapWidth = 70;
-        public int _mapHeight = 40;
+        public Dictionary<Point3D, Map> maps = new Dictionary<Point3D, Map>();
 
-        public Dictionary<Point, Map> maps = new Dictionary<Point, Map>();
+        
               
         public int Hours = 11;
         public int Minutes = 30;
@@ -30,7 +29,9 @@ namespace LofiHollow {
             LoadExistingMaps();
             CreatePlayer(); 
             CreateMap(Player.MapPos);
-           // CreateMonsters();
+
+            GameLoop.UIManager.LoadMap(maps[Player.MapPos], true);
+            GameLoop.UIManager.EntityRenderer.Add(Player);
         }
 
         public void LoadTileDefinitions() {
@@ -58,6 +59,8 @@ namespace LofiHollow {
                 tile.Foreground = new Color(fgR, fgG, fgB);
                 tile.Background = new Color(bgR, bgG, bgB);
 
+                tile.SpawnsMonsters = header[10] == "true" ? true : false;
+
                 tileLibrary.Add(tile.TileID, tile);
             }
         }
@@ -70,7 +73,9 @@ namespace LofiHollow {
                     string posString = fileName.Substring(7, fileName.Length - 11);
                     int x = Int32.Parse(posString.Split(',')[0]);
                     int y = Int32.Parse(posString.Split(',')[1]);
-
+                    int z = Int32.Parse(posString.Split(',')[2]);
+                    bool Resave = false;
+                     
                     string[] lines = File.ReadAllLines(fileName);
 
                     Map newMap = new Map(70, 40);
@@ -96,37 +101,87 @@ namespace LofiHollow {
                             newMap.MinimapTile.bg = new Color(bgR, bgG, bgB);
 
                             newMap.PlayerCanBuild = header[8] == "true" ? true : false;
+
+                            if (header.Length > 9) {
+                                newMap.AmbientMonsters = header[9] == "true" ? true : false;
+                            } else { 
+                                newMap.AmbientMonsters = false;
+                                Resave = true;
+                            }
                         } else {
-                            tile = tileLibrary[Int32.Parse(line)];
+                            TileBase lib = tileLibrary[Int32.Parse(line)];
+                            tile = new TileBase(lib.Foreground, lib.Background, lib.Glyph, lib.IsBlockingMove, lib.IsBlockingLOS, lib.Name, lib.TileID, lib.SpawnsMonsters);
 
                             newMap.Tiles[index] = tile;
                         }
                         index++;
 
                     }
+                    
+                    maps.Add(new Point3D(x, y, z), newMap);
 
-                    maps.Add(new Point(x, y), newMap);
+                    if (Resave) {
+                        GameLoop.UIManager.MessageLog.Add("Resaved map at " + x + ", " + y);
+                        SaveMapToFile(newMap, new Point3D(x, y, z));
+                    } 
                 }
             } else {
                 System.Console.WriteLine("Failed to load map directory");
             }
         }
 
-        public void SaveMapToFile(Map map, Point pos) {
-            string path = "./maps/" + pos.X + "," + pos.Y + ".dat";
+        public void SaveMapToFile(Map map, Point3D pos) {
+            string path = "./maps/" + pos.X + "," + pos.Y + "," + pos.Z + ".dat";
 
             using (StreamWriter output = new StreamWriter(path)) {
                 MinimapTile minimap = map.MinimapTile;
-                output.WriteLine(minimap.name + "|" + minimap.ch + "|" + minimap.fg.R + "|" + minimap.fg.G + "|" + minimap.fg.B + "|" + minimap.bg.R + "|" + minimap.bg.G + "|" + minimap.bg.B + "|" + map.PlayerCanBuild.ToString().ToLower());
+                output.WriteLine(minimap.name + "|" + minimap.ch + "|" +
+                    minimap.fg.R + "|" + minimap.fg.G + "|" + minimap.fg.B + "|" + 
+                    minimap.bg.R + "|" + minimap.bg.G + "|" + minimap.bg.B + "|" + 
+                    map.PlayerCanBuild.ToString().ToLower() + "|" + map.AmbientMonsters.ToString().ToLower());
                 foreach (TileBase tile in map.Tiles) {
                     output.WriteLine(tile.TileID);
                 }
             }
+
         }
          
-        public void CreateMap(Point pos) {
+        public void CreateMap(Point3D pos) {
             if (!maps.ContainsKey(pos)) {
-                Map newMap  = new Map(_mapWidth, _mapHeight);
+                Map newMap  = new Map(GameLoop.MapWidth, GameLoop.MapHeight);
+
+                if (pos.Z < 0) {
+                    for (int i = 0; i < newMap.Tiles.Length; i++) {
+                        TileBase lib = tileLibrary[31];
+                        TileBase tile = new TileBase(lib.Foreground, lib.Background, lib.Glyph, lib.IsBlockingMove, lib.IsBlockingLOS, lib.Name, lib.TileID, lib.SpawnsMonsters);
+
+                        newMap.Tiles[i] = tile;
+                    }
+
+                    if (Player.MapPos.Z > pos.Z) {
+                        TileBase lib = tileLibrary[29];
+                        TileBase tile = new TileBase(lib.Foreground, lib.Background, lib.Glyph, lib.IsBlockingMove, lib.IsBlockingLOS, lib.Name, lib.TileID, lib.SpawnsMonsters);
+
+                        newMap.Tiles[Player.Position.ToIndex(GameLoop.MapWidth)] = tile;
+                    }
+                }
+
+                if (pos.Z > 0) {
+                    for (int i = 0; i < newMap.Tiles.Length; i++) {
+                        TileBase lib = tileLibrary[32];
+                        TileBase tile = new TileBase(lib.Foreground, lib.Background, lib.Glyph, lib.IsBlockingMove, lib.IsBlockingLOS, lib.Name, lib.TileID, lib.SpawnsMonsters);
+
+                        newMap.Tiles[i] = tile;
+                    }
+
+                    if (Player.MapPos.Z < pos.Z) {
+                        TileBase lib = tileLibrary[30];
+                        TileBase tile = new TileBase(lib.Foreground, lib.Background, lib.Glyph, lib.IsBlockingMove, lib.IsBlockingLOS, lib.Name, lib.TileID, lib.SpawnsMonsters);
+
+                        newMap.Tiles[Player.Position.ToIndex(GameLoop.MapWidth)] = tile;
+                    }
+                }
+
                 maps.Add(pos, newMap);
             }
         } 
@@ -134,29 +189,10 @@ namespace LofiHollow {
         private void CreatePlayer() {
             Player = new Player(Color.Yellow, Color.Transparent);
             Player.Position = new Point(5, 5);
-            Player.MapPos = new Point(0, 1);
-            Player.Components.Add(new EntityViewSyncComponent());
+            Player.MapPos = new Point3D(0, 1, 0);
+
         }
-
-        private void CreateMonsters() { 
-            int numMonsters = 10;
-             
-            Random rndNum = new Random();
-             
-            for (int i = 0; i < numMonsters; i++) {
-                int monsterPosition = 0;
-                Monster newMonster = new Monster(Color.Blue, Color.Transparent);
-                newMonster.Components.Add(new EntityViewSyncComponent());
-
-                monsterPosition = rndNum.Next(0, maps[Player.MapPos].Tiles.Length);
-
-                newMonster.Name = "troll";
-
-                newMonster.Position = SadConsole.Helpers.GetPointFromIndex(monsterPosition, _mapWidth);
-                maps[Player.MapPos].Add(newMonster);
-            }
-        }
-
+         
         public void TickTime() {
             Minutes++;
             if (Minutes >= 60) {

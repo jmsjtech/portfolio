@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.Xna.Framework;
+using SadRogue.Primitives;
 using SadConsole;
 
 namespace LofiHollow {
@@ -16,7 +16,7 @@ namespace LofiHollow {
         }
 
         public ColoredGlyph AsColoredGlyph() {
-            return new ColoredGlyph(ch, fg, bg);
+            return new ColoredGlyph(fg, bg, ch);
         }
 
     }

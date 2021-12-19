@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.Xna.Framework;
+using SadRogue.Primitives;
 using LofiHollow.Entities;
 
 
@@ -16,6 +16,7 @@ namespace LofiHollow {
         public int Height { get { return _height; } set { _height = value; } }
 
         public bool PlayerCanBuild = false;
+        public bool AmbientMonsters = false;
 
         public GoRogue.MultiSpatialMap<Entity> Entities;  
         public static GoRogue.IDGenerator IDGenerator = new GoRogue.IDGenerator();  
@@ -44,33 +45,37 @@ namespace LofiHollow {
                 return false;
             if (_tiles[location.Y * Width + location.X].TileID == 7 && open) {
                 _tiles[location.Y * Width + location.X] = GameLoop.World.tileLibrary[8];
-                GameLoop.UIManager.MapConsole.SetRenderCells();
+               // GameLoop.UIManager.MapConsole.SetRenderCells();
             }
 
             if (_tiles[location.Y * Width + location.X].TileID == 8 && !open) {
                 _tiles[location.Y * Width + location.X] = GameLoop.World.tileLibrary[7];
-                GameLoop.UIManager.MapConsole.SetRenderCells();
+               // GameLoop.UIManager.MapConsole.SetRenderCells();
             }
 
             return false;
         }
 
         public T GetEntityAt<T>(Point location) where T : Entity {
-            return Entities.GetItems(location).OfType<T>().FirstOrDefault();
+            return Entities.GetItems(new GoRogue.Coord(location.X, location.Y)).OfType<T>().FirstOrDefault();
+        }
+
+        public TileBase GetTile(Point location) {
+            return Tiles[location.ToIndex(GameLoop.MapWidth)];
         }
          
         public void Remove(Entity entity) { 
-            Entities.Remove(entity); 
-            entity.Moved -= OnEntityMoved;
+            Entities.Remove(entity);
+            entity.PositionChanged -= OnPositionChange;
         }
          
         public void Add(Entity entity) { 
-            Entities.Add(entity, entity.Position); 
-            entity.Moved += OnEntityMoved;
+            Entities.Add(entity, new GoRogue.Coord(entity.Position.X, entity.Position.Y));
+            entity.PositionChanged += OnPositionChange;
         }
-         
-        private void OnEntityMoved(object sender, Entity.EntityMovedEventArgs args) {
-            Entities.Move(args.Entity as Entity, args.Entity.Position);
-        }
+
+        private void OnPositionChange(object sender, SadConsole.ValueChangedEventArgs<Point> e) {
+            Entities.Move(sender as Entity, new GoRogue.Coord(e.NewValue.X, e.NewValue.Y)); 
+        } 
     }
 }

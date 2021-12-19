@@ -57,6 +57,9 @@ UI
 - - Mining: 
 
 
+Effects System
+- Affliction length is measured in world seconds
+
 
 
 Map Editor:
@@ -68,10 +71,30 @@ Map Editor:
 
 Map
 - (DONE) Make a minimap that displays the surrounding map tiles
-- Primary small towm
-- Far away large city, technically reachable on foot but not likely
-- Easily extensible for much larger overworld expansions later
-- Signs - Probably gonna have to be hardcoded for now
+- (DONE) Map is now "3D", with the ability to make stairs up and down
+- (DONE) Simple fading effects of lower Z-levels to give an impression of height
+- (DONE) Simple slopes that allow fluid movement up and down Z-levels
+- Primary small town
+- - Blacksmith (Sells tools, armor, weapons)
+- - Town Hall (A few clerical things - let player buy a farm or other things)
+- - Adventurer's Guild (Gives kill tasks?)
+- - Apothecary (Sells potions and potion ingredients)
+- - General Store (Sells general goods - seeds, food)
+- - Inn (Allows the player to pay some gold for a room, must pay cost each night)
+- - Cemetary (Graves that act like signs)
+- - Library (Bookcases act like signs?)
+- - Clinic (Pay for healing)
+- - Hot Spring (Restore energy)
+- - Cafe / Bakery
+- - Butcher (Buys meat from the player, sells common meats)
+- - Docks
+- - Clothier
+- (DONE) Lake + Lake Cabin
+- (DONE) Road from Noonbreeze to mountain
+- Mountain tunnel at end of road, blocked off for now. Sign explaining why
+- (DONE) Easily extensible for much larger overworld expansions later
+- (DONE) Signs - Probably gonna have to be hardcoded for now
+- - Sign Secondary goal: load sign text from files
 - Ocean coast to the east, starter town is right on the coast
 - Desert blocking off the north
 - Dense forest blocking the south

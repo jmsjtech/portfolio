@@ -1,8 +1,9 @@
 {
+  "$type": "SadConsole.SadFont, SadConsole",
   "FilePath": "Cheepicus_48x48.png",
-  "GlyphHeight": 48,
+  "GlyphHeight": 12,
   "GlyphPadding": 0,
-  "GlyphWidth": 48,
+  "GlyphWidth": 12,
   "Name": "Cheepicus48",
   "SolidGlyphIndex": 219
 }
