@@ -9,6 +9,7 @@ using System.IO;
 namespace LofiHollow {
     public class World { 
         public Dictionary<int, TileBase> tileLibrary = new Dictionary<int, TileBase>();
+        public Dictionary<int, Item> itemLibrary = new Dictionary<int, Item>();
         public Dictionary<Point3D, Map> maps = new Dictionary<Point3D, Map>();
 
         
@@ -21,17 +22,49 @@ namespace LofiHollow {
         public bool AM = false;
 
         public double TimeLastTicked = 0;
+        public bool DoneInitializing = false;
          
         public Player Player { get; set; }
          
         public World() {
             LoadTileDefinitions();
+            LoadItemDefinitions();
             LoadExistingMaps();
             CreatePlayer(); 
             CreateMap(Player.MapPos);
 
             GameLoop.UIManager.LoadMap(maps[Player.MapPos], true);
             GameLoop.UIManager.EntityRenderer.Add(Player);
+            Player.ZIndex = 10;
+
+            Player.Inventory = new int[9];
+            DoneInitializing = true;
+
+            Player.Inventory[0] = 1;
+        }
+
+        public void LoadItemDefinitions() {
+            string[] lines = File.ReadAllLines("./items.dat");
+
+            foreach (string line in lines) {
+                string[] header = line.Split('|');
+                int ItemID = Int32.Parse(header[0]);
+                string Name = header[1];
+                int Glyph = (char) Int32.Parse(header[2]);
+                
+                int fgR = Int32.Parse(header[3]);
+                int fgG = Int32.Parse(header[4]);
+                int fgB = Int32.Parse(header[5]); 
+
+                Color Foreground = new Color(fgR, fgG, fgB); 
+
+                int ItemCategory = Int32.Parse(header[6]);
+                int EquipSlot = Int32.Parse(header[7]);
+
+                Item item = new Item(Foreground, Color.Black, Glyph, Name, ItemID, ItemCategory, EquipSlot);
+
+                itemLibrary.Add(item.ItemID, item);
+            }
         }
 
         public void LoadTileDefinitions() {
@@ -189,8 +222,7 @@ namespace LofiHollow {
         private void CreatePlayer() {
             Player = new Player(Color.Yellow, Color.Transparent);
             Player.Position = new Point(5, 5);
-            Player.MapPos = new Point3D(0, 1, 0);
-
+            Player.MapPos = new Point3D(0, 1, 0); 
         }
          
         public void TickTime() {

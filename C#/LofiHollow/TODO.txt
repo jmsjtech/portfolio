@@ -1,4 +1,17 @@
-﻿Tiles
+﻿MINIMUM SHIPPABLE REQUIREMENTS
+- Combat and levelling system implemented
+- (DONE) Inventory implemented
+- Stationary NPCs with the dialogue system and shops implemented
+- Save/Load game
+- Main menu
+- Finish the main town
+- Double check all accessible overworld maps to make sure they're filled out properly
+
+
+Dumb Ideas that could be fun/funny:
+- Jump button that moves you up a level and hovers you there for a second)
+- - Build up velocity by running before a jump to move tiles while you're in the air, up to 4 tiles of velocity
+- - Maybe as a reward for a dungeon? You get spring shoes and can then jump, spring shoes required to enter/complete the next dungeon
 
 
 Monsters / Combat
@@ -19,9 +32,12 @@ Monsters / Combat
 
 
 Items
+- (DONE) Item properties: ItemID, Name, Char, Foreground, ItemCategory, EquipSlot, 
+- (DONE) Load item definitions from file
+- (DONE) Pickup and drop items
 - Tools: Watering Can, Pickaxe, Axe, Hoe, Hammer
 - - Hammer: Construct tiles/furniture/anything that exists in the world, what you can make depends on construction level
-- Equippable item slots: Hand, Off-hand, Head, Torso, Legs, Ring1, Ring2, Amulet
+- (DONE) Equippable item slots: Hand, Off-hand, Head, Torso, Legs, Ring1, Ring2, Amulet
 
 
 
@@ -44,12 +60,12 @@ UI
 - - 28 days per month (four 7 day weeks), 10 normal months, then a week-long festival-month at the end of the area outside of the normal time.
 - - 2 Spring months, 3 summer months, 3 fall months, 2 winter months (Maybe let player decide the season lengths by selecting a "climate" they're in?)
 - (DONE) Stats - Energy, Health, Mana?
-- Inventory
-- - Openable menu - upgradable backpack mechanic
-- - Hotbar (visible in sidebar) - Top 9 slots of inventory
-- - While inventory is open, let the user move where in their inventory their items are
-- - Initialize inventory slots to Empty
-- Equipment Menu
+- (DONE) Inventory
+- - (DONE) Openable menu - upgradable backpack mechanic
+- - (DONE) Hotbar (visible in sidebar) - Top 9 slots of inventory
+- - (DONE) While inventory is open, let the user move where in their inventory their items are
+- - (DONE) Initialize inventory slots to Empty
+- (DONE) Equipment Menu
 - Skill Menu
 - - Melee: Accuracy with melee attacks and what tier of weapon you can use
 - - Construction: Build things that get placed in the world (walls, floors, furniture, etc)
@@ -91,14 +107,24 @@ Map
 - - Clothier
 - (DONE) Lake + Lake Cabin
 - (DONE) Road from Noonbreeze to mountain
-- Mountain tunnel at end of road, blocked off for now. Sign explaining why
+- (DONE) Mountain tunnel at end of road, blocked off for now. Sign explaining why
 - (DONE) Easily extensible for much larger overworld expansions later
 - (DONE) Signs - Probably gonna have to be hardcoded for now
 - - Sign Secondary goal: load sign text from files
-- Ocean coast to the east, starter town is right on the coast
-- Desert blocking off the north
-- Dense forest blocking the south
-- Mountain blocking the west?
+- (DONE) Ocean coast to the east, starter town is right on the coast
+- (DONE) Desert blocking off the north
+- (DONE) Dense forest blocking the south
+- (DONE) Mountain blocking the west
+
+
+Bespoke Dungeons?
+- Unique puzzle mechanic for each dungeon
+- Boss fight at the end?
+- Tower dungeon
+- Lake dungeon
+- Tree-top forest
+- Dungeon underneath Noonbreeze
+
 
 
 

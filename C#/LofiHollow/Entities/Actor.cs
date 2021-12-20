@@ -22,6 +22,8 @@ namespace LofiHollow.Entities {
         public int Gold = 0;
 
         public double TimeLastActed = 0;
+        public int[] Inventory = new int[1];
+        public int[] Equipment = new int[8];
 
 
         public Point3D MapPos = new Point3D(0, 0, 0);
@@ -41,6 +43,12 @@ namespace LofiHollow.Entities {
             TimeLastActed = SadConsole.GameHost.Instance.GameRunningTotalTime.TotalMilliseconds;
 
             if (GameLoop.World.maps.TryGetValue(MapPos, out Map map)) {
+                Point newPosition = Position + positionChange;
+                if (newPosition.Y < 0 && GameLoop.World.maps.ContainsKey(MapPos - new Point3D(0, -1, 0)) && GameLoop.World.maps[MapPos - new Point3D(0, -1, 0)].MinimapTile.name == "Desert") {
+                    GameLoop.UIManager.MessageLog.Add("There's dangerous sandstorms that way, best not go there for now.");
+                    return false;
+                }
+
                 if (map.GetTile(Position).Name == "Up Slope" && positionChange == new Point(0, -1)) {
                     if (!map.IsTileWalkable(Position + positionChange)) {
                         // This is an up slope, move up a map instead of up on the current map
@@ -183,6 +191,6 @@ namespace LofiHollow.Entities {
             }
 
             return true;
-        }
+        } 
     }
 }

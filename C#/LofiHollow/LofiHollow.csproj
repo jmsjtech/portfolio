@@ -18,6 +18,9 @@
     <None Update="fonts\player.font">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="items.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="maps\-1,-1.dat">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>

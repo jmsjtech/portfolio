@@ -26,12 +26,13 @@
 25|Shallow Water|false|247|38|102|145|0|0|0|true
 26|Tall Grass|false|42|0|127|0|0|0|0|true
 27|Sign|false|8|155|103|60|0|0|0|false
-28|Tree|false|6|0|127|0|0|0|0|false
-29|Up Stairs|false|60|255|255|255|0|0|0|false
-30|Down Stairs|false|62|255|255|255|0|0|0|false
+28|Tree|true|6|0|127|0|0|0|0|false
+29|Up Stairs|false|62|255|255|255|0|0|0|false
+30|Down Stairs|false|60|255|255|255|0|0|0|false
 31|Empty|true|0|255|255|255|0|0|0|false
 32|Space|false|61|30|144|255|0|0|0|false
 33|Up Slope|false|9|200|200|200|0|0|0|false
 34|Down Slope|false|10|200|200|200|0|0|0|false
-35|Left Slope|false|60|200|200|200|0|0|0|false
-36|Right Slope|false|62|200|200|200|0|0|0|false
+35|Left Slope|false|11|200|200|200|0|0|0|false
+36|Right Slope|false|12|200|200|200|0|0|0|false
+37|Mountain|true|30|100|100|100|0|0|0|false
