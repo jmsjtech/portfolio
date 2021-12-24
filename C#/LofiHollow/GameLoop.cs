@@ -46,14 +46,15 @@ namespace LofiHollow {
 
         private static void Init() {
             rand = new Random();
+            World = new World();
             UIManager = new UIManager();
             UIManager.Init();
 
-            World = new World();
+            World.InitPlayer();
             CommandManager = new CommandManager();
             BattleManager = new BattleManager();
 
-            SadConsole.Game.Instance.MonoGameInstance.Window.Title = "Lofi Hollow"; 
+            SadConsole.Game.Instance.MonoGameInstance.Window.Title = "Lofi Hollow";
         }
     }
 }

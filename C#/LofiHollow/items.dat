@@ -1,2 +1,8 @@
-0|(EMPTY)|32|0|0|0|-1|-1
-1|Sword|47|100|100|100|0|0
+# ID / Name / Glyph / R/G/B / Item Category / Equip Slot / Stackable / Numerical Bonus
+0|(EMPTY)|32|0|0|0|-1|-1|false|0
+1|Rusty Dagger|47|183|65|14|0|0|false|0
+2|Tattered Shirt|18|100|100|100|7|3|false|0
+3|Torn Pants|19|34|67|182|8|4|false|1
+4|Wood|92|155|103|60|-1|-1|true|0
+5|Weak Monster Core|44|0|128|128|-1|-1|true|0
+6|Bone|47|255|255|255|-1|-1|true|0

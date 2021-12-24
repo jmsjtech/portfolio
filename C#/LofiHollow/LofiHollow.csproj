@@ -1050,6 +1050,12 @@
     <None Update="maps\8,9.dat">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
+    <None Update="monsters.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="moves.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="tiles.dat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

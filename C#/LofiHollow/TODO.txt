@@ -14,33 +14,60 @@ Dumb Ideas that could be fun/funny:
 - - Maybe as a reward for a dungeon? You get spring shoes and can then jump, spring shoes required to enter/complete the next dungeon
 
 
+
+Moves (+ Spells)
+- (DONE) Use selected move button
+- (DONE) Menu to change selected move
+- (DONE) Physical moves may have an energy cost associated with using them
+- (DONE) Magical moves have a mana cost associated with using them
+- (DONE) Move Structure: Name, Physical/Magical, Use Cost, Accuracy, Power, Type?
+- (DONE) Load moves from file
+
+
 Monsters / Combat
-- Combat is turn based, you vs one monster
-- Monsters encountered by walking in dangerous areas (ie forests, caves) or in tall grass on otherwise safe maps
-- Stats: Health, Speed, Attack, Defense, M.Atk, M.Def. Level, experience, current/max health
-- - Health: HP growth per level 
-- - Speed: Faster unit goes first in combat (tie goes to player)
-- - Attack: Determines damage with physical attacks
-- - Defense: Physical damage reduction
-- - Magic Attack: Damage with magical attacks
-- - Magic Defense: Magical damage reduction
-- Monster definitions from file
-- - Level 0 base stats (When monster is generated in-game, add random amounts to each based on generated level)
-- - Stat growth per level per stat (On level, add between 0 and max points)
-- - Monster character
-- - Name
+- (DONE) Monsters drop items when they die
+- (DONE) Have a list of moves possible instead of just "attack"
+- (DONE) Equipment should influence stats (at least armor reducing income damage and weapon being factored into damage)
+- Use items in combat
+- (DONE) Missed attacks and critical hits
+- (DONE) Move combat messages to the battle window instead of cluttering the log
+- (DONE) Combat is turn based, you vs one monster
+- (DONE) Monster fights back
+- (DONE) Don't do the monsters turn if it dies from your attack
+- (DONE) Increment player experience after combat and track when they should level up
+- (DONE) On level up, display a stat select screen instead of victory, let player choose a stat to prioritize
+- (DONE) Victory/Flee screen
+- (DONE) Flee chance based on player speed and monster speed
+- (DONE) Monsters encountered by walking in dangerous areas (ie forests, caves) or in tall grass on otherwise safe maps
+- (DONE) Stats: Health, Speed, Attack, Defense, M.Atk, M.Def. Level, experience, current/max health
+- - (DONE) Health: HP growth per level 
+- - (DONE) Speed: Faster unit goes first in combat (tie goes to player)
+- - (DONE) Attack: Determines damage with physical attacks
+- - (DONE) Defense: Physical damage reduction
+- - (DONE) Magic Attack: Damage with magical attacks
+- - (DONE) Magic Defense: Magical damage reduction
+- (DONE) Monster definitions from file
+- - (DONE) Level 0 base stats (When monster is generated in-game, add random amounts to each based on generated level)
+- - (DONE) Stat growth per level per stat (On level, add between 0 and max points)
+- - (DONE) Monster character
+- - (DONE) Name
+- - (DONE) Possible drops and their likelihood
+- - (DONE) List of moves the monster knows and can choose between
 
 
 Items
+- Stack stackable items if you already have them in your inventory
 - (DONE) Item properties: ItemID, Name, Char, Foreground, ItemCategory, EquipSlot, 
 - (DONE) Load item definitions from file
 - (DONE) Pickup and drop items
-- Tools: Watering Can, Pickaxe, Axe, Hoe, Hammer
+- Tools: Watering Can, Pickaxe, Axe, Hoe, Hammer, Fishing Pole
 - - Hammer: Construct tiles/furniture/anything that exists in the world, what you can make depends on construction level
 - (DONE) Equippable item slots: Hand, Off-hand, Head, Torso, Legs, Ring1, Ring2, Amulet
 
 
-
+Map Decorations
+- Town
+- - Bed, Bookshelf?, Actual door sprites
 
 
 NPCs

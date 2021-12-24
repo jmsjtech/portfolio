@@ -8,6 +8,10 @@ namespace LofiHollow.Entities {
         public char Glyph = (char) 32;
         public Color Foreground = Color.Black;
         public int ItemCategory = -1;
+        public int ItemQuantity = 1;
+        public bool IsStackable = false;
+        public int NumericalBonus = 0;
+
         // -1: Debug / Empty
         // 0: Weapon
         // 1: Watering Can
@@ -31,13 +35,30 @@ namespace LofiHollow.Entities {
         // 5: Ring
         // 6: Amulet
 
-        public Item(Color foreground, Color background, int glyph, string name, int id, int itemCat, int equip) : base(foreground, background, glyph) {
+        public Item(Color foreground, Color background, int glyph, string name, int id, int itemCat, int equip, bool stackable, int num) : base(foreground, background, glyph) {
             Name = name;
             Foreground = foreground;
             Glyph = (char) glyph;
             ItemID = id;
             ItemCategory = itemCat;
             EquipSlot = equip;
+            IsStackable = stackable;
+            NumericalBonus = num;
+        }
+
+        public Item(int ID) : base(Color.Black, Color.Black, 32) {
+            if (GameLoop.World != null && GameLoop.World.itemLibrary != null && GameLoop.World.itemLibrary.ContainsKey(ID)) {
+                Item temp = GameLoop.World.itemLibrary[ID];
+
+                Name = temp.Name;
+                Foreground = temp.Foreground;
+                Glyph = temp.Glyph;
+                ItemID = temp.ItemID;
+                ItemCategory = temp.ItemCategory;
+                EquipSlot = temp.EquipSlot;
+                IsStackable = temp.IsStackable;
+                NumericalBonus = temp.NumericalBonus;
+            }
         }
 
 

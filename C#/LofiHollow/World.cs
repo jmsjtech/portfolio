@@ -10,7 +10,9 @@ namespace LofiHollow {
     public class World { 
         public Dictionary<int, TileBase> tileLibrary = new Dictionary<int, TileBase>();
         public Dictionary<int, Item> itemLibrary = new Dictionary<int, Item>();
-        public Dictionary<Point3D, Map> maps = new Dictionary<Point3D, Map>();
+        public Dictionary<int, Monster> monsterLibrary = new Dictionary<int, Monster>();
+        public Dictionary<int, Move> moveLibrary = new Dictionary<int, Move>();
+        public Dictionary<Point3D, Map> maps = new Dictionary<Point3D, Map>(); 
 
         
               
@@ -29,18 +31,15 @@ namespace LofiHollow {
         public World() {
             LoadTileDefinitions();
             LoadItemDefinitions();
-            LoadExistingMaps();
-            CreatePlayer(); 
+            LoadMoveDefinitions();
+            LoadMonsterDefinitions();
+            
+            LoadExistingMaps(); 
+        }
+
+        public void InitPlayer() {
+            CreatePlayer(true);
             CreateMap(Player.MapPos);
-
-            GameLoop.UIManager.LoadMap(maps[Player.MapPos], true);
-            GameLoop.UIManager.EntityRenderer.Add(Player);
-            Player.ZIndex = 10;
-
-            Player.Inventory = new int[9];
-            DoneInitializing = true;
-
-            Player.Inventory[0] = 1;
         }
 
         public void LoadItemDefinitions() {
@@ -48,6 +47,10 @@ namespace LofiHollow {
 
             foreach (string line in lines) {
                 string[] header = line.Split('|');
+                if (header[0][0] == '#') {
+                    continue;
+                }
+
                 int ItemID = Int32.Parse(header[0]);
                 string Name = header[1];
                 int Glyph = (char) Int32.Parse(header[2]);
@@ -60,10 +63,37 @@ namespace LofiHollow {
 
                 int ItemCategory = Int32.Parse(header[6]);
                 int EquipSlot = Int32.Parse(header[7]);
+                bool IsStackable = header[8] == "true" ? true : false;
+                int numericalBonus = Int32.Parse(header[9]);
 
-                Item item = new Item(Foreground, Color.Black, Glyph, Name, ItemID, ItemCategory, EquipSlot);
+                Item item = new Item(Foreground, Color.Black, Glyph, Name, ItemID, ItemCategory, EquipSlot, IsStackable, numericalBonus);
 
                 itemLibrary.Add(item.ItemID, item);
+            }
+        }
+
+        public void LoadMoveDefinitions() {
+            string[] lines = File.ReadAllLines("./moves.dat");
+
+            foreach (string line in lines) {
+                string[] header = line.Split('|');
+                if (header[0][0] == '#') {
+                    continue;
+                }
+
+                int MoveID = Int32.Parse(header[0]);
+                string Name = header[1];
+                string Type = header[2];
+                bool IsPhysical = header[3] == "true" ? true : false;
+
+                int Cost = Int32.Parse(header[4]);
+                int Acc = Int32.Parse(header[5]);
+                int Power = Int32.Parse(header[6]); 
+                 
+
+                Move move = new Move(MoveID, Name, Type, IsPhysical, Cost, Acc, Power);
+
+                moveLibrary.Add(move.MoveID, move);
             }
         }
 
@@ -74,6 +104,11 @@ namespace LofiHollow {
                 TileBase tile = new TileBase(Color.Green, Color.Black, ',');
 
                 string[] header = line.Split('|');
+
+                if (header[0][0] == '#') {
+                    continue;
+                }
+
                 tile.TileID = Int32.Parse(header[0]);
                 tile.Name = header[1];
                 tile.IsBlockingMove = header[2] == "true" ? true : false;
@@ -95,6 +130,62 @@ namespace LofiHollow {
                 tile.SpawnsMonsters = header[10] == "true" ? true : false;
 
                 tileLibrary.Add(tile.TileID, tile);
+            }
+        }
+
+        public void LoadMonsterDefinitions() {
+            string[] lines = File.ReadAllLines("./monsters.dat");
+
+            foreach (string line in lines) {
+                string[] header = line.Split('|');
+                if (header[0][0] == '#') {
+                    continue;
+                }
+
+                int monID = Int32.Parse(header[0]);
+                string name = header[1];
+
+                int vitality = Int32.Parse(header[2]);
+                int speed = Int32.Parse(header[3]);
+                int attack = Int32.Parse(header[4]);
+                int defense = Int32.Parse(header[5]);
+                int magicAtk = Int32.Parse(header[6]);
+                int magicDef = Int32.Parse(header[7]);
+
+                int glyph = Int32.Parse(header[8]);
+
+
+                int fgR = Int32.Parse(header[9]);
+                int fgG = Int32.Parse(header[10]);
+                int fgB = Int32.Parse(header[11]);
+                Color fg = new Color(fgR, fgG, fgB);
+
+                Monster monster = new Monster(fg, glyph, monID, name, vitality, speed, attack, defense, magicAtk, magicDef);
+
+
+                string[] allDrops = header[12].Split(";");
+                for (int i = 0; i < allDrops.Length; i++) {
+                    string[] thisDrop = allDrops[i].Split(",");
+
+                    int dropID = Int32.Parse(thisDrop[0]);
+                    int dropChance = Int32.Parse(thisDrop[1]);
+                    int dropQuantity = Int32.Parse(thisDrop[2]);
+
+                    ItemDrop drop = new ItemDrop(dropID, dropChance, dropQuantity);
+
+                    monster.DropTable.Add(drop);
+                }
+
+                string[] allMoves = header[13].Split(",");
+                for (int i = 0; i < allMoves.Length; i++) {
+                    if (moveLibrary.ContainsKey(Int32.Parse(allMoves[i]))) {
+                        monster.KnownMoves.Add(Int32.Parse(allMoves[i]));
+                    }
+                }
+
+
+
+                monsterLibrary.Add(monster.MonsterID, monster);
             }
         }
 
@@ -219,11 +310,33 @@ namespace LofiHollow {
             }
         } 
 
-        private void CreatePlayer() {
+        private void CreatePlayer(bool freshStart) {
             Player = new Player(Color.Yellow, Color.Transparent);
-            Player.Position = new Point(5, 5);
-            Player.MapPos = new Point3D(0, 1, 0); 
+            if (freshStart) {
+                Player.Position = new Point(25, 25);
+                Player.MapPos = new Point3D(3, 1, 0);
+                Player.Equipment[4] = new Item(3);
+                Player.Equipment[3] = new Item(2);
+                Player.Name = "Player";
+ 
+                GameLoop.UIManager.LoadMap(maps[Player.MapPos], true);
+                GameLoop.UIManager.EntityRenderer.Add(Player);
+                Player.ZIndex = 10;
+
+                DoneInitializing = true;
+
+                Player.Inventory[0] = new Item(1);
+
+                Player.KnownMoves.Add(1);
+                Player.KnownMoves.Add(2);
+                Player.KnownMoves.Add(3);
+
+                Player.RecalculateHP();
+                Player.MaxHP = Player.HitPoints;
+                Player.RecalculateEXP();
+            }
         }
+
          
         public void TickTime() {
             Minutes++;

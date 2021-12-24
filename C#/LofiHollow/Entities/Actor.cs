@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using SadRogue.Primitives; 
 
 namespace LofiHollow.Entities {
@@ -19,11 +20,32 @@ namespace LofiHollow.Entities {
         public int MagicAttack = 10;
         public int MagicDefense = 10;
 
+        public int BaseVitality = 10;
+        public int BaseSpeed = 10;
+        public int BaseAttack = 10;
+        public int BaseDefense = 10;
+        public int BaseMagicAttack = 10;
+        public int BaseMagicDefense = 10;
+
+        public int ExpGranted = 0;
+        public int AverageStrength = 0;
+        public int MaxStrength = 0;
+        public int MinStrength = 0;
+
         public int Gold = 0;
+        public int Level = 1;
+        public int Experience = 0;
+        public int ExpToNext = 100;
+        public string Descriptor = "";
+
+        public int CritChance = 1; // Out of 20
 
         public double TimeLastActed = 0;
-        public int[] Inventory = new int[1];
-        public int[] Equipment = new int[8];
+        public Item[] Inventory = new Item[9];
+        public Item[] Equipment = new Item[8];
+
+        public List<int> KnownMoves = new List<int>();
+        public List<ItemDrop> DropTable = new List<ItemDrop>();
 
 
         public Point3D MapPos = new Point3D(0, 0, 0);
@@ -33,10 +55,41 @@ namespace LofiHollow.Entities {
             Appearance.Background = background;
             Appearance.Glyph = glyph;
 
+            KnownMoves.Add(0);
+
+            for (int i = 0; i < Inventory.Length; i++) {
+                Inventory[i] = new Item(0);
+            }
+
+            for (int i = 0; i < Equipment.Length; i++) {
+                Equipment[i] = new Item(0);
+            }
+        }
+
+        public void RecalculateHP() {
+            MaxHP = (int) Math.Floor(0.01 * (2 * Vitality) * Level) + Level + 10;
+        }
+
+        public void RecalculateEXP() {
+            ExpToNext = (int) (75 * Math.Pow(2, (double) Level / (double) 7));
+        }
+
+        public int StatTotal() {
+            return (Vitality + Speed + Attack + Defense + MagicAttack + MagicDefense);
+        }
+
+        public Move PickKnownMove() {
+            int random = GameLoop.rand.Next(KnownMoves.Count);
+
+            if (GameLoop.World.moveLibrary.ContainsKey(KnownMoves[random])) {
+                return GameLoop.World.moveLibrary[KnownMoves[random]];
+            }
+
+            return new Move(0);
         }
 
         public bool MoveBy(Point positionChange) {
-            if (TimeLastActed + (100 - Speed) > SadConsole.GameHost.Instance.GameRunningTotalTime.TotalMilliseconds) {
+            if (TimeLastActed + (100 - BaseSpeed) > SadConsole.GameHost.Instance.GameRunningTotalTime.TotalMilliseconds) {
                 return false;
             }
 
@@ -106,7 +159,7 @@ namespace LofiHollow.Entities {
                     // do a bump attack
                     Monster monster = map.GetEntityAt<Monster>(Position + positionChange);
                     if (monster != null) {
-                        GameLoop.CommandManager.Attack(this, monster);
+                       // GameLoop.CommandManager.Attack(this, monster);
                         return true;
                     }
 
@@ -122,7 +175,28 @@ namespace LofiHollow.Entities {
                     if (ID == GameLoop.World.Player.ID) {
                         if (map.Tiles[Position.ToIndex(GameLoop.MapWidth)].SpawnsMonsters || map.AmbientMonsters) {
                             if (GameLoop.rand.Next(20) == 0) {
-                                GameLoop.UIManager.MessageLog.Add("Monster encounter!");
+                                int monsterID = GameLoop.BattleManager.GetEncounter(map.MinimapTile.name, map.Tiles[Position.ToIndex(GameLoop.MapWidth)].Name);
+                                if (monsterID != -1) {
+                                    if (GameLoop.World.monsterLibrary.ContainsKey(monsterID)) {
+                                        Monster temp = GameLoop.World.monsterLibrary[monsterID];
+                                        Monster mon = new Monster(temp.MonsterID, temp.Appearance.Foreground, temp.Appearance.Glyph);
+                                        
+                                        for (int i = 0; i < temp.DropTable.Count; i++) {
+                                            mon.DropTable.Add(temp.DropTable[i]);
+                                        }
+
+                                        for (int i = 0; i < temp.KnownMoves.Count; i++) {
+                                            mon.KnownMoves.Add(temp.KnownMoves[i]);
+                                        }
+
+                                        GameLoop.BattleManager.StartBattle(mon);
+                                    } else {
+                                        GameLoop.UIManager.MessageLog.Add("Monster ID wasn't in library.");
+                                    }
+                                } else {
+                                    GameLoop.UIManager.MessageLog.Add("Failed to get an encounter for (" + map.MinimapTile.name + ") [" +  map.Tiles[Position.ToIndex(GameLoop.MapWidth)].Name + "]");
+                                }
+                                
                             }
                         }
                     }

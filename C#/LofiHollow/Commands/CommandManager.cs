@@ -16,25 +16,17 @@ namespace LofiHollow.Commands {
 
         public bool MoveActorTo(Actor actor, Point position, Point3D mapPos) {
             return actor.MoveTo(position, mapPos);
-        }
-
-        public void Attack(Actor attacker, Actor defender) { 
-            StringBuilder attackMessage = new StringBuilder();
-            StringBuilder defenseMessage = new StringBuilder();
-
-            int atkDiceOutcome = Dice.Roll("3d6");
-        }
+        } 
 
         public void DropItem(Actor actor, int slot) {
-            if (actor.Inventory.Length > slot && actor.Inventory[slot] != 0) {
-                if (GameLoop.World.itemLibrary.ContainsKey(actor.Inventory[slot])) {
-                    Item temp = GameLoop.World.itemLibrary[actor.Inventory[slot]];
-                    Item item = new Item(temp.Foreground, Color.Black, temp.Glyph, temp.Name, temp.ItemID, temp.ItemCategory, temp.EquipSlot);
+            if (actor.Inventory.Length > slot && actor.Inventory[slot].ItemID != 0) {
+                if (GameLoop.World.itemLibrary.ContainsKey(actor.Inventory[slot].ItemID)) {
+                    Item item = actor.Inventory[slot]; 
                     item.Position = actor.Position;
 
                     GameLoop.World.maps[actor.MapPos].Entities.Add(item, new GoRogue.Coord(actor.Position.X, actor.Position.Y));
                     GameLoop.UIManager.EntityRenderer.Add(item);
-                    actor.Inventory[slot] = 0;
+                    actor.Inventory[slot] = new Item(0);
                 }
             }
         }
@@ -43,8 +35,18 @@ namespace LofiHollow.Commands {
             Item item = GameLoop.World.maps[actor.MapPos].GetEntityAt<Item>(actor.Position);
             if (item != null) {
                 for (int i = 0; i < actor.Inventory.Length; i++) {
-                    if (actor.Inventory[i] == 0) {
-                        actor.Inventory[i] = item.ItemID;
+                    if (actor.Inventory[i].ItemID == item.ItemID && item.IsStackable) {
+                        actor.Inventory[i].ItemQuantity++;
+
+                        // Remove item from drop table
+
+                        return;
+                    }
+                }
+
+                for (int i = 0; i < actor.Inventory.Length; i++) {
+                    if (actor.Inventory[i].ItemID == 0) {
+                        actor.Inventory[i] = item;
                         GameLoop.World.maps[actor.MapPos].Entities.Remove(item);
                         GameLoop.UIManager.EntityRenderer.Remove(item);
                         break;
@@ -53,27 +55,46 @@ namespace LofiHollow.Commands {
             }
         }
 
-        public void EquipItem(Actor actor, int slot, int id) {
-            if (actor.Inventory.Length > slot && slot >= 0) {
-                if (GameLoop.World.itemLibrary.ContainsKey(id)) {
-                    Item item = GameLoop.World.itemLibrary[id];
+        public void AddItemToInv(Actor actor, Item item) { 
+            if (item != null) {
+                for (int i = 0; i < actor.Inventory.Length; i++) {
+                    if (actor.Inventory[i].ItemID == item.ItemID && item.IsStackable) {
+                        actor.Inventory[i].ItemQuantity++;
 
-                    if (item.EquipSlot >= 0 && item.EquipSlot <= 6) {
-                        int temp = actor.Equipment[item.EquipSlot];
-                        actor.Equipment[item.EquipSlot] = item.ItemID;
-                        actor.Inventory[slot] = temp;
+                        GameLoop.UIManager.dropTable.Remove(item);
+                        return;
+                    }
+                }
+
+                for (int i = 0; i < actor.Inventory.Length; i++) {
+                    if (actor.Inventory[i].ItemID == 0) {
+                        actor.Inventory[i] = item;
+                        GameLoop.UIManager.dropTable.Remove(item);
+                        break;
                     }
                 }
             }
         }
 
+        public void EquipItem(Actor actor, int slot, int id) {
+            if (actor.Inventory.Length > slot && slot >= 0) { 
+                Item item = new Item(id);
+
+                if (item.EquipSlot >= 0 && item.EquipSlot <= 6) {
+                    Item temp = actor.Equipment[item.EquipSlot];
+                    actor.Equipment[item.EquipSlot] = item;
+                    actor.Inventory[slot] = temp;
+                } 
+            }
+        }
+
         public void UnequipItem(Actor actor, int slot) {
             if (slot >= 0 && slot <= 6) {
-                if (actor.Equipment[slot] != 0) {
+                if (actor.Equipment[slot].ItemID != 0) {
                     for (int i = 0; i < actor.Inventory.Length; i++) {
-                        if (actor.Inventory[i] == 0) {
+                        if (actor.Inventory[i].ItemID == 0) {
                             actor.Inventory[i] = actor.Equipment[slot];
-                            actor.Equipment[slot] = 0;
+                            actor.Equipment[slot] = new Item(0);
                         }
                     }
                 }

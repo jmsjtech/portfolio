@@ -8,7 +8,7 @@ namespace LofiHollow.UI {
     public class MessageLogWindow : Window { 
         private static readonly int _maxLines = 100;
          
-        private readonly Queue<string> _lines;
+        private readonly Queue<ColoredString> _lines;
          
         private SadConsole.Console _messageConsole;
         
@@ -17,7 +17,7 @@ namespace LofiHollow.UI {
         private int _windowBorderThickness = 2;
 
         public MessageLogWindow(int width, int height, string title) : base(width, height) {  
-            _lines = new Queue<string>();
+            _lines = new Queue<ColoredString>();
             CanDrag = false;
             Title = title.Align(HorizontalAlignment.Center, Width, (char) 196);
 
@@ -43,15 +43,36 @@ namespace LofiHollow.UI {
             _messageConsole.View = new Rectangle(0, _messageScrollBar.Value + _windowBorderThickness, _messageConsole.Width, _messageConsole.View.Height);
         }
 
-        public void Add(string message) {
+        public void Add(string msg) {
+            ColoredString message = new ColoredString(msg, Color.White, Color.Black);
             _lines.Enqueue(message);
 
             if (_lines.Count > _maxLines) {
                 _lines.Dequeue();
             }
 
-            _messageConsole.Cursor.Position = new Point(1, _lines.Count);
+            _messageConsole.Cursor.Position = new Point(1, _lines.Count - 1);
             _messageConsole.Cursor.Print(message + "\n");
+        }
+
+        public void Add(ColoredString message) {
+            _lines.Enqueue(message);
+
+            if (_lines.Count > _maxLines) {
+                _lines.Dequeue();
+            }
+
+            _messageConsole.Cursor.Position = new Point(1, _lines.Count - 1);
+            _messageConsole.Cursor.Print(message + "\n");
+        }
+
+        public void Clear() {
+            for (int i = 0; i < _lines.Count; i++) {
+                _lines.Dequeue();
+            }
+
+            _messageConsole.Clear();
+            _messageConsole.Cursor.Position = new Point(1, 0);
         }
 
         public override void Update(TimeSpan time) {

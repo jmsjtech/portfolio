@@ -36,3 +36,5 @@
 35|Left Slope|false|11|200|200|200|0|0|0|false
 36|Right Slope|false|12|200|200|200|0|0|0|false
 37|Mountain|true|30|100|100|100|0|0|0|false
+38|NPC|false|64|255|255|255|0|0|0|false
+39|Bed|false|13|171|35|40|0|0|0|false 
