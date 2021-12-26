@@ -20,6 +20,7 @@ namespace LofiHollow {
         public static CommandManager CommandManager;
         public static BattleManager BattleManager;
 
+
         public static Random rand;
 
         public static void Main(string[] args) {
@@ -44,7 +45,7 @@ namespace LofiHollow {
             }
         }
 
-        private static void Init() {
+        private static void Init() { 
             rand = new Random();
             World = new World();
             UIManager = new UIManager();

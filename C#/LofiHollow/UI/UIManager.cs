@@ -7,10 +7,17 @@ using SadConsole.UI;
 using System.Linq;
 using SadConsole.Input;
 using System.Collections.Generic;
+using SadRex;
+using Color = SadRogue.Primitives.Color;
+using System.IO;
 
 namespace LofiHollow.UI {
     public class UIManager : ScreenObject {
         public SadConsole.UI.Colors CustomColors;
+
+        public SadConsole.Console MainMenuConsole;
+        public Window MainMenuWindow;
+        public SadRex.Image MenuImage;
         
         public SadConsole.Console MapConsole;
         public Window MapWindow;
@@ -23,6 +30,8 @@ namespace LofiHollow.UI {
         public Window BattleWindow;
         public SadConsole.Console MoveConsole;
         public Window MoveWindow;
+        public SadConsole.Console InvConsole;
+        public Window InvWindow;
 
         public SadConsole.Console SignConsole;
         public Window SignWindow;
@@ -39,6 +48,7 @@ namespace LofiHollow.UI {
         public bool battleDone = false;
         public string moveMenu = "None";
         public string signText = "";
+        public bool AlreadyUsedItem = false;
 
         public List<Item> dropTable = new List<Item>();
 
@@ -47,6 +57,7 @@ namespace LofiHollow.UI {
 
         public int hotbarSelect = 0;
         public int moveIndex = 0;
+        public int invMoveIndex = -1;
 
         public int vitChange = 0;
         public int spdChange = 0;
@@ -66,35 +77,43 @@ namespace LofiHollow.UI {
             Parent = GameHost.Instance.Screen;
         }
 
-        public override void Update(TimeSpan timeElapsed) { 
-            if (GameLoop.World != null && GameLoop.World.DoneInitializing)
-                RenderSidebar();
+        public override void Update(TimeSpan timeElapsed) {
+            if (selectedMenu == "MainMenu") {
+                RenderMainMenu();
+                CaptureMainMenuClicks();
 
-            if (selectedMenu == "Sign") {
-                RenderSign();
-            }
-
-            if (selectedMenu == "Inventory") {
-                RenderInventory();
-            }
-
-            if (selectedMenu == "Battle" || selectedMenu == "TurnWait" || selectedMenu == "BattleDone") {
-                RenderBattle();
-
-                if (MoveWindow.IsVisible) {
-                    RenderMoves();
-                    CaptureMoveClicks();
-                } else {
-                    CaptureBattleClicks();
-                } 
             } else {
-                CheckKeyboard();
+                if (GameLoop.World != null && GameLoop.World.DoneInitializing)
+                    RenderSidebar();
+
+                if (selectedMenu == "Sign") {
+                    RenderSign();
+                }
+
+                if (selectedMenu == "Inventory") {
+                    RenderInventory();
+                }
+
+                if (selectedMenu == "Battle" || selectedMenu == "TurnWait" || selectedMenu == "BattleDone") {
+                    RenderBattle();
+
+                    if (MoveWindow.IsVisible) {
+                        RenderMoves();
+                        CaptureMoveClicks();
+                    } else if (InvWindow.IsVisible) {
+                        RenderBattleInv();
+                        CaptureInvClicks();
+                    } else {
+                        CaptureBattleClicks();
+                    }
+                } else {
+                    CheckKeyboard();
+                }
+
+                RenderOverlays();
+
+                CheckFall();
             }
-
-            RenderOverlays();
-
-            CheckFall();
-
             base.Update(timeElapsed);
         } 
 
@@ -107,11 +126,14 @@ namespace LofiHollow.UI {
             CreateInventoryWindow(GameLoop.GameWidth / 2, GameLoop.GameHeight / 2, "");
             CreateSignWindow((GameLoop.MapWidth / 2) - 1, GameLoop.MapHeight / 2, "");
 
+            CreateMainMenu();
+
             MessageLog = new MessageLogWindow(72, 18, "Message Log");
             Children.Add(MessageLog);
             MessageLog.Show();
             MessageLog.Position = new Point(0, 42);
-            MessageLog.Add("Testing 123");
+            
+            MessageLog.IsVisible = false;
 
             EntityRenderer = new SadConsole.Entities.Renderer();
 
@@ -119,8 +141,97 @@ namespace LofiHollow.UI {
 
            // CreateMapWindow(72, 42, "Game Map");
             UseMouse = true;
-
+            selectedMenu = "MainMenu";
         }
+
+
+
+        private void RenderMainMenu() {
+
+            int leftEdge = 32;
+            int topEdge = 10;
+
+            // L
+            for (int i = 0; i < 5; i++) {
+                MainMenuConsole.SetDecorator(leftEdge + 1, topEdge + i, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            }
+            // MainMenuConsole.SetDecorator(28, 7, 3, new CellDecorator(Color.MediumPurple, 240, Mirror.None)); 
+
+            
+
+            // O
+            MainMenuConsole.SetDecorator(leftEdge + 3, topEdge + 2, 3, new CellDecorator(Color.MediumPurple, 240, Mirror.None)); 
+            MainMenuConsole.SetDecorator(leftEdge + 3, topEdge + 3, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 5, topEdge + 3, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 3, topEdge + 4, 3, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+
+            // F
+            MainMenuConsole.SetDecorator(leftEdge + 8, topEdge + 1, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 7, topEdge + 2, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 7, topEdge + 3, 2, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 7, topEdge + 4, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+
+            // I
+            MainMenuConsole.SetDecorator(leftEdge + 10, topEdge + 1, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 10, topEdge + 3, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 10, topEdge + 4, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+
+
+
+            // H
+            MainMenuConsole.SetDecorator(leftEdge + 14, topEdge, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 14, topEdge + 1, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 14, topEdge + 2, 2, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 14, topEdge + 3, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 14, topEdge + 4, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 16, topEdge + 3, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 16, topEdge + 4, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+
+            // O
+            MainMenuConsole.SetDecorator(leftEdge + 18, topEdge + 2, 3, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 18, topEdge + 3, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 20, topEdge + 3, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 18, topEdge + 4, 3, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+
+            // LL
+            for (int i = 0; i < 5; i++) {
+                MainMenuConsole.SetDecorator(leftEdge + 22, topEdge + i, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+                MainMenuConsole.SetDecorator(leftEdge + 24, topEdge + i, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            }
+
+            // O
+            MainMenuConsole.SetDecorator(leftEdge + 26, topEdge + 2, 3, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 26, topEdge + 3, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 28, topEdge + 3, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 26, topEdge + 4, 3, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+
+            // W
+            MainMenuConsole.SetDecorator(leftEdge + 30, topEdge + 2, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 34, topEdge + 2, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 30, topEdge + 3, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 32, topEdge + 3, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 34, topEdge + 3, 1, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 30, topEdge + 4, 2, new CellDecorator(Color.MediumPurple, 240, Mirror.None));
+            MainMenuConsole.SetDecorator(leftEdge + 33, topEdge + 4, 2, new CellDecorator(Color.MediumPurple, 240, Mirror.None)); 
+
+
+
+
+            MainMenuConsole.DrawBox(new Rectangle(40, 20, 20, 10), ShapeParameters.CreateStyledBoxFilled(ICellSurface.ConnectedLineThin, new ColoredGlyph(Color.White, Color.Black), new ColoredGlyph(Color.Black, Color.Black)));
+        }
+
+        private void CaptureMainMenuClicks() {
+            if (GameHost.Instance.Mouse.LeftClicked) {
+                selectedMenu = "None";
+                MainMenuWindow.IsVisible = false;
+                MapWindow.IsVisible = true;
+                MessageLog.IsVisible = true;
+                SidebarWindow.IsVisible = true;
+            }
+        }
+
+
+
 
         private void CheckKeyboard() {
             if (selectedMenu != "Sign" && selectedMenu != "Targeting") { 
@@ -186,16 +297,34 @@ namespace LofiHollow.UI {
                                 int x = mousePos.X - 10;
                                 if (GameHost.Instance.Mouse.LeftClicked) {
                                     if (x < 35) {
-                                        if (moveIndex == -1)
-                                            moveIndex = slot;
+                                        if (invMoveIndex == -1)
+                                            invMoveIndex = slot;
                                         else {
-                                            Item tempID = GameLoop.World.Player.Inventory[moveIndex];
-                                            GameLoop.World.Player.Inventory[moveIndex] = GameLoop.World.Player.Inventory[slot];
+                                            Item tempID = GameLoop.World.Player.Inventory[invMoveIndex];
+                                            GameLoop.World.Player.Inventory[invMoveIndex] = GameLoop.World.Player.Inventory[slot];
                                             GameLoop.World.Player.Inventory[slot] = tempID;
-                                            moveIndex = -1;
+                                            invMoveIndex = -1;
                                         }
                                     } else if (x > 35 && x < 43) {
-                                        GameLoop.CommandManager.EquipItem(GameLoop.World.Player, slot, GameLoop.World.Player.Inventory[slot].ItemID);
+                                        Item item = GameLoop.World.Player.Inventory[slot];
+                                        if (GameLoop.World.Player.Inventory[slot].EquipSlot != -1) {
+                                            GameLoop.CommandManager.EquipItem(GameLoop.World.Player, slot, GameLoop.World.Player.Inventory[slot]);
+                                        } else if (item.ItemCategory == 11) {
+                                            string[] itemResult = GameLoop.CommandManager.UseItem(GameLoop.World.Player, item).Split("|"); ;
+
+                                            if (itemResult[0] != "f") {
+                                                if (item.IsStackable && item.ItemQuantity > 1) {
+                                                    item.ItemQuantity -= 1;
+                                                } else {
+                                                    GameLoop.World.Player.Inventory[slot] = new Item(0);
+                                                } 
+                                                MessageLog.Add(new ColoredString("Used the " + item.Name + ".", Color.AliceBlue, Color.Black));
+                                                MessageLog.Add(new ColoredString(itemResult[1], Color.AliceBlue, Color.Black)); 
+                                            } else {
+                                                MessageLog.Add(new ColoredString("Tried to use the " + item.Name + ".", Color.AliceBlue, Color.Black));
+                                                MessageLog.Add(new ColoredString(itemResult[1], Color.AliceBlue, Color.Black)); 
+                                            }
+                                        }
                                     } else if (x > 43) {
                                         if (slot < GameLoop.World.Player.Inventory.Length && slot >= 0) {
                                             GameLoop.CommandManager.DropItem(GameLoop.World.Player, slot);
@@ -410,6 +539,8 @@ namespace LofiHollow.UI {
         }
 
         private void RenderInventory() {
+            Point mousePos = new MouseScreenObjectState(InventoryConsole, GameHost.Instance.Mouse).CellPosition;
+
             InventoryConsole.Clear();
             InventoryConsole.Print((InventoryConsole.Width / 2) - 4, 0, "BACKPACK");
 
@@ -419,11 +550,26 @@ namespace LofiHollow.UI {
                      
                     InventoryConsole.Print(0, i + 1, item.AsColoredGlyph());
                     if (!item.IsStackable || (item.IsStackable && item.ItemQuantity == 1))
-                        InventoryConsole.Print(2, i + 1, new ColoredString(item.Name, moveIndex == i ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.Black));
+                        InventoryConsole.Print(2, i + 1, new ColoredString(item.Name, invMoveIndex == i ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.Black));
                     else
-                        InventoryConsole.Print(2, i + 1, new ColoredString(("(" + item.ItemQuantity + ") " + item.Name), i == hotbarSelect ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.TransparentBlack));
+                        InventoryConsole.Print(2, i + 1, new ColoredString(("(" + item.ItemQuantity + ") " + item.Name), invMoveIndex == i ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.Black));
                     
-                    InventoryConsole.Print(28, i + 1, new ColoredString("MOVE | EQUIP | DROP", item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.Black));
+                    ColoredString Options = new ColoredString("MOVE", (mousePos.Y == i + 1 && mousePos.X < 33) ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.Black);
+
+                    Options += new ColoredString(" | ", Color.White, Color.Black);
+
+                    if (item.EquipSlot != -1) {
+                        Options += new ColoredString("EQUIP", (mousePos.Y == i + 1 && mousePos.X > 33 && mousePos.X < 41) ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.Black);
+                    } else if (item.ItemCategory == 11) {
+                        Options += new ColoredString(" USE ", (mousePos.Y == i + 1 && mousePos.X > 33 && mousePos.X < 41) ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.Black);
+                    } else {
+                        Options += new ColoredString("     ", item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.Black);
+                    }
+
+                    Options += new ColoredString(" | ", Color.White, Color.Black);
+                    Options += new ColoredString("DROP", (mousePos.Y == i + 1 && mousePos.X > 41) ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.Black);
+
+                    InventoryConsole.Print(28, i + 1, Options);
                 } else {
                     InventoryConsole.Print(2, i + 1, new ColoredString("[LOCKED]", Color.DarkSlateGray, Color.Black));
                 }
@@ -452,6 +598,7 @@ namespace LofiHollow.UI {
         private void RenderBattle() { 
             BattleConsole.Clear();
             BattleConsole.IsFocused = true;
+            Point mousePos = new MouseScreenObjectState(BattleConsole, GameHost.Instance.Mouse).CellPosition;
 
             if ((selectedMenu == "Battle" || selectedMenu == "TurnWait")) {
                 string enemyTitle = "";
@@ -478,17 +625,17 @@ namespace LofiHollow.UI {
                 BattleConsole.Print(BattleConsole.Width - 11, 29, GameLoop.BattleManager.Enemy.Appearance);
 
                 BattleConsole.DrawLine(new Point(0, 31), new Point(BattleConsole.Width - 1, 31), (char)196, Color.Orange, Color.Black);
-                BattleConsole.Print(1, 32, GameLoop.World.moveLibrary[moveIndex].Name.ToUpper().Align(HorizontalAlignment.Center, 16));
-                BattleConsole.Print(1, 33, new ColoredString("CHANGE".Align(HorizontalAlignment.Center, 16), Color.Gray, Color.Black));
-                BattleConsole.Print(1, 34, "ITEM".Align(HorizontalAlignment.Center, 16));
+                BattleConsole.Print(1, 32, new ColoredString(GameLoop.World.moveLibrary[moveIndex].Name.ToUpper().Align(HorizontalAlignment.Center, 16), mousePos.Y == 32 ? Color.Yellow : Color.White, Color.Black) );
+                BattleConsole.Print(1, 33, new ColoredString("CHANGE".Align(HorizontalAlignment.Center, 16), mousePos.Y == 33 ? Color.Yellow : Color.White, Color.Black));
+                BattleConsole.Print(1, 34, new ColoredString("ITEM".Align(HorizontalAlignment.Center, 16), mousePos.Y == 34 ? Color.Yellow : Color.White, Color.Black));
                 //BattleConsole.Print(BattleConsole.Width - 7, BattleConsole.Height - 4, (GameLoop.BattleManager.fleePercent + "%").Align(HorizontalAlignment.Right, 5));
-                BattleConsole.Print(1, BattleConsole.Height - 1, "FLEE".Align(HorizontalAlignment.Center, 16));
+                BattleConsole.Print(1, BattleConsole.Height - 1, new ColoredString("FLEE".Align(HorizontalAlignment.Center, 16), mousePos.Y == BattleConsole.Height-1 ? Color.Yellow : Color.White, Color.Black));
 
 
                 BattleConsole.DrawLine(new Point(18, 31), new Point(18, BattleConsole.Height - 1), (char)179, Color.Orange, Color.Black);
 
                 if (selectedMenu == "TurnWait")
-                    BattleLog.Print((BattleLog.Width / 2) - 3, 4, "[OKAY]");
+                    BattleLog.Print(0, 4, "[CLICK ANYWHERE TO CONTINUE]".Align(HorizontalAlignment.Center, BattleLog.Width));
             } else if (selectedMenu == "BattleDone" && battleResult == "Victory") {
                 BattleConsole.Print(0, 8, "Victory!".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
                 BattleConsole.Print(0, 10, ("You got " + GameLoop.BattleManager.Enemy.ExpGranted + " exp.").Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
@@ -497,12 +644,12 @@ namespace LofiHollow.UI {
                 BattleConsole.Print(0, 8, "Victory!".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
                 BattleConsole.Print(0, 10, ("You got " + GameLoop.BattleManager.Enemy.ExpGranted + " exp and levelled up!").Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
                 BattleConsole.Print(0, 12, "Pick a stat to recieve a boost:".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
-                BattleConsole.Print(0, 16, "Vitality".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
-                BattleConsole.Print(0, 18, "Speed".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
-                BattleConsole.Print(0, 20, "Attack".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
-                BattleConsole.Print(0, 22, "Defense".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
-                BattleConsole.Print(0, 24, "Magic Attack".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
-                BattleConsole.Print(0, 26, "Magic Defense".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
+                BattleConsole.Print(0, 16, new ColoredString("Vitality".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 16 ? Color.Yellow : Color.White, Color.Black));
+                BattleConsole.Print(0, 18, new ColoredString("Speed".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 18 ? Color.Yellow : Color.White, Color.Black));
+                BattleConsole.Print(0, 20, new ColoredString("Attack".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 20 ? Color.Yellow : Color.White, Color.Black));
+                BattleConsole.Print(0, 22, new ColoredString("Defense".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 22 ? Color.Yellow : Color.White, Color.Black));
+                BattleConsole.Print(0, 24, new ColoredString("Magic Attack".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 24 ? Color.Yellow : Color.White, Color.Black));
+                BattleConsole.Print(0, 26, new ColoredString("Magic Defense".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 26 ? Color.Yellow : Color.White, Color.Black));
             } else if (selectedMenu == "BattleDone" && battleResult == "LevelDone") {
                 BattleConsole.Print(0, 8, "Victory!".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
                 BattleConsole.Print(0, 10, ("You got " + GameLoop.BattleManager.Enemy.ExpGranted + " exp and levelled up!").Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
@@ -513,16 +660,16 @@ namespace LofiHollow.UI {
                 BattleConsole.Print(0, 19, ("Defense  +" + defChange).Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
                 BattleConsole.Print(0, 20, ("Magic Attack  +" + matkChange).Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
                 BattleConsole.Print(0, 21, ("Magic Defense  +" + mdefChange).Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
-                BattleConsole.Print(0, 25, "[Close]".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
+                BattleConsole.Print(0, 25, new ColoredString("[Close]".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 25 ? Color.Yellow : Color.White, Color.Black));
             } else if (selectedMenu == "BattleDone" && battleResult == "Drops") {
                 BattleConsole.Print(0, 7, ("The " + GameLoop.BattleManager.Enemy.Name + " dropped items!").Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
                 BattleConsole.Print(0, 8, "(click to take)".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
                 for (int i = 0; i < dropTable.Count; i++) {
                     Item item = dropTable[i];
                     if (!item.IsStackable || (item.IsStackable && item.ItemQuantity == 1))
-                        BattleConsole.Print(0, 10 + (i), item.Name.Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
+                        BattleConsole.Print(0, 10 + (i), new ColoredString(item.Name.Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 10 + i ? Color.Yellow : Color.White, Color.Black));
                     else
-                        BattleConsole.Print(0, 10 + (i), ("(" + item.ItemQuantity + ") " + item.Name).Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
+                        BattleConsole.Print(0, 10 + (i), new ColoredString(("(" + item.ItemQuantity + ") " + item.Name).Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 10 + i ? Color.Yellow : Color.White, Color.Black));
                 }
 
                 if (dropTable.Count == 0) {
@@ -533,14 +680,16 @@ namespace LofiHollow.UI {
                     dropTable.Clear();
                 }
 
-                BattleConsole.Print(0, 30, "[DONE]".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
+                BattleConsole.Print(0, 30, new ColoredString("[DONE]".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 30 ? Color.Yellow : Color.White, Color.Black));
             } else if (selectedMenu == "BattleDone") {
                 BattleConsole.Print(0, 10, "You escaped!".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
-                BattleConsole.Print(0, 25, "[Close]".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
+                BattleConsole.Print(0, 25, new ColoredString("[Close]".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 25 ? Color.Yellow : Color.White, Color.Black));
             }
         }
 
         private void RenderMoves() {
+            Point mousePos = new MouseScreenObjectState(MoveConsole, GameHost.Instance.Mouse).CellPosition;
+
             MoveConsole.Clear();
             MoveConsole.Print(0, 0, "        NAME        | PHY | COST | ACC | POW ");
             MoveConsole.DrawLine(new Point(0, 1), new Point(MoveConsole.Width - 1, 1), (char)196, Color.Orange, Color.Black);
@@ -555,7 +704,85 @@ namespace LofiHollow.UI {
 
                 string full = name + "|" + phys + "|" + cost + "|" + acc + "|" + pow;
 
-                MoveConsole.Print(0, i + 2, full);
+                MoveConsole.Print(0, i + 2, new ColoredString(full, mousePos.Y == i+2 ? Color.Yellow : Color.White, Color.Black));
+            }
+        }
+
+        private void RenderBattleInv() {
+            Point mousePos = new MouseScreenObjectState(InvConsole, GameHost.Instance.Mouse).CellPosition;
+            InvConsole.Clear();
+            InvConsole.Print(0, 0, "        NAME        | QTY |" + ("DESC").Align(HorizontalAlignment.Center, 36));
+            InvConsole.DrawLine(new Point(0, 1), new Point(InvConsole.Width - 1, 1), (char)196, Color.Orange, Color.Black);
+
+            for (int i = 0; i < GameLoop.World.Player.Inventory.Length; i++) {
+                Item item = GameLoop.World.Player.Inventory[i];
+                string name = item.Name.Align(HorizontalAlignment.Left, 20);
+                string qty = item.ItemQuantity.ToString().Align(HorizontalAlignment.Center, 5);
+                string desc = item.Description.Align(HorizontalAlignment.Center, 36);
+
+                string full = name + "|" + qty + "|" + desc;
+
+                InvConsole.Print(0, i + 2, new ColoredString(full, mousePos.Y == i + 2 ? Color.Yellow : item.ItemCategory == 11 ? Color.White : item.EquipSlot != -1 ? Color.White : Color.DarkSlateGray, Color.Black));
+            }
+
+            InvConsole.Print(0, InvConsole.Height - 1, new ColoredString("[CLOSE]".Align(HorizontalAlignment.Center, InvConsole.Width), mousePos.Y == InvConsole.Height - 1 ? Color.Yellow : Color.White, Color.Black));
+        }
+
+        private void CaptureInvClicks() {
+            Point mousePos = new MouseScreenObjectState(InvConsole, GameHost.Instance.Mouse).CellPosition - new Point(0, 2);
+
+            if (GameHost.Instance.Mouse.LeftClicked) {
+                if (mousePos.Y == InvConsole.Height - 3) {
+                    InvWindow.IsVisible = false;
+                } else { 
+                    if (mousePos.Y >= 0 && mousePos.Y < GameLoop.World.Player.Inventory.Length) {
+                        Item item = GameLoop.World.Player.Inventory[mousePos.Y];
+
+                        if (!AlreadyUsedItem) {
+                            if (item.ItemCategory == 11) {
+                                string[] itemResult = GameLoop.CommandManager.UseItem(GameLoop.World.Player, item).Split("|");
+
+                                if (itemResult[0] != "f") {
+                                    if (item.IsStackable && item.ItemQuantity > 1) {
+                                        item.ItemQuantity -= 1;
+                                    } else {
+                                        GameLoop.World.Player.Inventory[mousePos.Y] = new Item(0);
+                                    }
+
+                                    AlreadyUsedItem = true;
+                                    selectedMenu = "TurnWait";
+                                    BattleLog.Clear();
+                                    BattleLog.Print(0, 1, ("Used the " + item.Name + ".").Align(HorizontalAlignment.Center, BattleLog.Width));
+                                    BattleLog.Print(0, 2, itemResult[1].Align(HorizontalAlignment.Center, BattleLog.Width));
+                                    InvWindow.IsVisible = false;
+                                } else { 
+                                    selectedMenu = "TurnWait";
+                                    BattleLog.Clear();
+                                    BattleLog.Print(0, 1, ("Tried to use the " + item.Name + ".").Align(HorizontalAlignment.Center, BattleLog.Width));
+                                    BattleLog.Print(0, 2, itemResult[1].Align(HorizontalAlignment.Center, BattleLog.Width));
+                                    InvWindow.IsVisible = false;
+                                }
+                            } else if (item.EquipSlot != -1) {
+                                GameLoop.CommandManager.EquipItem(GameLoop.World.Player, mousePos.Y, item);
+                                AlreadyUsedItem = true;
+                                selectedMenu = "TurnWait";
+                                BattleLog.Clear();
+                                BattleLog.Print(0, 1, ("Equipped the " + item.Name + ".").Align(HorizontalAlignment.Center, BattleLog.Width));
+                                InvWindow.IsVisible = false;
+                            } else {
+                                selectedMenu = "TurnWait";
+                                BattleLog.Clear();
+                                BattleLog.Print(0, 1, "That item can't be used in combat.".Align(HorizontalAlignment.Center, BattleLog.Width));
+                                InvWindow.IsVisible = false;
+                            }
+                        } else {
+                            selectedMenu = "TurnWait";
+                            BattleLog.Clear();
+                            BattleLog.Print(0, 1, "You already used an item this turn!".Align(HorizontalAlignment.Center, BattleLog.Width));
+                            InvWindow.IsVisible = false;
+                        }
+                    }
+                } 
             }
         }
 
@@ -593,7 +820,7 @@ namespace LofiHollow.UI {
                     }
 
                     if (mousePos.Y == 34) {
-                        MessageLog.Add("Tried to open inventory");
+                        InvWindow.IsVisible = true;
                     } 
                 } 
             } else if (selectedMenu == "TurnWait") {
@@ -749,6 +976,7 @@ namespace LofiHollow.UI {
 
 
         private void RenderSidebar() {
+            Point mousePos = new MouseScreenObjectState(SidebarConsole, GameHost.Instance.Mouse).CellPosition;
             SidebarConsole.Clear();
 
             string timeHour = GameLoop.World.Hours.ToString();
@@ -873,7 +1101,7 @@ namespace LofiHollow.UI {
 
                         SidebarConsole.Print(0, y + i, "|");
                         SidebarConsole.Print(1, y + i, item.AsColoredGlyph());
-                        SidebarConsole.Print(3, y + i, new ColoredString(item.Name, item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.TransparentBlack));
+                        SidebarConsole.Print(3, y + i, new ColoredString(item.Name, mousePos.Y == y + i ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.TransparentBlack));
                     }
                 }
             }  
@@ -902,6 +1130,7 @@ namespace LofiHollow.UI {
             MapConsole.SadComponents.Add(EntityRenderer);
             
             MapWindow.Show();
+            MapWindow.IsVisible = false;
         }
 
         public void CreateSidebarWindow(int width, int height, string title) {
@@ -920,6 +1149,8 @@ namespace LofiHollow.UI {
             Children.Add(SidebarWindow);
 
             SidebarWindow.Show();
+
+            SidebarWindow.IsVisible = false;
         }
 
         public void CreateBattleWindow(int width, int height, string title) {
@@ -958,6 +1189,19 @@ namespace LofiHollow.UI {
             BattleWindow.Children.Add(MoveWindow);
             MoveWindow.Show();
             MoveWindow.IsVisible = false;
+
+            InvWindow = new Window(67, 32);
+            InvWindow.CanDrag = false;
+            InvWindow.Position = new Point((BattleWindow.Width - InvWindow.Width) / 2, (BattleWindow.Height - InvWindow.Height) / 2);
+
+            InvConsole = new SadConsole.Console(65, 30);
+            InvConsole.Position = new Point(1, 1);
+            InvWindow.Title = "".Align(HorizontalAlignment.Center, 20, (char)196);
+
+            InvWindow.Children.Add(InvConsole);
+            BattleWindow.Children.Add(InvWindow);
+            InvWindow.Show();
+            InvWindow.IsVisible = false;
         }
 
         public void CreateInventoryWindow(int width, int height, string title) {
@@ -978,6 +1222,39 @@ namespace LofiHollow.UI {
 
             InventoryWindow.Show();
             InventoryWindow.IsVisible = false;
+        }
+
+        public void CreateMainMenu() {
+            MainMenuWindow = new Window(GameLoop.GameWidth, GameLoop.GameHeight);
+            MainMenuWindow.CanDrag = false;
+            MainMenuWindow.Position = new Point(0, 0);
+
+            int menuConWidth = GameLoop.GameWidth;
+            int menuConHeight = GameLoop.GameHeight;
+
+            Stream menuXP = new FileStream("./data/trees.xp", FileMode.Open);
+            MenuImage = SadRex.Image.Load(menuXP);
+
+            ColoredGlyph[] cells = new ColoredGlyph[100 * 60];
+
+            for (int i = 0; i < MenuImage.Layers[0].Cells.Count; i++) {
+                var cell = MenuImage.Layers[0].Cells[i];
+                Color convertedFG = new Color(cell.Foreground.R, cell.Foreground.G, cell.Foreground.B);
+                Color convertedBG = new Color(cell.Background.R, cell.Background.G, cell.Background.B);
+
+                cells[i] = new ColoredGlyph(Color.Transparent, convertedFG, MenuImage.Layers[0].Cells[i].Character);
+            }
+
+            MainMenuConsole = new SadConsole.Console(menuConWidth, menuConHeight, cells);
+            MainMenuConsole.Position = new Point(0, 0);
+            MainMenuWindow.Title = "".Align(HorizontalAlignment.Center, menuConWidth, (char)196);
+
+
+            MainMenuWindow.Children.Add(MainMenuConsole);
+            Children.Add(MainMenuWindow);
+
+            MainMenuWindow.Show();
+            MainMenuWindow.IsVisible = true;
         }
 
         public void CreateSignWindow(int width, int height, string title) {

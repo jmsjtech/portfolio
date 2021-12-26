@@ -189,7 +189,9 @@ namespace LofiHollow.Entities {
                                             mon.KnownMoves.Add(temp.KnownMoves[i]);
                                         }
 
-                                        GameLoop.BattleManager.StartBattle(mon);
+                                        int NormalizedMapPos = Math.Abs(MapPos.X) + Math.Abs(MapPos.Y) + Math.Abs(MapPos.Z);
+
+                                        GameLoop.BattleManager.StartBattle(mon, NormalizedMapPos - 2);
                                     } else {
                                         GameLoop.UIManager.MessageLog.Add("Monster ID wasn't in library.");
                                     }

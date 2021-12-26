@@ -22,10 +22,22 @@ namespace LofiHollow {
             return -1;
         }
 
-        public void StartBattle(Monster monster) {
+        public void StartBattle(Monster monster, int level) {
             Enemy = monster;
 
-            ApplyLevels(Enemy, 1);
+            int levelMod = 0;
+
+            if (level > 10) {
+                levelMod = GameLoop.rand.Next((level / 10) * 2) - (level / 10);
+            } else {
+                levelMod = GameLoop.rand.Next(3) - 1;
+            }
+
+            int moddedLevel = level + levelMod;
+            if (moddedLevel < 1)
+                moddedLevel = 1;
+
+            ApplyLevels(Enemy, moddedLevel);
 
             GameLoop.UIManager.BattleWindow.Title = monster.Name.ToUpper();
             GameLoop.UIManager.BattleWindow.IsVisible = true;
@@ -53,7 +65,7 @@ namespace LofiHollow {
                     GameLoop.World.Player.RecalculateEXP();
                     GameLoop.UIManager.battleResult = "Level";
                 }
-
+                GameLoop.UIManager.BattleLog.Print(0, 1, Enemy.Name + " died!");
             } else {
                 GameLoop.UIManager.battleResult = "Fled";
             }
@@ -107,8 +119,6 @@ namespace LofiHollow {
                     // Then monster
                     if (Enemy.HitPoints > 0)
                         CalculateDamage(Enemy, GameLoop.World.Player, Enemy.PickKnownMove(), 1);
-                    else
-                        GameLoop.UIManager.BattleLog.Print(0, 1, Enemy.Name + " died!");
                 }
             } else {
                 // Monster goes first
@@ -130,6 +140,7 @@ namespace LofiHollow {
             }
 
             GameLoop.UIManager.selectedMenu = "TurnWait";
+            GameLoop.UIManager.AlreadyUsedItem = false;
         }
 
         public bool TryEscape() { 

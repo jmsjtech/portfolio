@@ -8,9 +8,10 @@ namespace LofiHollow.Entities {
         public char Glyph = (char) 32;
         public Color Foreground = Color.Black;
         public int ItemCategory = -1;
-        public int ItemQuantity = 1;
+        public int ItemQuantity = 0;
         public bool IsStackable = false;
         public int NumericalBonus = 0;
+        public string Description = "";
 
         // -1: Debug / Empty
         // 0: Weapon
@@ -24,6 +25,7 @@ namespace LofiHollow.Entities {
         // 8: Leggings
         // 9: Ring
         // 10: Amulet
+        // 11: Consumable
         
         public int EquipSlot = -1;
         // -1: Not equippable
@@ -35,7 +37,7 @@ namespace LofiHollow.Entities {
         // 5: Ring
         // 6: Amulet
 
-        public Item(Color foreground, Color background, int glyph, string name, int id, int itemCat, int equip, bool stackable, int num) : base(foreground, background, glyph) {
+        public Item(Color foreground, Color background, int glyph, string name, int id, int itemCat, int equip, bool stackable, int num, string desc) : base(foreground, background, glyph) {
             Name = name;
             Foreground = foreground;
             Glyph = (char) glyph;
@@ -44,6 +46,16 @@ namespace LofiHollow.Entities {
             EquipSlot = equip;
             IsStackable = stackable;
             NumericalBonus = num;
+            Description = desc;
+
+            Appearance.Foreground = Foreground;
+            Appearance.Glyph = Glyph;
+            Appearance.Background = Color.Transparent;
+
+            if (id == 0)
+                ItemQuantity = 0;
+            else
+                ItemQuantity = 1;
         }
 
         public Item(int ID) : base(Color.Black, Color.Black, 32) {
@@ -53,11 +65,22 @@ namespace LofiHollow.Entities {
                 Name = temp.Name;
                 Foreground = temp.Foreground;
                 Glyph = temp.Glyph;
+
+                Appearance.Foreground = Foreground;
+                Appearance.Glyph = Glyph;
+                Appearance.Background = Color.Transparent;
+
                 ItemID = temp.ItemID;
                 ItemCategory = temp.ItemCategory;
                 EquipSlot = temp.EquipSlot;
                 IsStackable = temp.IsStackable;
                 NumericalBonus = temp.NumericalBonus;
+                Description = temp.Description;
+
+                if (ID == 0)
+                    ItemQuantity = 0;
+                else
+                    ItemQuantity = 1;
             }
         }
 

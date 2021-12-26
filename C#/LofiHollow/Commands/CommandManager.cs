@@ -38,7 +38,8 @@ namespace LofiHollow.Commands {
                     if (actor.Inventory[i].ItemID == item.ItemID && item.IsStackable) {
                         actor.Inventory[i].ItemQuantity++;
 
-                        // Remove item from drop table
+                        GameLoop.World.maps[actor.MapPos].Entities.Remove(item);
+                        GameLoop.UIManager.EntityRenderer.Remove(item);
 
                         return;
                     }
@@ -76,9 +77,42 @@ namespace LofiHollow.Commands {
             }
         }
 
-        public void EquipItem(Actor actor, int slot, int id) {
-            if (actor.Inventory.Length > slot && slot >= 0) { 
-                Item item = new Item(id);
+        public string UseItem(Actor actor, Item item) {
+            if (item.ItemID == 7) {
+                if (actor.HitPoints != actor.MaxHP) {
+                    int healAmount = GoRogue.DiceNotation.Dice.Roll("1d8");
+
+                    if (actor.HitPoints + healAmount > actor.MaxHP) {
+                        healAmount = actor.MaxHP - actor.HitPoints;
+                    }
+
+                    actor.HitPoints += healAmount;
+                    return "t|Healed " + healAmount + " hit points!";
+
+                } else {
+                    return "f|You're already at max HP!";
+                }
+            } else if (item.ItemID == 8) {
+                if (actor.HitPoints != actor.MaxHP) {
+                    int healAmount = GoRogue.DiceNotation.Dice.Roll("2d8");
+
+                    if (actor.HitPoints + healAmount > actor.MaxHP) {
+                        healAmount = actor.MaxHP - actor.HitPoints;
+                    }
+
+                    actor.HitPoints += healAmount;
+                    return "t|Healed " + healAmount + " hit points!";
+
+                } else {
+                    return "f|You're already at max HP!";
+                }
+            }
+
+            return "f|Item usage not implemented.";
+        }
+
+        public void EquipItem(Actor actor, int slot, Item item) {
+            if (actor.Inventory.Length > slot && slot >= 0) {
 
                 if (item.EquipSlot >= 0 && item.EquipSlot <= 6) {
                     Item temp = actor.Equipment[item.EquipSlot];

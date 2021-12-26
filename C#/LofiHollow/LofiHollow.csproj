@@ -12,6 +12,21 @@
     <Reference Include="netstandard" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="data\items.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="data\monsters.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="data\moves.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="data\tiles.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="data\trees.xp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="fonts\Cheepicus48.font">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -1077,6 +1092,7 @@
     <PackageReference Include="OptimizedPriorityQueue" Version="4.2.0" />
     <PackageReference Include="SadConsole" Version="9.1.1" />
     <PackageReference Include="SadConsole.Host.MonoGame" Version="9.1.1" />
+    <PackageReference Include="SadRex" Version="1.0.3" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="Troschuetz.Random" Version="4.4.0" />
   </ItemGroup>

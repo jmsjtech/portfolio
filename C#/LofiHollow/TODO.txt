@@ -1,17 +1,70 @@
 ﻿MINIMUM SHIPPABLE REQUIREMENTS
-- Combat and levelling system implemented
+- (DONE) Combat and levelling system implemented
 - (DONE) Inventory implemented
 - Stationary NPCs with the dialogue system and shops implemented
 - Save/Load game
 - Main menu
 - Finish the main town
 - Double check all accessible overworld maps to make sure they're filled out properly
+- Farming gameplay
 
 
 Dumb Ideas that could be fun/funny:
 - Jump button that moves you up a level and hovers you there for a second)
 - - Build up velocity by running before a jump to move tiles while you're in the air, up to 4 tiles of velocity
 - - Maybe as a reward for a dungeon? You get spring shoes and can then jump, spring shoes required to enter/complete the next dungeon
+
+
+
+Menu
+- (DONE) Background image
+- (DONE) Game Name
+- Start new game
+- - Prompt for name, set it as player name
+- Load existing game
+- - List all existing saves in save directory by player name and in-game date
+
+
+Quests / Story Missions?
+- Keep a log of all missions the player has started and completed
+- Make new quests acquirable if you meet the requirements
+- Mission object structure: Mission ID, Name, Current stage, Required mission(s), Required NPC relationship, Required stats, Required time, season, or year.
+
+
+Saving/Loading
+- Save all data
+- - Entire player structure (including inventory, equipment, and all stats)
+- - Save player editable maps into their save folder
+- Load data back up
+- - Reload all player stats, inventory, and equipment
+- - Don't do the shipwreck or beach start stuff unless it's a new character
+- - Load all save-specific maps after the main map loading, overwriting the base maps.
+
+
+Crafting
+- Carpentry: Wooden crafts and furniture
+- - At the least, make and place functional chests
+
+
+
+Farming
+- Have to buy the plot of land where the farm is first
+- Hoe - Turn dirt into tilled land (only on owned land tiles)
+- Seeds: only plantable in the correct season
+- - Spring Crops:
+- - Summer Crops:
+- - Fall Crops:
+- - Winter Crops:
+
+
+Shop Mode
+- A shop that you can buy in town
+- Pedestals on which you can place and price items
+- Extra item stats required: Value, Condition
+- Friendly NPCs will be willing to pay more, unfriendly NPCs pay less
+- Each NPC has a chance to buy items they would like as gifts
+- Giving a good deal on an item increases NPC relations, bad deal decreases relations
+
 
 
 
@@ -24,11 +77,22 @@ Moves (+ Spells)
 - (DONE) Load moves from file
 
 
+
+More Combat Improvements
+- Limit item stacks to a definable quantity
+- Limited number of uses for weapons and armor before it breaks (requiring repairing in town)
+- Monsters weak or strong to individual damage types
+- Define some monster templates that carry stats, immunities, and weaknesses to serve as monster building blocks
+- - Templates can also be randomly assigned to a small portion of enemies to make for actual elites
+- Unequip items in combat
+- Switch all stats and attributes to (unnamed D20 system) clone?
+
+
 Monsters / Combat
 - (DONE) Monsters drop items when they die
 - (DONE) Have a list of moves possible instead of just "attack"
 - (DONE) Equipment should influence stats (at least armor reducing income damage and weapon being factored into damage)
-- Use items in combat
+- (DONE) Use items in combat
 - (DONE) Missed attacks and critical hits
 - (DONE) Move combat messages to the battle window instead of cluttering the log
 - (DONE) Combat is turn based, you vs one monster
@@ -56,7 +120,7 @@ Monsters / Combat
 
 
 Items
-- Stack stackable items if you already have them in your inventory
+- (DONE) Stack stackable items if you already have them in your inventory
 - (DONE) Item properties: ItemID, Name, Char, Foreground, ItemCategory, EquipSlot, 
 - (DONE) Load item definitions from file
 - (DONE) Pickup and drop items

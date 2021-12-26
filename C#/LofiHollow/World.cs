@@ -40,10 +40,35 @@ namespace LofiHollow {
         public void InitPlayer() {
             CreatePlayer(true);
             CreateMap(Player.MapPos);
+
+            MakeShipWreckage();
+
+        }
+
+        public void MakeShipWreckage() {
+            Item woodBit1 = new Item(4);
+            woodBit1.Position = new Point(23, 24);
+            maps[new Point3D(3, 1, 0)].Entities.Add(woodBit1, new GoRogue.Coord(woodBit1.Position.X, woodBit1.Position.Y));
+            GameLoop.UIManager.EntityRenderer.Add(woodBit1);
+
+            Item woodBit2 = new Item(4);
+            woodBit2.Position = new Point(26, 23);
+            maps[new Point3D(3, 1, 0)].Entities.Add(woodBit2, new GoRogue.Coord(woodBit2.Position.X, woodBit2.Position.Y));
+            GameLoop.UIManager.EntityRenderer.Add(woodBit2);
+
+            Item woodBit3 = new Item(4);
+            woodBit3.Position = new Point(25, 22);
+            maps[new Point3D(3, 1, 0)].Entities.Add(woodBit3, new GoRogue.Coord(woodBit3.Position.X, woodBit3.Position.Y));
+            GameLoop.UIManager.EntityRenderer.Add(woodBit3);
+
+            Item woodBit4 = new Item(4);
+            woodBit4.Position = new Point(24, 25);
+            maps[new Point3D(3, 1, 0)].Entities.Add(woodBit4, new GoRogue.Coord(woodBit4.Position.X, woodBit4.Position.Y));
+            GameLoop.UIManager.EntityRenderer.Add(woodBit4);
         }
 
         public void LoadItemDefinitions() {
-            string[] lines = File.ReadAllLines("./items.dat");
+            string[] lines = File.ReadAllLines("./data/items.dat");
 
             foreach (string line in lines) {
                 string[] header = line.Split('|');
@@ -65,15 +90,16 @@ namespace LofiHollow {
                 int EquipSlot = Int32.Parse(header[7]);
                 bool IsStackable = header[8] == "true" ? true : false;
                 int numericalBonus = Int32.Parse(header[9]);
+                string desc = header[10];
 
-                Item item = new Item(Foreground, Color.Black, Glyph, Name, ItemID, ItemCategory, EquipSlot, IsStackable, numericalBonus);
+                Item item = new Item(Foreground, Color.Black, Glyph, Name, ItemID, ItemCategory, EquipSlot, IsStackable, numericalBonus, desc);
 
                 itemLibrary.Add(item.ItemID, item);
             }
         }
 
         public void LoadMoveDefinitions() {
-            string[] lines = File.ReadAllLines("./moves.dat");
+            string[] lines = File.ReadAllLines("./data/moves.dat");
 
             foreach (string line in lines) {
                 string[] header = line.Split('|');
@@ -98,7 +124,7 @@ namespace LofiHollow {
         }
 
         public void LoadTileDefinitions() {
-            string[] lines = File.ReadAllLines("./tiles.dat");
+            string[] lines = File.ReadAllLines("./data/tiles.dat");
 
             foreach (string line in lines) {
                 TileBase tile = new TileBase(Color.Green, Color.Black, ',');
@@ -134,7 +160,8 @@ namespace LofiHollow {
         }
 
         public void LoadMonsterDefinitions() {
-            string[] lines = File.ReadAllLines("./monsters.dat");
+            string[] lines = File.ReadAllLines("./data/monsters.dat");
+           
 
             foreach (string line in lines) {
                 string[] header = line.Split('|');
