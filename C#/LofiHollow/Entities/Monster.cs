@@ -1,22 +1,23 @@
 ﻿using System;
+using Newtonsoft.Json;
 using SadRogue.Primitives;
 
 namespace LofiHollow.Entities {
     public class Monster : Actor {
+        [JsonProperty]
         public int MonsterID = -1;
 
-        public Monster(Color foreground, int glyph, int ID, string name, int vitality, int speed, int attack, int defense, int matk, int mdef) : base(foreground, Color.Black, glyph) {
-            MonsterID = ID;
-            Name = name;
-            BaseVitality = vitality;
-            BaseSpeed = speed;
-            BaseAttack = attack;
-            BaseDefense = defense;
-            BaseMagicAttack = matk;
-            BaseMagicDefense = mdef;
+        [JsonConstructor]
+        public Monster() : base(Color.White, 'e') { 
         }
 
-        public Monster(int ID, Color fg, int glyph) : base(fg, Color.Black, glyph) {
+
+        public Monster(Color foreground, int glyph, int ID, string name) : base(foreground, glyph) {
+            MonsterID = ID;
+            Name = name;
+        }
+
+        public Monster(int ID, Color fg, int glyph) : base(fg, glyph) {
             if (GameLoop.World.monsterLibrary != null && GameLoop.World.monsterLibrary.ContainsKey(ID)) {
                 Monster temp = GameLoop.World.monsterLibrary[ID];
 
@@ -24,13 +25,16 @@ namespace LofiHollow.Entities {
                 Appearance.Foreground = temp.Appearance.Foreground;
                 Appearance.Glyph = temp.Appearance.Glyph;
                 MonsterID = temp.MonsterID;
-                BaseVitality = temp.BaseVitality;
-                BaseSpeed = temp.BaseSpeed;
-                BaseAttack = temp.BaseAttack;
-                BaseDefense = temp.BaseDefense;
-                BaseMagicAttack = temp.BaseMagicAttack;
-                BaseMagicDefense = temp.BaseMagicDefense;
 
+                SetAttribs(temp.STR, temp.DEX, temp.CON, temp.INT, temp.WIS, temp.CHA);
+
+                LandSpeed = temp.LandSpeed;
+                BaseAttackBonus = temp.BaseAttackBonus;
+                SizeMod = temp.SizeMod;
+                HitDice = temp.HitDice;
+                CR = temp.CR;
+                InitiativeMod = temp.InitiativeMod;
+                
             }
         }
     }

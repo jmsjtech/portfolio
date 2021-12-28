@@ -20,9 +20,28 @@ Menu
 - (DONE) Background image
 - (DONE) Game Name
 - Start new game
-- - Prompt for name, set it as player name
-- Load existing game
-- - List all existing saves in save directory by player name and in-game date
+- - (DONE) Prompt for name, set it as player name
+- - Character creation
+- - - (DONE) Point buy for stats
+- - - (DONE) Select level 1 class
+- - - (DONE) Select experience track
+- - - (DONE) Select race
+- - - Pick feats
+- - - Pick spells if a caster class
+- (DONE) Load existing game
+- - (DONE) List all existing saves in save directory by player name and in-game date
+
+
+Skills
+- (DONE) Skill structure: ID, Name, Level, Experience total
+- (DONE) SkillableTile structure: Name, Harvest Tool category, Required level, Item given, Depleted tile name, time to restore, Exp given each harvest, Exp given on depletion
+- Depleted tiles turn back into the normal tile once enough time has passed
+- (DONE) Set up the proper experience scale
+- (DONE) Make skill actions grant experience to the correct skill
+- Make a UI to display all skill progress in a window (hotkey 'C'?)
+- (DONE) Block skill actions if you don't have the requisite level
+
+
 
 
 Quests / Story Missions?
@@ -33,11 +52,11 @@ Quests / Story Missions?
 
 Saving/Loading
 - Save all data
-- - Entire player structure (including inventory, equipment, and all stats)
+- - (DONE) Entire player structure (including inventory, equipment, and all stats)
 - - Save player editable maps into their save folder
 - Load data back up
-- - Reload all player stats, inventory, and equipment
-- - Don't do the shipwreck or beach start stuff unless it's a new character
+- - (DONE) Reload all player stats, inventory, and equipment
+- - (DONE) Don't do the shipwreck or beach start stuff unless it's a new character
 - - Load all save-specific maps after the main map loading, overwriting the base maps.
 
 
@@ -86,6 +105,18 @@ More Combat Improvements
 - - Templates can also be randomly assigned to a small portion of enemies to make for actual elites
 - Unequip items in combat
 - Switch all stats and attributes to (unnamed D20 system) clone?
+- - (DONE) Attributes + Attribute Modifiers
+- - (DONE) Armor Class to determine hits
+- - (DONE) Critical Strikes
+
+
+Serialization
+- (DONE) Load monsters via json files
+- Load items via json files
+- Load tiles via json files
+
+
+
 
 
 Monsters / Combat

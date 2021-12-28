@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 using LofiHollow.Entities;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace LofiHollow {
     public class World { 
@@ -12,207 +13,144 @@ namespace LofiHollow {
         public Dictionary<int, Item> itemLibrary = new Dictionary<int, Item>();
         public Dictionary<int, Monster> monsterLibrary = new Dictionary<int, Monster>();
         public Dictionary<int, Move> moveLibrary = new Dictionary<int, Move>();
-        public Dictionary<Point3D, Map> maps = new Dictionary<Point3D, Map>(); 
+        public Dictionary<Point3D, Map> maps = new Dictionary<Point3D, Map>();
+        public Dictionary<int, ClassDef> classLibrary = new Dictionary<int, ClassDef>();
+        public Dictionary<int, Race> raceLibrary = new Dictionary<int, Race>();
+        public Dictionary<int, Skill> skillLibrary = new Dictionary<int, Skill>();
 
-        
-              
-        public int Hours = 11;
-        public int Minutes = 30;
-        public int Month = 12;
-        public int Day = 28;
-        public int Year = 1;
-        public bool AM = false;
 
-        public double TimeLastTicked = 0;
         public bool DoneInitializing = false;
          
         public Player Player { get; set; }
          
         public World() {
+            LoadSkillDefinitions(); 
             LoadTileDefinitions();
             LoadItemDefinitions();
             LoadMoveDefinitions();
+            LoadRaceDefinitions();
+            LoadClassDefinitions(); 
             LoadMonsterDefinitions();
-            
-            LoadExistingMaps(); 
+             
         }
 
         public void InitPlayer() {
-            CreatePlayer(true);
+            CreatePlayer();
             CreateMap(Player.MapPos);
-
-            MakeShipWreckage();
 
         }
 
         public void MakeShipWreckage() {
-            Item woodBit1 = new Item(4);
+            Item woodBit1 = new Item(1);
             woodBit1.Position = new Point(23, 24);
             maps[new Point3D(3, 1, 0)].Entities.Add(woodBit1, new GoRogue.Coord(woodBit1.Position.X, woodBit1.Position.Y));
             GameLoop.UIManager.EntityRenderer.Add(woodBit1);
 
-            Item woodBit2 = new Item(4);
+            Item woodBit2 = new Item(1);
             woodBit2.Position = new Point(26, 23);
             maps[new Point3D(3, 1, 0)].Entities.Add(woodBit2, new GoRogue.Coord(woodBit2.Position.X, woodBit2.Position.Y));
             GameLoop.UIManager.EntityRenderer.Add(woodBit2);
 
-            Item woodBit3 = new Item(4);
+            Item woodBit3 = new Item(1);
             woodBit3.Position = new Point(25, 22);
             maps[new Point3D(3, 1, 0)].Entities.Add(woodBit3, new GoRogue.Coord(woodBit3.Position.X, woodBit3.Position.Y));
             GameLoop.UIManager.EntityRenderer.Add(woodBit3);
 
-            Item woodBit4 = new Item(4);
+            Item woodBit4 = new Item(1);
             woodBit4.Position = new Point(24, 25);
             maps[new Point3D(3, 1, 0)].Entities.Add(woodBit4, new GoRogue.Coord(woodBit4.Position.X, woodBit4.Position.Y));
             GameLoop.UIManager.EntityRenderer.Add(woodBit4);
         }
 
         public void LoadItemDefinitions() {
-            string[] lines = File.ReadAllLines("./data/items.dat");
+            if (Directory.Exists("./data/items/")) {
+                string[] itemFiles = Directory.GetFiles("./data/items/");
 
-            foreach (string line in lines) {
-                string[] header = line.Split('|');
-                if (header[0][0] == '#') {
-                    continue;
+                foreach (string fileName in itemFiles) {
+                    string json = File.ReadAllText(fileName);
+
+                    Item item = JsonConvert.DeserializeObject<Item>(json);
+
+                    itemLibrary.Add(item.ItemID, item);
                 }
-
-                int ItemID = Int32.Parse(header[0]);
-                string Name = header[1];
-                int Glyph = (char) Int32.Parse(header[2]);
-                
-                int fgR = Int32.Parse(header[3]);
-                int fgG = Int32.Parse(header[4]);
-                int fgB = Int32.Parse(header[5]); 
-
-                Color Foreground = new Color(fgR, fgG, fgB); 
-
-                int ItemCategory = Int32.Parse(header[6]);
-                int EquipSlot = Int32.Parse(header[7]);
-                bool IsStackable = header[8] == "true" ? true : false;
-                int numericalBonus = Int32.Parse(header[9]);
-                string desc = header[10];
-
-                Item item = new Item(Foreground, Color.Black, Glyph, Name, ItemID, ItemCategory, EquipSlot, IsStackable, numericalBonus, desc);
-
-                itemLibrary.Add(item.ItemID, item);
-            }
+            } 
         }
-
-        public void LoadMoveDefinitions() {
-            string[] lines = File.ReadAllLines("./data/moves.dat");
-
-            foreach (string line in lines) {
-                string[] header = line.Split('|');
-                if (header[0][0] == '#') {
-                    continue;
-                }
-
-                int MoveID = Int32.Parse(header[0]);
-                string Name = header[1];
-                string Type = header[2];
-                bool IsPhysical = header[3] == "true" ? true : false;
-
-                int Cost = Int32.Parse(header[4]);
-                int Acc = Int32.Parse(header[5]);
-                int Power = Int32.Parse(header[6]); 
-                 
-
-                Move move = new Move(MoveID, Name, Type, IsPhysical, Cost, Acc, Power);
-
-                moveLibrary.Add(move.MoveID, move);
-            }
-        }
+         
 
         public void LoadTileDefinitions() {
-            string[] lines = File.ReadAllLines("./data/tiles.dat");
+            if (Directory.Exists("./data/tiles/")) {
+                string[] tileFiles = Directory.GetFiles("./data/tiles/");
 
-            foreach (string line in lines) {
-                TileBase tile = new TileBase(Color.Green, Color.Black, ',');
+                foreach (string fileName in tileFiles) {
+                    string json = File.ReadAllText(fileName);
 
-                string[] header = line.Split('|');
+                    TileBase tile = JsonConvert.DeserializeObject<TileBase>(json);
 
-                if (header[0][0] == '#') {
-                    continue;
+                    tileLibrary.Add(tile.TileID, tile);
                 }
-
-                tile.TileID = Int32.Parse(header[0]);
-                tile.Name = header[1];
-                tile.IsBlockingMove = header[2] == "true" ? true : false;
-
-                tile.Glyph = Int32.Parse(header[3]);
-
-
-                int fgR = Int32.Parse(header[4]);
-                int fgG = Int32.Parse(header[5]);
-                int fgB = Int32.Parse(header[6]);
-
-                int bgR = Int32.Parse(header[7]);
-                int bgG = Int32.Parse(header[8]);
-                int bgB = Int32.Parse(header[9]);
-
-                tile.Foreground = new Color(fgR, fgG, fgB);
-                tile.Background = new Color(bgR, bgG, bgB);
-
-                tile.SpawnsMonsters = header[10] == "true" ? true : false;
-
-                tileLibrary.Add(tile.TileID, tile);
             }
+            /*
+            string path = "./data/tiles/" + tile.TileID + "," + tile.Name + ".dat";
+
+            using (StreamWriter output = new StreamWriter(path)) {
+                string jsonString = JsonConvert.SerializeObject(tile, Formatting.Indented);
+                output.WriteLine(jsonString);
+            }*/
+        }
+
+        public void LoadSkillDefinitions() { 
+            if (Directory.Exists("./data/skills/")) {
+                string[] skillFiles = Directory.GetFiles("./data/skills/");
+
+                foreach (string fileName in skillFiles) {
+                    string json = File.ReadAllText(fileName);
+
+                    Skill skill = JsonConvert.DeserializeObject<Skill>(json);
+
+                    skillLibrary.Add(skill.SkillID, skill);
+                }
+            } 
+        }
+
+        public void LoadRaceDefinitions() {
+            if (Directory.Exists("./data/races/")) {
+                string[] tileFiles = Directory.GetFiles("./data/races/");
+
+                foreach (string fileName in tileFiles) {
+                    string json = File.ReadAllText(fileName);
+
+                    Race race = JsonConvert.DeserializeObject<Race>(json);
+
+                    raceLibrary.Add(race.RaceID, race);
+                }
+            }
+        }
+
+        public void LoadClassDefinitions() {
+            if (Directory.Exists("./data/classes/")) {
+                string[] tileFiles = Directory.GetFiles("./data/classes/");
+
+                foreach (string fileName in tileFiles) {
+                    string json = File.ReadAllText(fileName);
+
+                    ClassDef classDef = JsonConvert.DeserializeObject<ClassDef>(json);
+
+                    classLibrary.Add(classDef.ClassID, classDef);
+                }
+            } 
         }
 
         public void LoadMonsterDefinitions() {
-            string[] lines = File.ReadAllLines("./data/monsters.dat");
-           
+            if (Directory.Exists("./data/monsters/")) {
+                string[] monsterFiles = Directory.GetFiles("./data/monsters/");
 
-            foreach (string line in lines) {
-                string[] header = line.Split('|');
-                if (header[0][0] == '#') {
-                    continue;
+                foreach (string fileName in monsterFiles) {
+                    string json = File.ReadAllText(fileName);
+
+                    Monster monster = JsonConvert.DeserializeObject<Monster>(json);
+
+                    monsterLibrary.Add(monster.MonsterID, monster);
                 }
-
-                int monID = Int32.Parse(header[0]);
-                string name = header[1];
-
-                int vitality = Int32.Parse(header[2]);
-                int speed = Int32.Parse(header[3]);
-                int attack = Int32.Parse(header[4]);
-                int defense = Int32.Parse(header[5]);
-                int magicAtk = Int32.Parse(header[6]);
-                int magicDef = Int32.Parse(header[7]);
-
-                int glyph = Int32.Parse(header[8]);
-
-
-                int fgR = Int32.Parse(header[9]);
-                int fgG = Int32.Parse(header[10]);
-                int fgB = Int32.Parse(header[11]);
-                Color fg = new Color(fgR, fgG, fgB);
-
-                Monster monster = new Monster(fg, glyph, monID, name, vitality, speed, attack, defense, magicAtk, magicDef);
-
-
-                string[] allDrops = header[12].Split(";");
-                for (int i = 0; i < allDrops.Length; i++) {
-                    string[] thisDrop = allDrops[i].Split(",");
-
-                    int dropID = Int32.Parse(thisDrop[0]);
-                    int dropChance = Int32.Parse(thisDrop[1]);
-                    int dropQuantity = Int32.Parse(thisDrop[2]);
-
-                    ItemDrop drop = new ItemDrop(dropID, dropChance, dropQuantity);
-
-                    monster.DropTable.Add(drop);
-                }
-
-                string[] allMoves = header[13].Split(",");
-                for (int i = 0; i < allMoves.Length; i++) {
-                    if (moveLibrary.ContainsKey(Int32.Parse(allMoves[i]))) {
-                        monster.KnownMoves.Add(Int32.Parse(allMoves[i]));
-                    }
-                }
-
-
-
-                monsterLibrary.Add(monster.MonsterID, monster);
             }
         }
 
@@ -260,9 +198,8 @@ namespace LofiHollow {
                                 Resave = true;
                             }
                         } else {
-                            TileBase lib = tileLibrary[Int32.Parse(line)];
-                            tile = new TileBase(lib.Foreground, lib.Background, lib.Glyph, lib.IsBlockingMove, lib.IsBlockingLOS, lib.Name, lib.TileID, lib.SpawnsMonsters);
-
+                            tile = new TileBase(tileLibrary[Int32.Parse(line)]);
+                            
                             newMap.Tiles[index] = tile;
                         }
                         index++;
@@ -293,43 +230,63 @@ namespace LofiHollow {
                 foreach (TileBase tile in map.Tiles) {
                     output.WriteLine(tile.TileID);
                 }
+            } 
+        }
+
+        public void SavePlayer() {
+            System.IO.Directory.CreateDirectory("./saves/" + Player.Name + "/");
+            string path = "./saves/" + Player.Name + "/player.dat";
+
+            using (StreamWriter output = new StreamWriter(path)) {
+                string jsonString = JsonConvert.SerializeObject(Player, Formatting.Indented);
+                output.WriteLine(jsonString);
+            }
+        }
+
+        public void LoadPlayer(string playerName) {  
+
+            if (Directory.Exists("./saves/" + playerName + "/")) {
+                string[] monsterFiles = Directory.GetFiles("./saves/" + playerName + "/");
+
+                foreach (string fileName in monsterFiles) {
+                    string json = File.ReadAllText(fileName);
+
+                    string[] name = fileName.Split("/");
+
+                    if (name[name.Length - 1] == "player.dat") {
+                        Player = JsonConvert.DeserializeObject<Player>(json);
+                    } 
+                }
             }
 
+
+            GameLoop.UIManager.LoadMap(maps[Player.MapPos], false);
+            GameLoop.UIManager.EntityRenderer.Add(Player); 
         }
-         
+
+
+
         public void CreateMap(Point3D pos) {
             if (!maps.ContainsKey(pos)) {
                 Map newMap  = new Map(GameLoop.MapWidth, GameLoop.MapHeight);
 
                 if (pos.Z < 0) {
-                    for (int i = 0; i < newMap.Tiles.Length; i++) {
-                        TileBase lib = tileLibrary[31];
-                        TileBase tile = new TileBase(lib.Foreground, lib.Background, lib.Glyph, lib.IsBlockingMove, lib.IsBlockingLOS, lib.Name, lib.TileID, lib.SpawnsMonsters);
-
-                        newMap.Tiles[i] = tile;
+                    for (int i = 0; i < newMap.Tiles.Length; i++) {  
+                        newMap.Tiles[i] = new TileBase(31);
                     }
 
-                    if (Player.MapPos.Z > pos.Z) {
-                        TileBase lib = tileLibrary[29];
-                        TileBase tile = new TileBase(lib.Foreground, lib.Background, lib.Glyph, lib.IsBlockingMove, lib.IsBlockingLOS, lib.Name, lib.TileID, lib.SpawnsMonsters);
-
-                        newMap.Tiles[Player.Position.ToIndex(GameLoop.MapWidth)] = tile;
+                    if (Player.MapPos.Z > pos.Z) { 
+                        newMap.Tiles[Player.Position.ToIndex(GameLoop.MapWidth)] = new TileBase(29);
                     }
                 }
 
                 if (pos.Z > 0) {
-                    for (int i = 0; i < newMap.Tiles.Length; i++) {
-                        TileBase lib = tileLibrary[32];
-                        TileBase tile = new TileBase(lib.Foreground, lib.Background, lib.Glyph, lib.IsBlockingMove, lib.IsBlockingLOS, lib.Name, lib.TileID, lib.SpawnsMonsters);
-
-                        newMap.Tiles[i] = tile;
+                    for (int i = 0; i < newMap.Tiles.Length; i++) { 
+                        newMap.Tiles[i] = new TileBase(32);
                     }
 
-                    if (Player.MapPos.Z < pos.Z) {
-                        TileBase lib = tileLibrary[30];
-                        TileBase tile = new TileBase(lib.Foreground, lib.Background, lib.Glyph, lib.IsBlockingMove, lib.IsBlockingLOS, lib.Name, lib.TileID, lib.SpawnsMonsters);
-
-                        newMap.Tiles[Player.Position.ToIndex(GameLoop.MapWidth)] = tile;
+                    if (Player.MapPos.Z < pos.Z) {  
+                        newMap.Tiles[Player.Position.ToIndex(GameLoop.MapWidth)] = new TileBase(30);
                     }
                 }
 
@@ -337,58 +294,36 @@ namespace LofiHollow {
             }
         } 
 
-        private void CreatePlayer(bool freshStart) {
-            Player = new Player(Color.Yellow, Color.Transparent);
-            if (freshStart) {
-                Player.Position = new Point(25, 25);
-                Player.MapPos = new Point3D(3, 1, 0);
-                Player.Equipment[4] = new Item(3);
-                Player.Equipment[3] = new Item(2);
-                Player.Name = "Player";
+        private void CreatePlayer() {
+            Player = new Player(Color.Yellow);
+            Player.Position = new Point(25, 25);
+            Player.MapPos = new Point3D(3, 1, 0);
+            Player.Name = "Player"; 
  
-                GameLoop.UIManager.LoadMap(maps[Player.MapPos], true);
-                GameLoop.UIManager.EntityRenderer.Add(Player);
-                Player.ZIndex = 10;
+            GameLoop.UIManager.LoadMap(maps[Player.MapPos], true);
+            GameLoop.UIManager.EntityRenderer.Add(Player);
+            Player.ZIndex = 10;
 
-                DoneInitializing = true;
-
-                Player.Inventory[0] = new Item(1);
-
-                Player.KnownMoves.Add(1);
-                Player.KnownMoves.Add(2);
-                Player.KnownMoves.Add(3);
-
-                Player.RecalculateHP();
-                Player.MaxHP = Player.HitPoints;
-                Player.RecalculateEXP();
-            }
+            DoneInitializing = true;
+                 
+            Player.MaxHP = 0;
+            Player.CurrentHP = Player.MaxHP;
+            
         }
 
-         
-        public void TickTime() {
-            Minutes++;
-            if (Minutes >= 60) {
-                Hours++;
-                Minutes = 0;
-                if (Hours == 12) {
-                    AM = !AM;
-                    if (AM) {
-                        Day++;
-                        if (Day > 28) {
-                            Day = 1;
-                            Month++;
+        public void FreshStart() {
+            Player.MaxHP = Int32.Parse(Player.ClassLevels[0].HitDie.Split("d")[1]) + Player.GetMod("CON");
+            Player.CurrentHP = Player.MaxHP;
+            MakeShipWreckage();
 
-                            if (Month > 12) {
-                                Month = 1;
-                                Year++;
-                            }
-                        }
-                    }
-                }
-                if (Hours > 12) {
-                    Hours = 1;
-                }
-            } 
+            Player.Inventory[0] = new Item(36);
+
+            Player.Skills = new Dictionary<string, Skill>();
+            
+            for (int i = 0; i < skillLibrary.Count; i++) {
+                Skill skill = new Skill(skillLibrary[i]);
+                Player.Skills.Add(skill.Name, skill);
+            }
         }
     }
 }

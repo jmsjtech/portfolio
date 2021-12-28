@@ -11,9 +11,9 @@ namespace LofiHollow {
         public float fleePercent;
 
         public int GetEncounter(string mapName, string tileName) {
-            if (mapName == "Field") {
+            if (mapName == "Field" || mapName == "Road") {
                 if (tileName == "Tall Grass") {
-                    int[] possible = { 0, 1 };
+                    int[] possible = { 0, 1, 2, 3 };
 
                     return possible[GameLoop.rand.Next(possible.Length)];
                 }
@@ -25,33 +25,28 @@ namespace LofiHollow {
         public void StartBattle(Monster monster, int level) {
             Enemy = monster;
 
-            int levelMod = 0;
+            Enemy.SetExpGranted();
+            Enemy.UpdateHP(0);
 
-            if (level > 10) {
-                levelMod = GameLoop.rand.Next((level / 10) * 2) - (level / 10);
+            if (GameLoop.World.Player.RollInitiative() > Enemy.RollInitiative()) {
+                GameLoop.UIManager.PlayerFirst = true;
             } else {
-                levelMod = GameLoop.rand.Next(3) - 1;
+                GameLoop.UIManager.PlayerFirst = false;
             }
-
-            int moddedLevel = level + levelMod;
-            if (moddedLevel < 1)
-                moddedLevel = 1;
-
-            ApplyLevels(Enemy, moddedLevel);
+            
 
             GameLoop.UIManager.BattleWindow.Title = monster.Name.ToUpper();
             GameLoop.UIManager.BattleWindow.IsVisible = true;
             GameLoop.UIManager.BattleWindow.IsFocused = true;
             GameLoop.UIManager.BattleLog.IsVisible = true;
             
-            GameLoop.UIManager.selectedMenu = "Battle"; 
-
+            GameLoop.UIManager.selectedMenu = "Battle";
             BattleState = "Battle";
 
             GameLoop.UIManager.BattleLog.Clear();
             GameLoop.UIManager.battleDone = false;
 
-            CalculateFlee();
+            CalculateFlee(); 
         }
 
         public void EndBattle(bool fled) {
@@ -59,13 +54,10 @@ namespace LofiHollow {
             if (!fled) {
                 GameLoop.UIManager.battleResult = "Victory";
                 GameLoop.World.Player.Experience += Enemy.ExpGranted;
-                if (GameLoop.World.Player.Experience >= GameLoop.World.Player.ExpToNext) {
-                    GameLoop.World.Player.Experience -= GameLoop.World.Player.ExpToNext;
+                if (GameLoop.World.Player.Experience >= GameLoop.World.Player.ExpToLevel()) {
                     GameLoop.World.Player.Level += 1;
-                    GameLoop.World.Player.RecalculateEXP();
                     GameLoop.UIManager.battleResult = "Level";
-                }
-                GameLoop.UIManager.BattleLog.Print(0, 1, Enemy.Name + " died!");
+                } 
             } else {
                 GameLoop.UIManager.battleResult = "Fled";
             }
@@ -73,38 +65,16 @@ namespace LofiHollow {
             GameLoop.UIManager.battleDone = true;
         }
 
-        public void ResolveTurn(string action, int usedID) {
-            Move move = GameLoop.World.moveLibrary[usedID];
+        public void ResolveTurn(string action, bool melee, bool playerFirst) { 
             GameLoop.UIManager.BattleLog.Clear();
-
-            if (move.Cost != 0) {
-                if (move.IsPhysical) {
-                    if (move.Cost > GameLoop.World.Player.Energy) {  
-                        GameLoop.UIManager.selectedMenu = "TurnWait";
-                        GameLoop.UIManager.BattleLog.Print(0, 1, "You don't have enough energy for that attack!");
-                        return;
-                    } else {
-                        GameLoop.World.Player.Energy -= move.Cost;
-                    }
-                } else {
-                    if (move.Cost > GameLoop.World.Player.Mana) {
-                        GameLoop.UIManager.selectedMenu = "TurnWait";
-                        GameLoop.UIManager.BattleLog.Print(0, 1, "You don't have enough mana for that attack!");
-                        return;
-                    } else {
-                        GameLoop.World.Player.Mana -= move.Cost;
-                    }
-                }
-            }
-
-
-
-            if (GameLoop.World.Player.Speed >= Enemy.Speed) {
+            
+            if (playerFirst) {
                 // Player goes first
                 if (action == "Attack") {
-                    CalculateDamage(GameLoop.World.Player, Enemy, move, 0);
+                    CalculateDamage(GameLoop.World.Player, Enemy, melee, 0);
 
-                    if (Enemy.HitPoints <= 0) {
+                    if (Enemy.CurrentHP <= 0) {
+                        GameLoop.UIManager.BattleLog.Print(0, 1, Enemy.Name + " died!");
                         EndBattle(false);
                     }
                 }
@@ -117,18 +87,19 @@ namespace LofiHollow {
 
                 if (!GameLoop.UIManager.battleDone) {
                     // Then monster
-                    if (Enemy.HitPoints > 0)
-                        CalculateDamage(Enemy, GameLoop.World.Player, Enemy.PickKnownMove(), 1);
+                    if (Enemy.CurrentHP > 0)
+                        CalculateDamage(Enemy, GameLoop.World.Player, true, 1);
                 }
             } else {
                 // Monster goes first
-                CalculateDamage(Enemy, GameLoop.World.Player, GameLoop.World.moveLibrary[0], 0);
+                CalculateDamage(Enemy, GameLoop.World.Player, true, 0);
 
                 // Then player
                 if (action == "Attack") {
-                    CalculateDamage(GameLoop.World.Player, Enemy, Enemy.PickKnownMove(), 1);
+                    CalculateDamage(GameLoop.World.Player, Enemy, melee, 1);
 
-                    if (Enemy.HitPoints <= 0) {
+                    if (Enemy.CurrentHP <= 0) {
+                        GameLoop.UIManager.BattleLog.Print(0, 2, Enemy.Name + " died!");
                         EndBattle(false);
                     }
                 }
@@ -147,9 +118,60 @@ namespace LofiHollow {
             return GameLoop.rand.Next(100) < fleePercent; 
         }
 
+        public void RollDrops() {
+            for (int i = 0; i < GameLoop.BattleManager.Enemy.DropTable.Count; i++) {
+                ItemDrop drop = GameLoop.BattleManager.Enemy.DropTable[i];
+
+                int roll = GameLoop.rand.Next(drop.DropChance);
+
+                if (roll == 0) {
+                    Item item = new Item(drop.ItemID);
+
+                    if (item.IsStackable) {
+                        item.ItemQuantity = GameLoop.rand.Next(drop.DropQuantity) + 1;
+                        GameLoop.UIManager.dropTable.Add(item);
+                    } else {
+                        int qty = GameLoop.rand.Next(drop.DropQuantity) + 1;
+
+                        for (int j = 0; j < qty; j++) {
+                            Item itemNonStack = new Item(drop.ItemID);
+                            GameLoop.UIManager.dropTable.Add(itemNonStack);
+                        }
+                    }
+                }
+            }
+
+
+            int coreChance = GameLoop.rand.Next(100) + 1;
+
+            if (coreChance < 75) {
+                Item core = new Item(5);
+                core.SubID = GameLoop.BattleManager.Enemy.CR;
+                core.Name = "Monster Core [";
+
+                string CR = Enemy.CR.ToString();
+
+                if (Enemy.CR < 0) {
+                    if (Enemy.CR == -2) { CR = ((char)25).ToString(); }
+                    if (Enemy.CR == -3) { CR = ((char)26).ToString(); }
+                    if (Enemy.CR == -4) { CR = ((char)27).ToString(); }
+                    if (Enemy.CR == -6) { CR = ((char)28).ToString(); }
+                    if (Enemy.CR == -8) { CR = ((char)29).ToString(); }
+                }
+
+                core.Name += CR + "]";
+
+                core.AverageValue = Enemy.ExpGranted / 4;
+
+                core.Description = "The core of a CR " + CR + " monster.";
+
+                GameLoop.UIManager.dropTable.Add(core);
+            }
+        }
+
         public void CalculateFlee() {
-            float playerSpeed = GameLoop.World.Player.Speed;
-            float monsterSpeed = Enemy.Speed;
+            float playerSpeed = GameLoop.World.Player.DEX;
+            float monsterSpeed = Enemy.DEX;
 
             fleePercent = ((playerSpeed / monsterSpeed) * 100) / 2;
 
@@ -161,125 +183,56 @@ namespace LofiHollow {
             fleePercent = (float) Math.Ceiling(fleePercent); 
         }
 
-        public void CalculateDamage(Actor attacker, Actor defender, Move move, int y) {
-            int level = attacker.Level;
-            int attackVsDamage;
+        public void CalculateDamage(Actor attacker, Actor defender, bool melee, int y) {
+            int attackRoll = GoRogue.DiceNotation.Dice.Roll("1d20");
 
-            if (move.IsPhysical)
-                attackVsDamage = attacker.Attack / defender.Defense;
-            else
-                attackVsDamage = attacker.MagicAttack / defender.MagicDefense;
+            int attackBonus = attacker.RollAttack(true);
+            
 
-            int damage = (((((2 * level) / 5) + 2) * move.Power * attackVsDamage) / 50) + 2;
-
-            if (move.Type == "None") {
-                GameLoop.UIManager.BattleLog.Print(0, y, attacker.Name + " used " + move.Name + ". Nothing happens.");
-                damage = 0;
-            } else { 
-                if (GameLoop.rand.Next(100) + 1 < move.Accuracy) {
-                    if (attacker.Equipment[0].ItemID != 0) {
-                        damage += attacker.Equipment[0].NumericalBonus;
-                    }
-
-                    if (defender.Equipment[1].ItemID != 0) {
-                        damage -= defender.Equipment[1].NumericalBonus;
-                    }
-
-                    if (defender.Equipment[2].ItemID != 0) {
-                        damage -= defender.Equipment[2].NumericalBonus;
-                    }
-
-                    if (defender.Equipment[3].ItemID != 0) {
-                        damage -= defender.Equipment[3].NumericalBonus;
-                    }
-
-                    if (defender.Equipment[4].ItemID != 0) {
-                        damage -= defender.Equipment[4].NumericalBonus;
-                    }
-
-                    if (damage > 0) {
-                        if (GameLoop.rand.Next(20) + 1 <= attacker.CritChance) {
-                            damage = damage * 2;
-                            GameLoop.UIManager.BattleLog.Print(0, y, new ColoredString(attacker.Name + " used " + move.Name + ". Critical hit!", Color.Yellow, Color.Black));
-                        } else {
-                            GameLoop.UIManager.BattleLog.Print(0, y, attacker.Name + " used " + move.Name + ".");
-                        }
-                    } else {
-                        GameLoop.UIManager.BattleLog.Print(0, y, attacker.Name + " used " + move.Name + " but did no damage!");
-                    }
-                } else {
-                    GameLoop.UIManager.BattleLog.Print(0, y, attacker.Name + " used " + move.Name + " but missed!");
-                    damage = 0;
+            if (attackRoll + attackBonus >= defender.GetAC(0)) {
+                string weaponDice = attacker.UnarmedDice;
+                int minCrit = 20;
+                int critMod = 2;
+                if (attacker.Equipment != null && attacker.Equipment[0].Weapon != null) {
+                    weaponDice = attacker.Equipment[0].Weapon.DamageDice;
+                    minCrit = attacker.Equipment[0].Weapon.MinCrit;
+                    critMod = attacker.Equipment[0].Weapon.CritMod;
                 }
-            }
 
+                string moddedDice = weaponDice;
 
-           
-            defender.HitPoints -= damage;
-        }
+                if (attacker.GetMod("STR") > 0)
+                    moddedDice += "+" + attacker.GetMod("STR");
+                else
+                    moddedDice += "-" + Math.Abs(attacker.GetMod("STR"));
 
-        public void ApplyLevels(Actor actor, int levels) {
-            actor.Vitality = 0;
-            actor.Speed = 0;
-            actor.Attack = 0;
-            actor.Defense = 0;
-            actor.MagicAttack = 0;
-            actor.MagicDefense = 0;
-            actor.Level = levels;
+                int damage = GoRogue.DiceNotation.Dice.Roll(moddedDice);
 
-            for (int i = 0; i < levels; i++) {
-                if (actor.BaseVitality != 0)
-                    actor.Vitality += GameLoop.rand.Next(actor.BaseVitality) + 1;
-                if (actor.BaseSpeed != 0)
-                    actor.Speed += GameLoop.rand.Next(actor.BaseSpeed) + 1;
-                if (actor.BaseAttack != 0)
-                    actor.Attack += GameLoop.rand.Next(actor.BaseAttack) + 1;
-                if (actor.BaseDefense != 0)
-                    actor.Defense += GameLoop.rand.Next(actor.BaseDefense) + 1;
-                if (actor.BaseMagicAttack != 0)
-                    actor.MagicAttack += GameLoop.rand.Next(actor.BaseMagicAttack) + 1;
-                if (actor.BaseMagicDefense != 0)
-                    actor.MagicDefense += GameLoop.rand.Next(actor.BaseMagicDefense) + 1;
-            }
+                if (damage < 0)
+                    damage = 0; 
+                 
 
-            int statsInAverage = 0;
+                if (attackRoll >= minCrit) {
+                    int confirmCrit = attacker.RollAttack(false);
 
-            if (actor.BaseVitality != 0)
-                statsInAverage++;
-            if (actor.BaseSpeed != 0)
-                statsInAverage++;
-            if (actor.BaseAttack != 0)
-                statsInAverage++;
-            if (actor.BaseDefense != 0)
-                statsInAverage++;
-            if (actor.BaseMagicAttack != 0)
-                statsInAverage++;
-            if (actor.BaseMagicDefense != 0)
-                statsInAverage++;
+                    if (confirmCrit >= defender.GetAC(0)) {
+                        if (critMod == 2)
+                            damage += GoRogue.DiceNotation.Dice.Roll(weaponDice); 
+                        else
+                            damage += (critMod - 1) * GoRogue.DiceNotation.Dice.Roll(weaponDice);
 
+                        GameLoop.UIManager.BattleLog.Print(0, y, new ColoredString(attacker.Name + " hit for " + damage + " damage. Critical Hit!", Color.Green, Color.Black));
+                    } else { 
+                        GameLoop.UIManager.BattleLog.Print(0, y, new ColoredString(attacker.Name + " hit for " + damage + " damage.", Color.White, Color.Black));
+                    }
+                } else { 
+                    GameLoop.UIManager.BattleLog.Print(0, y, new ColoredString(attacker.Name + " hit for " + damage + " damage.", Color.White, Color.Black));
+                }
 
-
-            actor.MaxStrength = (actor.BaseVitality + actor.BaseSpeed + actor.BaseAttack + actor.BaseDefense + actor.BaseMagicAttack + actor.BaseMagicDefense) * levels;
-            actor.MinStrength = levels * statsInAverage;
-            actor.AverageStrength = (actor.MaxStrength + actor.MinStrength) / 2;
-            actor.ExpGranted = actor.StatTotal() * levels;
-            actor.RecalculateHP();
-            actor.HitPoints = actor.MaxHP;
-
-            int diff = actor.MaxStrength - actor.MinStrength;
-            int powerVsMin = actor.StatTotal() - actor.MinStrength;
-
-            if (powerVsMin > (float) diff * 0.8) {
-                actor.Descriptor = "Elite";
-            } else if (powerVsMin > (float) diff * 0.6) {
-                actor.Descriptor = "Strong";
-            } else if (powerVsMin > (float)diff * 0.4) {
-                // Average
-            } else if (powerVsMin > (float)diff * 0.2) {
-                actor.Descriptor = "Weak";
-            } else {
-                actor.Descriptor = "Fragile";
-            }
-        }
+                defender.CurrentHP -= damage;
+            } else { 
+                GameLoop.UIManager.BattleLog.Print(0, y, attacker.Name + " attacked, but missed!");
+            } 
+        } 
     }
 }

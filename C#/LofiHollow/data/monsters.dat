@@ -1,3 +1,4 @@
-# ID, Name, Vitality, Speed, Attack, Defense, M.Atk, M.Def, Character, R/G/B / Drops / Moves
-0|Slime|10|8|4|2|1|1|111|50|205|50|5,2,1|0,4,4,4
-1|Skeleton|10|2|4|4|1|1|115|255|255|255|5,2,1;6,2,4|0
+# ID / Name / Character / R,G,B / STR,DEX,CON,INT,WIS,CHA / Speed / BAB / SizeMod / HP / CR / Init Bonus / Drops
+0|Toad|102|50,205,50|1,12,6,1,15,4|5|0|-4|1d8-2|-8|1|5,2,1
+1|Rat|114|200,200,2500|2,15,11,2,13,2|15|0|-2|1d8|-4|2|5,2,1
+2|Raccoon|114|110,66,33|8,15,11,2,16,5|20|4|-2|1d8|-2|2|5,2,1

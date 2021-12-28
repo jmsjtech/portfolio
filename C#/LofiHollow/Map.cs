@@ -28,7 +28,7 @@ namespace LofiHollow {
             Tiles = new TileBase[width * height];
 
             for (int i = 0; i < Tiles.Length; i++) {
-                Tiles[i] = new TileBase(Color.Green, Color.Black, ',');
+                Tiles[i] = new TileBase();
             }
 
             Entities = new GoRogue.MultiSpatialMap<Entity>();

@@ -35,7 +35,7 @@ namespace LofiHollow.Commands {
             Item item = GameLoop.World.maps[actor.MapPos].GetEntityAt<Item>(actor.Position);
             if (item != null) {
                 for (int i = 0; i < actor.Inventory.Length; i++) {
-                    if (actor.Inventory[i].ItemID == item.ItemID && item.IsStackable) {
+                    if (actor.Inventory[i].ItemID == item.ItemID && actor.Inventory[i].SubID == item.SubID && item.IsStackable) {
                         actor.Inventory[i].ItemQuantity++;
 
                         GameLoop.World.maps[actor.MapPos].Entities.Remove(item);
@@ -56,13 +56,15 @@ namespace LofiHollow.Commands {
             }
         }
 
-        public void AddItemToInv(Actor actor, Item item) { 
+        public void AddItemToInv(Actor actor, Item item) {
+            bool putInInv = false;
             if (item != null) {
                 for (int i = 0; i < actor.Inventory.Length; i++) {
-                    if (actor.Inventory[i].ItemID == item.ItemID && item.IsStackable) {
+                    if (actor.Inventory[i].ItemID == item.ItemID && actor.Inventory[i].SubID == item.SubID && item.IsStackable) {
                         actor.Inventory[i].ItemQuantity++;
 
                         GameLoop.UIManager.dropTable.Remove(item);
+                        putInInv = true;
                         return;
                     }
                 }
@@ -71,36 +73,43 @@ namespace LofiHollow.Commands {
                     if (actor.Inventory[i].ItemID == 0) {
                         actor.Inventory[i] = item;
                         GameLoop.UIManager.dropTable.Remove(item);
-                        break;
+                        putInInv = true;
+                        return;
                     }
                 }
+            }
+
+            if (!putInInv) {
+                item.Position = actor.Position;
+                GameLoop.World.maps[actor.MapPos].Entities.Add(item, new GoRogue.Coord(actor.Position.X, actor.Position.Y));
+                GameLoop.UIManager.EntityRenderer.Add(item);
             }
         }
 
         public string UseItem(Actor actor, Item item) {
             if (item.ItemID == 7) {
-                if (actor.HitPoints != actor.MaxHP) {
+                if (actor.CurrentHP != actor.MaxHP) {
                     int healAmount = GoRogue.DiceNotation.Dice.Roll("1d8");
 
-                    if (actor.HitPoints + healAmount > actor.MaxHP) {
-                        healAmount = actor.MaxHP - actor.HitPoints;
+                    if (actor.CurrentHP + healAmount > actor.MaxHP) {
+                        healAmount = actor.MaxHP - actor.CurrentHP;
                     }
 
-                    actor.HitPoints += healAmount;
+                    actor.CurrentHP += healAmount;
                     return "t|Healed " + healAmount + " hit points!";
 
                 } else {
                     return "f|You're already at max HP!";
                 }
             } else if (item.ItemID == 8) {
-                if (actor.HitPoints != actor.MaxHP) {
+                if (actor.CurrentHP != actor.MaxHP) {
                     int healAmount = GoRogue.DiceNotation.Dice.Roll("2d8");
 
-                    if (actor.HitPoints + healAmount > actor.MaxHP) {
-                        healAmount = actor.MaxHP - actor.HitPoints;
+                    if (actor.CurrentHP + healAmount > actor.MaxHP) {
+                        healAmount = actor.MaxHP - actor.CurrentHP;
                     }
 
-                    actor.HitPoints += healAmount;
+                    actor.CurrentHP += healAmount;
                     return "t|Healed " + healAmount + " hit points!";
 
                 } else {

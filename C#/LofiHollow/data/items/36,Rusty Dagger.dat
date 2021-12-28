@@ -1,0 +1,50 @@
+{
+  "ItemID": 36,
+  "ItemQuantity": 1,
+  "IsStackable": false,
+  "Description": "A rusted dagger",
+  "AverageValue": 20,
+  "Weight": 1,
+  "ItemCategory": 0,
+  "EquipSlot": 0,
+  "ForegroundR": 183,
+  "ForegroundG": 65,
+  "ForegroundB": 14,
+  "ItemGlyph": 20,
+  "Effect": null,
+  "Weapon": {
+    "DamageDice": "1d4-1",
+	"CritMod": 2,
+	"MinCrit": 19,
+	"WeaponCategory": "Light",
+	"WeaponClass": "Simple",
+	"DamageType": "Piercing"
+  },
+  "Appearance": {
+    "Decorators": [],
+    "Foreground": {
+      "_packedValue": 4278190335
+    },
+    "Background": {
+      "_packedValue": 0
+    },
+    "Glyph": 20,
+    "Mirror": 0,
+    "IsVisible": true
+  },
+  "Children": [],
+  "ChildrenLocked": true,
+  "Components": [],
+  "Position": {
+    "X": 0,
+    "Y": 0
+  },
+  "Name": "Rusty Dagger",
+  "ZIndex": 0,
+  "IsVisible": true,
+  "IsEnabled": true,
+  "FocusedMode": 0,
+  "IsExclusiveMouse": false,
+  "UseKeyboard": true,
+  "UseMouse": true
+}

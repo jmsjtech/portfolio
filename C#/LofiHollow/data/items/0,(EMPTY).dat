@@ -1,0 +1,42 @@
+{
+  "ItemID": 0,
+  "ItemQuantity": 0,
+  "IsStackable": false,
+  "Description": " ",
+  "AverageValue": 0,
+  "Weight": 0.0,
+  "ItemCategory": -1,
+  "EquipSlot": -1,
+  "ForegroundR": 0,
+  "ForegroundG": 0,
+  "ForegroundB": 0,
+  "ItemGlyph": 32,
+  "Effect": null,
+  "Appearance": {
+    "Decorators": [],
+    "Foreground": {
+      "_packedValue": 4278190080
+    },
+    "Background": {
+      "_packedValue": 0
+    },
+    "Glyph": 32,
+    "Mirror": 0,
+    "IsVisible": true
+  },
+  "Children": [],
+  "ChildrenLocked": true,
+  "Components": [],
+  "Position": {
+    "X": 0,
+    "Y": 0
+  },
+  "Name": "(EMPTY)",
+  "ZIndex": 0,
+  "IsVisible": true,
+  "IsEnabled": true,
+  "FocusedMode": 0,
+  "IsExclusiveMouse": false,
+  "UseKeyboard": true,
+  "UseMouse": true
+}

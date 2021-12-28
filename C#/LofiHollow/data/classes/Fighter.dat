@@ -1,0 +1,11 @@
+{
+  "ClassID": 0,
+  "Name": "Fighter",
+  "HitDie": "1d10",
+  "BABperLevel": 1.0,
+  "SkillRanks": 2,
+  "ClassLevels": 0,
+  "FortSaveProg": "Good",
+  "RefSaveProg": "Bad",
+  "WillSaveProg": "Bad"
+}
