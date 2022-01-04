@@ -7,5 +7,203 @@
   "ClassLevels": 0,
   "FortSaveProg": "Good",
   "RefSaveProg": "Bad",
-  "WillSaveProg": "Bad"
+  "WillSaveProg": "Bad",
+  "ClassFeatures": [
+    [
+      {
+        "Name": "Bonus feat",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      }
+    ],
+    [
+      {
+        "Name": "Bonus feat",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      },
+      {
+        "Name": "Bravery",
+        "Selection": "+1",
+        "BonusTo": "Will,Fear",
+        "NumericalBonus": 1
+      }
+    ],
+    [
+      {
+        "Name": "Armor Training",
+        "Selection": "",
+        "BonusTo": "ArmorCheckPenalty",
+        "NumericalBonus": -1
+      }
+    ],
+    [
+      {
+        "Name": "Bonus feat",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      }
+    ],
+    [
+      {
+        "Name": "Weapon Training",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 1
+      }
+    ],
+    [
+      {
+        "Name": "Bonus feat",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      },
+      {
+        "Name": "Bravery",
+        "Selection": "+2",
+        "BonusTo": "Will,Fear",
+        "NumericalBonus": 2
+      }
+    ],
+    [
+      {
+        "Name": "Armor Training",
+        "Selection": "",
+        "BonusTo": "ArmorCheckPenalty",
+        "NumericalBonus": -2
+      }
+    ],
+    [
+      {
+        "Name": "Bonus feat",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      }
+    ],
+    [
+      {
+        "Name": "Weapon Training",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      }
+    ],
+    [
+      {
+        "Name": "Bonus feat",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      },
+      {
+        "Name": "Bravery",
+        "Selection": "+3",
+        "BonusTo": "Will,Fear",
+        "NumericalBonus": 3
+      }
+    ],
+    [
+      {
+        "Name": "Armor Training",
+        "Selection": "",
+        "BonusTo": "ArmorCheckPenalty",
+        "NumericalBonus": -3
+      }
+    ],
+    [
+      {
+        "Name": "Bonus feat",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      }
+    ],
+    [
+      {
+        "Name": "Weapon Training",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      }
+    ],
+    [
+      {
+        "Name": "Bonus feat",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      },
+      {
+        "Name": "Bravery",
+        "Selection": "",
+        "BonusTo": "Will,Fear",
+        "NumericalBonus": 4
+      }
+    ],
+    [
+      {
+        "Name": "Armor Training",
+        "Selection": "",
+        "BonusTo": "ArmorCheckPenalty",
+        "NumericalBonus": -4
+      }
+    ],
+    [
+      {
+        "Name": "Bonus feat",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      }
+    ],
+    [
+      {
+        "Name": "Weapon Training",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      }
+    ],
+    [
+      {
+        "Name": "Bonus feat",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      },
+      {
+        "Name": "Bravery",
+        "Selection": "",
+        "BonusTo": "Will,Fear",
+        "NumericalBonus": 5
+      }
+    ],
+    [
+      {
+        "Name": "Armor Mastery",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      }
+    ],
+    [
+      {
+        "Name": "Bonus feat",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      },
+      {
+        "Name": "Weapon Mastery",
+        "Selection": "",
+        "BonusTo": "",
+        "NumericalBonus": 0
+      }
+    ]
+  ]
 }

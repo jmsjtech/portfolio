@@ -1,5 +1,7 @@
 ﻿using SadRogue.Primitives;
 using System;
+using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace LofiHollow {
     public class Point3D : IEquatable<Point3D> {
@@ -49,6 +51,6 @@ namespace LofiHollow {
 
         public override string ToString() {
             return "(" + X + "," + Y + "," + Z + ")";
-        }
+        } 
     }
 }

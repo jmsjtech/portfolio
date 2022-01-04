@@ -16,11 +16,17 @@ namespace LofiHollow.Entities {
         [JsonProperty]
         public bool IsStackable = false;
         [JsonProperty]
+        public string ShortDesc = "";
+        [JsonProperty]
         public string Description = "";
         [JsonProperty]
         public int AverageValue = 0;
         [JsonProperty]
         public float Weight = 0.0f;
+        [JsonProperty]
+        public int Durability = -1;
+        [JsonProperty]
+        public int MaxDurability = -1;
         [JsonProperty]
         public int ItemCategory = -1;
         // -1: Debug / Empty
@@ -30,11 +36,11 @@ namespace LofiHollow.Entities {
         // 3: Axe
         // 4: Hoe
         // 5: Hammer
-        // 6: Helmet
-        // 7: Chestplate
-        // 8: Leggings
-        // 9: Ring
-        // 10: Amulet
+        // 6: Armor
+        // 7: Fishing Rod
+        // 8: 
+        // 9: 
+        // 10: 
         // 11: Consumable
         [JsonProperty]
         public int EquipSlot = -1;
@@ -59,6 +65,12 @@ namespace LofiHollow.Entities {
 
         [JsonProperty]
         public Weapon Weapon;
+
+        [JsonProperty]
+        public Armor Armor;
+
+        [JsonProperty]
+        public Heal Heal;
 
         [JsonProperty]
         public int ForegroundR = 0;
@@ -92,6 +104,7 @@ namespace LofiHollow.Entities {
                 EquipSlot = temp.EquipSlot;
                 IsStackable = temp.IsStackable; 
                 Description = temp.Description;
+                ShortDesc = temp.ShortDesc;
 
                 Weight = temp.Weight;
                 AverageValue = temp.AverageValue;
@@ -105,12 +118,43 @@ namespace LofiHollow.Entities {
                 Appearance.Glyph = ItemGlyph;
 
                 Weapon = temp.Weapon;
+                Heal = temp.Heal;
 
                 if (ID == 0)
                     ItemQuantity = 0;
                 else
                     ItemQuantity = 1;
             }
+        }
+
+        public Item(Item temp) : base(Color.Black, Color.Transparent, 32) { 
+            Name = temp.Name;
+            ItemID = temp.ItemID;
+            SubID = temp.SubID;
+            ItemCategory = temp.ItemCategory;
+            EquipSlot = temp.EquipSlot;
+            IsStackable = temp.IsStackable;
+            Description = temp.Description;
+            ShortDesc = temp.ShortDesc;
+
+            Weight = temp.Weight;
+            AverageValue = temp.AverageValue;
+
+            ForegroundR = temp.ForegroundR;
+            ForegroundG = temp.ForegroundG;
+            ForegroundB = temp.ForegroundB;
+            ItemGlyph = temp.ItemGlyph;
+
+            Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
+            Appearance.Glyph = ItemGlyph;
+
+            Weapon = temp.Weapon;
+            Heal = temp.Heal;
+
+            if (ID == 0)
+                ItemQuantity = 0;
+            else
+                ItemQuantity = 1; 
         }
 
 

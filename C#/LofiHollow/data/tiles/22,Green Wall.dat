@@ -1,7 +1,7 @@
 {
   "TileID": 22,
   "IsBlockingMove": true,
-  "IsBlockingLOS": false,
+  "IsBlockingLOS": true,
   "SpawnsMonsters": false,
   "Name": "Green Wall",
   "ForegroundR": 10,

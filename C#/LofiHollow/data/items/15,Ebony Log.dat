@@ -1,0 +1,43 @@
+{
+  "ItemID": 15,
+  "ItemQuantity": 1,
+  "IsStackable": false,
+  "ShortDesc": "An ebony log",
+  "Description": "",
+  "AverageValue": 2000,
+  "Weight": 1.0,
+  "ItemCategory": -1,
+  "EquipSlot": -1,
+  "ForegroundR": 140,
+  "ForegroundG": 96,
+  "ForegroundB": 63,
+  "ItemGlyph":45,
+  "Effect": null,
+  "Appearance": {
+    "Decorators": [],
+    "Foreground": {
+      "_packedValue": 4280369765
+    },
+    "Background": {
+      "_packedValue": 0
+    },
+    "Glyph": 45,
+    "Mirror": 0,
+    "IsVisible": true
+  },
+  "Children": [],
+  "ChildrenLocked": true,
+  "Components": [],
+  "Position": {
+    "X": 0,
+    "Y": 0
+  },
+  "Name": "Ebony Log",
+  "ZIndex": 0,
+  "IsVisible": true,
+  "IsEnabled": true,
+  "FocusedMode": 0,
+  "IsExclusiveMouse": false,
+  "UseKeyboard": true,
+  "UseMouse": true
+}

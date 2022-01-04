@@ -1,0 +1,20 @@
+{
+  "TemplateID": 0,
+  "Name": "Advanced",
+  "Prefix": true,
+  "CRmod": 1,
+  "STRbonus": 4,
+  "DEXbonus": 4,
+  "CONbonus": 4,
+  "INTbonus": 4,
+  "WISbonus": 4,
+  "CHAbonus": 4,
+  "Features": [
+    {
+      "Name": "Tough Skin",
+      "Selection": "",
+      "BonusTo": "AC,Natural Armor",
+      "NumericalBonus": 2
+    }
+  ]
+}

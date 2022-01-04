@@ -1,9 +1,10 @@
 ﻿using System;
 using SadRogue.Primitives;
 using SadConsole;
+using Newtonsoft.Json;
 
 namespace LofiHollow.Entities {
-    public class Armor : Item {
+    public class Armor {
         public int ArmorBonus = 0;
         public int MaxDexBonus = 0;
         public int ArmorCheckPenalty = 0;
@@ -11,11 +12,12 @@ namespace LofiHollow.Entities {
         public int SpeedReduction = 0;
 
 
-        public Armor(Color foreground, int glyph) : base(foreground, glyph) {
+        [JsonConstructor]
+        public Armor() {
 
         }
 
-        public Armor(Color fg, int glyph, int AC, int maxDex, int ACP, int ASFail, int Speed) : base(fg, glyph) {
+        public Armor(Color fg, int glyph, int AC, int maxDex, int ACP, int ASFail, int Speed) {
             ArmorBonus = AC;
             MaxDexBonus = maxDex;
             ArmorCheckPenalty = ACP;

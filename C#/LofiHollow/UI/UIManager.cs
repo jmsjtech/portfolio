@@ -10,6 +10,9 @@ using System.Collections.Generic;
 using SadRex;
 using Color = SadRogue.Primitives.Color;
 using System.IO;
+using LofiHollow.Entities.NPC;
+using LofiHollow.TileData;
+using Newtonsoft.Json;
 
 namespace LofiHollow.UI {
     public class UIManager : ScreenObject {
@@ -30,10 +33,11 @@ namespace LofiHollow.UI {
         public SadConsole.Console BattleConsole;
         public SadConsole.Console BattleLog;
         public Window BattleWindow;
-        public SadConsole.Console MoveConsole;
-        public Window MoveWindow;
         public SadConsole.Console InvConsole;
         public Window InvWindow;
+
+        public SadConsole.Console DialogueConsole;
+        public Window DialogueWindow;
 
         public SadConsole.Console SignConsole;
         public Window SignWindow;
@@ -43,10 +47,31 @@ namespace LofiHollow.UI {
 
         public SadConsole.Entities.Renderer EntityRenderer;
 
+
+        public GoRogue.FOV FOV;
+        public bool LimitedVision = true;
+
+        public Dictionary<Point3D, MinimapTile> minimap = new Dictionary<Point3D, MinimapTile>();
+
+
         public Point targetDir = new Point(0, 0);
+        public bool BuyingFromShop = true;
+        public List<Item> BuyingItems = new List<Item>();
+        public List<Item> SellingItems = new List<Item>();
+        public int BuyCopper = 0;
+        public int BuySilver = 0;
+        public int BuyGold = 0;
+        public int BuyJade = 0;
         public string targetType = "None";
         public string selectedMenu = "None";
         public string battleResult = "None";
+        public string dialogueOption = "None";
+        public string dialogueLatest = "";
+        public string chitChat1 = "";
+        public string chitChat2 = "";
+        public string chitChat3 = "";
+        public string chitChat4 = "";
+        public string chitChat5 = "";
         public bool battleDone = false;
         public string moveMenu = "None";
         public string signText = "";
@@ -60,6 +85,7 @@ namespace LofiHollow.UI {
 
         public int hotbarSelect = 0; 
         public int invMoveIndex = -1;
+        public NPC DialogueNPC = null;
 
         public int charCreationStage = 0;
         public int ccPointBuyLeft = 20;
@@ -100,17 +126,20 @@ namespace LofiHollow.UI {
                 if (selectedMenu == "Battle" || selectedMenu == "TurnWait" || selectedMenu == "BattleDone") {
                     RenderBattle();
 
-                    if (MoveWindow.IsVisible) {
-                        RenderMoves();
-                        CaptureMoveClicks();
-                    } else if (InvWindow.IsVisible) {
+                    if (InvWindow.IsVisible) {
                         RenderBattleInv();
                         CaptureInvClicks();
                     } else {
                         CaptureBattleClicks();
                     }
                 } else {
-                    CheckKeyboard();
+                    if (selectedMenu != "Dialogue") {
+                        CheckKeyboard();
+                        UpdateNPCs();
+                    } else {
+                        RenderDialogue();
+                        CaptureDialogueClicks();
+                    }
                 }
 
                 RenderOverlays();
@@ -128,6 +157,7 @@ namespace LofiHollow.UI {
             CreateBattleWindow(72, 42, ""); 
             CreateInventoryWindow(GameLoop.GameWidth / 2, GameLoop.GameHeight / 2, "");
             CreateSignWindow((GameLoop.MapWidth / 2) - 1, GameLoop.MapHeight / 2, "");
+            CreateDialogueWindow(72, 42, "");
 
             CreateMainMenu();
 
@@ -139,12 +169,36 @@ namespace LofiHollow.UI {
             MessageLog.IsVisible = false;
 
             EntityRenderer = new SadConsole.Entities.Renderer();
-
-           // LoadMap(GameLoop.World.maps[GameLoop.World.Player.MapPos], true);
-
-           // CreateMapWindow(72, 42, "Game Map");
+             
             UseMouse = true;
             selectedMenu = "MainMenu";
+        }
+
+
+        public void UpdateNPCs() {
+            for (int i = 0; i < GameLoop.World.npcLibrary.Count; i++) {
+                GameLoop.World.npcLibrary[i].Update(false);
+            }
+
+            if (LimitedVision) {
+                for (int i = 0; i < EntityRenderer.Entities.Count; i++) {
+                    Entity ent = (Entity) EntityRenderer.Entities[i];
+
+                    if (FOV.CurrentFOV.Contains(new GoRogue.Coord(ent.Position.X, ent.Position.Y))) {
+                        ent.IsVisible = true;
+                    } else {
+                        ent.IsVisible = false;
+                    }
+
+                    if (ent.MapPos.Z < GameLoop.World.Player.MapPos.Z) {
+                        int depth = GameLoop.World.Player.MapPos.Z - ent.MapPos.Z;
+
+                        Color shaded = new Color(ent.Appearance.Foreground.R, ent.Appearance.Foreground.G, ent.Appearance.Foreground.B, 255 - (depth * 51));
+
+                        ent.Appearance.Foreground = shaded;
+                    }
+                }
+            }
         }
 
 
@@ -395,8 +449,7 @@ namespace LofiHollow.UI {
                     } else if (mousePos.Y == 23) {
                         selectedMenu = "LoadFile";
                         if (Directory.Exists("./saves/")) {
-                            Names = Directory.GetDirectories("./saves/");
-                            System.Console.WriteLine(Names.Length);
+                            Names = Directory.GetDirectories("./saves/"); 
 
                             for (int i = 0; i < Names.Length; i++) {
                                 string[] split = Names[i].Split("/");
@@ -485,6 +538,7 @@ namespace LofiHollow.UI {
                         }
 
                         GameLoop.World.FreshStart();
+                        UpdateVision();
                     }
 
                     if (mousePos.X >= 14 + CreateX && mousePos.X <= 47 + CreateX) {
@@ -534,11 +588,590 @@ namespace LofiHollow.UI {
                             MapWindow.IsVisible = true;
                             MessageLog.IsVisible = true;
                             SidebarWindow.IsVisible = true;
+                            UpdateVision();
                         }
                     }
                 }
             }
         }
+
+
+
+        private void RenderDialogue() {
+            DialogueConsole.Clear();
+            Point mousePos = new MouseScreenObjectState(DialogueConsole, GameHost.Instance.Mouse).CellPosition;
+
+            if (DialogueNPC != null) {
+                DialogueWindow.IsFocused = true;
+                int opinion = 0;
+                if (GameLoop.World.Player.MetNPCs.ContainsKey(DialogueNPC.Name))
+                    opinion = GameLoop.World.Player.MetNPCs[DialogueNPC.Name];
+                
+                DialogueWindow.Title = (DialogueNPC.Name + ", " + DialogueNPC.Occupation + " - " + DialogueNPC.RelationshipDescriptor() + " (" + opinion + ")").Align(HorizontalAlignment.Center, DialogueWindow.Width - 2, (char)196);
+
+                if (dialogueOption == "None" || dialogueOption == "Goodbye") {
+                    if (dialogueLatest.Contains('@') && !GameLoop.World.Player.Name.Contains('@')) {
+                        int index = dialogueLatest.IndexOf('@');
+                        dialogueLatest = dialogueLatest.Remove(index, 1);
+                        dialogueLatest = dialogueLatest.Insert(index, GameLoop.World.Player.Name);
+                    }
+                    string[] allLines = dialogueLatest.Split("|");
+
+                    for (int i = 0; i < allLines.Length; i++)
+                        DialogueConsole.Print(1, 1 + i, new ColoredString(allLines[i], Color.White, Color.Black));
+                }
+
+                if (dialogueOption == "None") { 
+                    //  DialogueConsole.Print(1, DialogueConsole.Height - 19, new ColoredString("Mission: [A book for Cobalt]", mousePos.Y == DialogueConsole.Height - 19 ? Color.Yellow : Color.White, Color.Black));
+
+                    DialogueConsole.DrawLine(new Point(0, DialogueConsole.Height - 20), new Point(DialogueConsole.Width - 1, DialogueConsole.Height - 20), 196, Color.Orange, Color.Black);
+                    
+                    if (DialogueNPC.Shop != null && DialogueNPC.Shop.ShopOpen(DialogueNPC))
+                        DialogueConsole.Print(1, DialogueConsole.Height - 17, new ColoredString("[Open Store]", mousePos.Y == DialogueConsole.Height - 17 ? Color.Yellow : Color.White, Color.Black));
+
+                    DialogueConsole.Print(1, DialogueConsole.Height - 15, new ColoredString("[Give Item]", mousePos.Y == DialogueConsole.Height - 15 ? Color.Yellow : Color.White, Color.Black));
+
+                    DialogueConsole.Print(1, DialogueConsole.Height - 12, new ColoredString("Chit-chat: " + chitChat1, mousePos.Y == DialogueConsole.Height - 12 ? Color.Yellow : Color.White, Color.Black));
+                    DialogueConsole.Print(1, DialogueConsole.Height - 10, new ColoredString("Chit-chat: " + chitChat2, mousePos.Y == DialogueConsole.Height - 10 ? Color.Yellow : Color.White, Color.Black));
+                    DialogueConsole.Print(1, DialogueConsole.Height - 8, new ColoredString("Chit-chat: " + chitChat3, mousePos.Y == DialogueConsole.Height - 8 ? Color.Yellow : Color.White, Color.Black));
+                    DialogueConsole.Print(1, DialogueConsole.Height - 6, new ColoredString("Chit-chat: " + chitChat4, mousePos.Y == DialogueConsole.Height - 6 ? Color.Yellow : Color.White, Color.Black));
+                    DialogueConsole.Print(1, DialogueConsole.Height - 4, new ColoredString("Chit-chat: " + chitChat5, mousePos.Y == DialogueConsole.Height - 4 ? Color.Yellow : Color.White, Color.Black));
+
+                    DialogueConsole.Print(1, DialogueConsole.Height - 1, new ColoredString("Nevermind.", mousePos.Y == DialogueConsole.Height - 1 ? Color.Yellow : Color.White, Color.Black));
+                } else if (dialogueOption == "Goodbye") {
+                    DialogueConsole.Print(1, DialogueConsole.Height -1, new ColoredString("[Click anywhere to close]", mousePos.Y == DialogueConsole.Height - 1 ? Color.Yellow : Color.White, Color.Black));
+                } else if (dialogueOption == "Gift") {
+                    int y = 1;
+                    DialogueConsole.Print(1, y++, "Give what?");
+
+                    for (int i = 0; i < GameLoop.World.Player.Inventory.Length; i++) {
+                        Item item = GameLoop.World.Player.Inventory[i];
+
+                        string nameWithDurability = item.Name;
+
+                        if (item.Durability >= 0)
+                            nameWithDurability = "[" + item.Durability + "] " + item.Name;
+
+                        DialogueConsole.Print(1, y, item.AsColoredGlyph());
+                        if (!item.IsStackable || (item.IsStackable && item.ItemQuantity == 1))
+                            DialogueConsole.Print(3, y, new ColoredString(nameWithDurability, mousePos.Y == y ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.Black));
+                        else
+                            DialogueConsole.Print(3, y, new ColoredString(("(" + item.ItemQuantity + ") " + item.Name), mousePos.Y == y ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.Black));
+
+                        y++;
+                    }
+
+                    DialogueConsole.Print(1, y + 2, new ColoredString("Nevermind.", mousePos.Y == y + 2 ? Color.Yellow : Color.White, Color.Black));
+                } else if (dialogueOption == "Shop") {
+                    
+                    ColoredString shopHeader = new ColoredString(DialogueNPC.Shop.ShopName, Color.White, Color.Black); 
+
+
+                    ColoredString playerCopperString = new ColoredString("CP:" + GameLoop.World.Player.CopperCoins, new Color(184, 115, 51), Color.Black);
+                    ColoredString playerSilverString = new ColoredString("SP:" + GameLoop.World.Player.SilverCoins, Color.Silver, Color.Black);
+                    ColoredString playerGoldString = new ColoredString("GP:" + GameLoop.World.Player.GoldCoins, Color.Yellow, Color.Black);
+                    ColoredString playerJadeString = new ColoredString("JP:" + GameLoop.World.Player.JadeCoins, new Color(0, 168, 107), Color.Black);
+
+                    ColoredString playerMoney = new ColoredString("", Color.White, Color.Black);
+                    playerMoney += playerCopperString + new ColoredString(" / ", Color.White, Color.Black);
+                    playerMoney += playerSilverString + new ColoredString(" / ", Color.White, Color.Black);
+                    playerMoney += playerGoldString + new ColoredString(" / ", Color.White, Color.Black);
+                    playerMoney += playerJadeString;
+
+
+
+                    DialogueConsole.Print(1, 0, GameLoop.World.Player.Name);
+                    DialogueConsole.Print(1, 1, playerMoney);
+                    DialogueConsole.Print(DialogueConsole.Width - (shopHeader.Length + 1), 0, shopHeader); 
+                    DialogueConsole.DrawLine(new Point(0, 2), new Point(DialogueConsole.Width - 1, 2), 196);
+                    if (BuyingFromShop) {
+                        DialogueConsole.Print(0, 3, " Buy  |" + "Item Name".Align(HorizontalAlignment.Center, 23) + "|" + "Short Description".Align(HorizontalAlignment.Center, 27) + "|" + "Price".Align(HorizontalAlignment.Center, 11));
+                        DialogueConsole.DrawLine(new Point(0, 4), new Point(DialogueConsole.Width - 1, 4), 196);
+
+
+                        for (int i = 0; i < DialogueNPC.Shop.SoldItems.Count; i++) {
+                            Item item = new Item(DialogueNPC.Shop.SoldItems[i]);
+                            int price = DialogueNPC.Shop.GetPrice(GameLoop.World.Player.MetNPCs[DialogueNPC.Name], item, false);
+
+                            int buyQuantity = 0;
+
+                            for (int j = 0; j < BuyingItems.Count; j++) {
+                                if (BuyingItems[j].ItemID == item.ItemID && BuyingItems[j].SubID == item.SubID) {
+                                    buyQuantity += BuyingItems[j].ItemQuantity;
+                                }
+                            }
+
+                            DialogueConsole.Print(0, 5 + i, new ColoredString("-", mousePos.Y == 5 + i && mousePos.X == 0 ? Color.Red : Color.White, Color.Black));
+                            DialogueConsole.Print(1, 5 + i, new ColoredString(buyQuantity.ToString().Align(HorizontalAlignment.Center, 3), Color.White, Color.Black));
+                            DialogueConsole.Print(5, 5 + i, new ColoredString("+", mousePos.Y == 5 + i && mousePos.X == 5 ? Color.Lime : Color.White, Color.Black));
+                            DialogueConsole.Print(6, 5 + i, new ColoredString("|" + item.Name.Align(HorizontalAlignment.Center, 23) + "|" + item.ShortDesc.Align(HorizontalAlignment.Center, 27) + "|", mousePos.Y == 5 + i ? Color.Yellow : Color.White, Color.Black));
+                            DialogueConsole.Print(DialogueConsole.Width - 10, 5 + i, ConvertCoppers(price));
+                        }
+
+                        DialogueConsole.DrawLine(new Point(0, DialogueConsole.Height - 7), new Point(DialogueConsole.Width - 1, DialogueConsole.Height - 7), 196);
+                        DialogueConsole.Print(1, DialogueConsole.Height - 6, new ColoredString("[View Inventory]", (mousePos.Y == DialogueConsole.Height - 6 && mousePos.X >= 1 && mousePos.X <= 16) ? Color.Yellow : Color.White, Color.Black));
+                    } else {
+                        DialogueConsole.Print(0, 3, " Sell |" + "Item Name".Align(HorizontalAlignment.Center, 23) + "|" + "Short Description".Align(HorizontalAlignment.Center, 27) + "|" + "Price".Align(HorizontalAlignment.Center, 11));
+                        DialogueConsole.DrawLine(new Point(0, 4), new Point(DialogueConsole.Width - 1, 4), 196);
+
+
+                        for (int i = 0; i < GameLoop.World.Player.Inventory.Length; i++) {
+                            Item item = new Item(GameLoop.World.Player.Inventory[i]);
+                            item.ItemQuantity = GameLoop.World.Player.Inventory[i].ItemQuantity;
+                            int price = DialogueNPC.Shop.GetPrice(GameLoop.World.Player.MetNPCs[DialogueNPC.Name], item, true);
+
+                            int sellQuantity = 0;
+
+                            for (int j = 0; j < SellingItems.Count; j++) {
+                                if (SellingItems[j].ItemID == item.ItemID && SellingItems[j].SubID == item.SubID) {
+                                    sellQuantity = SellingItems[j].ItemQuantity;
+                                }
+                            }
+
+                            string name = item.Name;
+
+                            if (item.ItemQuantity > 1) {
+                                name = "[" + item.ItemQuantity + "] " + name;
+                            }
+
+                            DialogueConsole.Print(0, 5 + i, new ColoredString("-", mousePos.Y == 5 + i && mousePos.X == 0 ? Color.Red : Color.White, Color.Black));
+                            DialogueConsole.Print(1, 5 + i, new ColoredString(sellQuantity.ToString().Align(HorizontalAlignment.Center, 3), Color.White, Color.Black));
+                            DialogueConsole.Print(5, 5 + i, new ColoredString("+", mousePos.Y == 5 + i && mousePos.X == 5 ? Color.Lime : Color.White, Color.Black));
+                            DialogueConsole.Print(6, 5 + i, new ColoredString("|" + name.Align(HorizontalAlignment.Center, 23) + "|" + item.ShortDesc.Align(HorizontalAlignment.Center, 27) + "|", mousePos.Y == 5 + i ? Color.Yellow : Color.White, Color.Black));
+                            DialogueConsole.Print(DialogueConsole.Width - 10, 5 + i, ConvertCoppers(price));
+                        }
+
+                        DialogueConsole.DrawLine(new Point(0, DialogueConsole.Height - 7), new Point(DialogueConsole.Width - 1, DialogueConsole.Height - 7), 196);
+                        DialogueConsole.Print(1, DialogueConsole.Height - 6, new ColoredString("[View Shop]", (mousePos.Y == DialogueConsole.Height - 6 && mousePos.X >= 1 && mousePos.X <= 11) ? Color.Yellow : Color.White, Color.Black));
+                    }
+                    
+                    int buyValue = 0;
+
+                    for (int j = 0; j < BuyingItems.Count; j++) {
+                        buyValue += BuyingItems[j].ItemQuantity * DialogueNPC.Shop.GetPrice(GameLoop.World.Player.MetNPCs[DialogueNPC.Name], BuyingItems[j], false);
+                    }
+
+                    int sellValue = 0;
+
+                    for (int j = 0; j < SellingItems.Count; j++) {
+                        sellValue += SellingItems[j].ItemQuantity * DialogueNPC.Shop.GetPrice(GameLoop.World.Player.MetNPCs[DialogueNPC.Name], SellingItems[j], true);
+                    }
+
+                    DialogueConsole.Print(28, DialogueConsole.Height - 6, "Coins");
+
+                    ColoredString buyCopperString = new ColoredString(BuyCopper.ToString(), new Color(184, 115, 51), Color.Black);
+                    ColoredString buySilverString = new ColoredString(BuySilver.ToString(), Color.Silver, Color.Black);
+                    ColoredString buyGoldString = new ColoredString(BuyGold.ToString(), Color.Yellow, Color.Black);
+                    ColoredString buyJadeString = new ColoredString(BuyJade.ToString(), new Color(0, 168, 107), Color.Black);
+
+                    DialogueConsole.Print(30, DialogueConsole.Height - 5, buyCopperString);
+                    DialogueConsole.Print(30, DialogueConsole.Height - 4, buySilverString);
+                    DialogueConsole.Print(30, DialogueConsole.Height - 3, buyGoldString);
+                    DialogueConsole.Print(30, DialogueConsole.Height - 2, buyJadeString);
+
+                    DialogueConsole.Print(28, DialogueConsole.Height - 5, new ColoredString("-", mousePos == new Point(28, DialogueConsole.Height - 5) ? Color.Red : Color.White, Color.Black));
+                    DialogueConsole.Print(28, DialogueConsole.Height - 4, new ColoredString("-", mousePos == new Point(28, DialogueConsole.Height - 4) ? Color.Red : Color.White, Color.Black));
+                    DialogueConsole.Print(28, DialogueConsole.Height - 3, new ColoredString("-", mousePos == new Point(28, DialogueConsole.Height - 3) ? Color.Red : Color.White, Color.Black));
+                    DialogueConsole.Print(28, DialogueConsole.Height - 2, new ColoredString("-", mousePos == new Point(28, DialogueConsole.Height - 2) ? Color.Red : Color.White, Color.Black));
+
+                    DialogueConsole.Print(32, DialogueConsole.Height - 5, new ColoredString("+", mousePos == new Point(32, DialogueConsole.Height - 5) ? Color.Lime : Color.White, Color.Black));
+                    DialogueConsole.Print(32, DialogueConsole.Height - 4, new ColoredString("+", mousePos == new Point(32, DialogueConsole.Height - 4) ? Color.Lime : Color.White, Color.Black));
+                    DialogueConsole.Print(32, DialogueConsole.Height - 3, new ColoredString("+", mousePos == new Point(32, DialogueConsole.Height - 3) ? Color.Lime : Color.White, Color.Black));
+                    DialogueConsole.Print(32, DialogueConsole.Height - 2, new ColoredString("+", mousePos == new Point(32, DialogueConsole.Height - 2) ? Color.Lime : Color.White, Color.Black));
+
+                    sellValue += BuyCopper;
+                    sellValue += BuySilver * 10;
+                    sellValue += BuyGold * 100;
+                    sellValue += BuyJade * 1000;
+
+                    DialogueConsole.Print(27, DialogueConsole.Height - 1, "[EXACT]");
+
+                    DialogueConsole.Print(1, DialogueConsole.Height - 4, new ColoredString("Buy Value: ", Color.White, Color.Black) + ConvertCoppers(buyValue));
+                    DialogueConsole.Print(1, DialogueConsole.Height - 3, new ColoredString("Sell Value: ", Color.White, Color.Black) + ConvertCoppers(sellValue));
+
+                    int diff = buyValue - sellValue;
+
+                    string total = diff > 0 ? "You owe " : diff == 0 ? "Trade is equal" : "You are owed ";
+
+                    if (diff < 0)
+                        DialogueConsole.Print(1, DialogueConsole.Height - 2, new ColoredString(total, Color.White, Color.Black) + ConvertCoppers(-diff));
+                    else if (diff > 0)
+                        DialogueConsole.Print(1, DialogueConsole.Height - 2, new ColoredString(total, Color.White, Color.Black) + ConvertCoppers(diff));
+                    else 
+                        DialogueConsole.Print(1, DialogueConsole.Height - 2, new ColoredString(total, Color.White, Color.Black));
+
+                    if (diff <= 0)
+                        DialogueConsole.Print(DialogueConsole.Width - 15, DialogueConsole.Height - 5, new ColoredString("[Accept - Gift]", Color.Green, Color.Black));
+                    else
+                        DialogueConsole.Print(DialogueConsole.Width - 15, DialogueConsole.Height - 5, new ColoredString("[Accept - Gift]", Color.Red, Color.Black));
+
+
+                    if (diff <= 0)
+                        DialogueConsole.Print(DialogueConsole.Width - 8, DialogueConsole.Height - 3, new ColoredString("[Accept]", Color.Green, Color.Black));
+                    else
+                        DialogueConsole.Print(DialogueConsole.Width - 8, DialogueConsole.Height - 3, new ColoredString("[Accept]", Color.Red, Color.Black));
+
+                    DialogueConsole.Print(DialogueConsole.Width - 12, DialogueConsole.Height - 1, new ColoredString("[Close Shop]", (mousePos.Y == DialogueConsole.Height - 1 && mousePos.X >= DialogueConsole.Width - 12 && mousePos.X <= DialogueConsole.Width - 1) ? Color.Yellow : Color.White, Color.Black));
+
+                }
+            }
+        }
+
+        private void CaptureDialogueClicks() {
+            Point mousePos = new MouseScreenObjectState(DialogueConsole, GameHost.Instance.Mouse).CellPosition;
+            if (GameHost.Instance.Mouse.LeftClicked) {
+                if (dialogueOption == "Goodbye") {
+                    dialogueOption = "None";
+                    selectedMenu = "None";
+                    DialogueWindow.IsVisible = false;
+                    DialogueNPC = null;
+                    dialogueLatest = "";
+                    DialogueConsole.Clear();
+                } else if (dialogueOption == "Shop") {
+                    if (mousePos.Y == DialogueConsole.Height - 1 && mousePos.X >= DialogueConsole.Width - 12 && mousePos.X <= DialogueConsole.Width - 1) {
+                        dialogueOption = "None";
+                        BuyingItems.Clear();
+                        SellingItems.Clear();
+                        BuyingFromShop = true;
+                    }
+
+                    if (mousePos.X == 28) {
+                        if (mousePos.Y == DialogueConsole.Height - 5 && BuyCopper > 0 ) { BuyCopper--; }
+                        if (mousePos.Y == DialogueConsole.Height - 4 && BuySilver > 0) { BuySilver--; }
+                        if (mousePos.Y == DialogueConsole.Height - 3 && BuyGold > 0) { BuyGold--; }
+                        if (mousePos.Y == DialogueConsole.Height - 2 && BuyJade > 0) { BuyJade--; } 
+                    }
+
+                    if (mousePos.X == 32) {
+                        if (mousePos.Y == DialogueConsole.Height - 5 && BuyCopper < GameLoop.World.Player.CopperCoins) { BuyCopper++; }
+                        if (mousePos.Y == DialogueConsole.Height - 4 && BuySilver < GameLoop.World.Player.SilverCoins) { BuySilver++; }
+                        if (mousePos.Y == DialogueConsole.Height - 3 && BuyGold < GameLoop.World.Player.GoldCoins) { BuyGold++; }
+                        if (mousePos.Y == DialogueConsole.Height - 2 && BuyJade < GameLoop.World.Player.JadeCoins) { BuyJade++; }
+                    }
+
+                    int buyValue = 0; 
+                    for (int j = 0; j < BuyingItems.Count; j++) {
+                        buyValue += BuyingItems[j].ItemQuantity * DialogueNPC.Shop.GetPrice(GameLoop.World.Player.MetNPCs[DialogueNPC.Name], BuyingItems[j], false);
+                    }
+
+                    int sellValue = 0; 
+                    for (int j = 0; j < SellingItems.Count; j++) {
+                        sellValue += SellingItems[j].ItemQuantity * DialogueNPC.Shop.GetPrice(GameLoop.World.Player.MetNPCs[DialogueNPC.Name], SellingItems[j], true);
+                    }
+
+                    sellValue += BuyCopper;
+                    sellValue += BuySilver * 10;
+                    sellValue += BuyGold * 100;
+                    sellValue += BuyJade * 1000;
+
+                    int diff = buyValue - sellValue;
+
+                    if (mousePos.X >= 27 && mousePos.X <= 33 && mousePos.Y == DialogueConsole.Height - 1 && diff > 0) {
+                        if (diff >= 1000)
+                            BuyJade = diff / 1000;
+                        diff -= BuyJade * 1000;
+
+                        if (diff >= 100)
+                            BuyGold = diff / 100;
+                        diff -= BuyGold * 100;
+
+                        if (diff >= 10)
+                            BuySilver = diff / 10;
+                        diff -= BuySilver * 10;
+
+                        BuyCopper = diff;
+
+                        if (BuyJade > GameLoop.World.Player.JadeCoins) {
+                            int jadeOff = BuyJade - GameLoop.World.Player.JadeCoins;
+                            BuyJade = GameLoop.World.Player.JadeCoins;
+                            BuyGold += jadeOff * 10;
+                        }
+
+                        if (BuyGold > GameLoop.World.Player.GoldCoins) {
+                            int goldOff = BuyJade - GameLoop.World.Player.GoldCoins;
+                            BuyGold = GameLoop.World.Player.GoldCoins;
+                            BuySilver += goldOff * 10;
+                        }
+
+                        if (BuySilver > GameLoop.World.Player.SilverCoins) {
+                            int silverOff = BuyJade - GameLoop.World.Player.SilverCoins;
+                            BuySilver = GameLoop.World.Player.SilverCoins;
+                            BuyCopper += silverOff * 10;
+                        }
+
+                        if (BuyCopper > GameLoop.World.Player.CopperCoins) {
+                            BuyCopper = GameLoop.World.Player.CopperCoins;
+                        }
+
+                    }
+
+                    if (diff <= 0) {
+                        if (mousePos.X >= DialogueConsole.Width - 8 && mousePos.X <= DialogueConsole.Width - 3 && mousePos.Y == DialogueConsole.Height - 3) {
+                            GameLoop.World.Player.CopperCoins -= BuyCopper;
+                            GameLoop.World.Player.SilverCoins -= BuySilver;
+                            GameLoop.World.Player.GoldCoins -= BuyGold;
+                            GameLoop.World.Player.JadeCoins -= BuyJade;
+
+                            diff *= -1;
+                            int plat = 0;
+                            int gold = 0;
+                            int silver = 0; 
+
+                            if (diff > 1000)
+                                plat = diff / 1000;
+                            diff -= plat * 1000;
+
+                            if (diff > 100)
+                                gold = diff / 100;
+                            diff -= gold * 100;
+
+                            if (diff > 10)
+                                silver = diff / 10;
+                            diff -= silver * 10;
+                             
+
+                            GameLoop.World.Player.CopperCoins += diff;
+                            GameLoop.World.Player.SilverCoins += silver;
+                            GameLoop.World.Player.GoldCoins += gold;
+                            GameLoop.World.Player.JadeCoins += plat;
+
+                            for (int i = 0; i < SellingItems.Count; i++) {
+                                for (int j = 0; j < GameLoop.World.Player.Inventory.Length; j++) {
+                                    if (GameLoop.World.Player.Inventory[j].ItemID == SellingItems[i].ItemID && GameLoop.World.Player.Inventory[j].SubID == SellingItems[i].SubID) {
+                                        GameLoop.World.Player.Inventory[j].ItemQuantity -= SellingItems[i].ItemQuantity;
+                                        if (GameLoop.World.Player.Inventory[j].ItemQuantity <= 0) {
+                                            GameLoop.World.Player.Inventory[j] = new Item(0);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+
+                            for (int i = 0; i < BuyingItems.Count; i++) {
+                                GameLoop.CommandManager.AddItemToInv(GameLoop.World.Player, BuyingItems[i]);
+                            }
+
+                            BuyCopper = 0;
+                            BuySilver = 0;
+                            BuyGold = 0;
+                            BuyJade = 0;
+
+                            BuyingItems.Clear();
+                            SellingItems.Clear();
+                        } else if (mousePos.X >= DialogueConsole.Width - 15 && mousePos.X <= DialogueConsole.Width - 3 && mousePos.Y == DialogueConsole.Height - 5) {
+                            GameLoop.World.Player.CopperCoins -= BuyCopper;
+                            GameLoop.World.Player.SilverCoins -= BuySilver;
+                            GameLoop.World.Player.GoldCoins -= BuyGold;
+                            GameLoop.World.Player.JadeCoins -= BuyJade;
+
+                            diff *= -1;
+                            
+                            if (diff >= 100) {
+                                string reaction = DialogueNPC.ReactGift(-2);
+                                if (DialogueNPC.GiftResponses.ContainsKey(reaction))
+                                    dialogueLatest = DialogueNPC.GiftResponses[reaction];
+                                else
+                                    dialogueLatest = "Error - No response for " + reaction + " gift.";
+                            } else if (diff >= 10) {
+                                string reaction = DialogueNPC.ReactGift(-3);
+                                if (DialogueNPC.GiftResponses.ContainsKey(reaction))
+                                    dialogueLatest = DialogueNPC.GiftResponses[reaction];
+                                else
+                                    dialogueLatest = "Error - No response for " + reaction + " gift.";
+                            }
+
+
+
+                            for (int i = 0; i < SellingItems.Count; i++) {
+                                for (int j = 0; j < GameLoop.World.Player.Inventory.Length; j++) {
+                                    if (GameLoop.World.Player.Inventory[j].ItemID == SellingItems[i].ItemID && GameLoop.World.Player.Inventory[j].SubID == SellingItems[i].SubID) {
+                                        GameLoop.World.Player.Inventory[j].ItemQuantity -= SellingItems[i].ItemQuantity;
+                                        if (GameLoop.World.Player.Inventory[j].ItemQuantity <= 0) {
+                                            GameLoop.World.Player.Inventory[j] = new Item(0);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+
+                            for (int i = 0; i < BuyingItems.Count; i++) {
+                                GameLoop.CommandManager.AddItemToInv(GameLoop.World.Player, BuyingItems[i]);
+                            }
+
+                            BuyCopper = 0;
+                            BuySilver = 0;
+                            BuyGold = 0;
+                            BuyJade = 0;
+
+                            BuyingItems.Clear();
+                            SellingItems.Clear();
+                            dialogueOption = "None";
+                            BuyingFromShop = false;
+                            return;
+                        }
+                    }
+
+                    if (BuyingFromShop) {
+                        if (mousePos.Y == DialogueConsole.Height - 6 && mousePos.X >= 1 && mousePos.X <= 16) {
+                            BuyingFromShop = false;
+                        } else {
+                            int itemSlot = mousePos.Y - 5;
+                            if (itemSlot >= 0 && itemSlot <= DialogueNPC.Shop.SoldItems.Count) {
+                                if (mousePos.X == 0) {
+                                    for (int i = 0; i < BuyingItems.Count; i++) {
+                                        if (BuyingItems[i].ItemID == DialogueNPC.Shop.SoldItems[itemSlot]) {
+                                            if (BuyingItems[i].IsStackable && BuyingItems[i].ItemQuantity > 1) {
+                                                BuyingItems[i].ItemQuantity--;
+                                                break;
+                                            } else if (!BuyingItems[i].IsStackable || BuyingItems[i].ItemQuantity == 1) {
+                                                BuyingItems.RemoveAt(i);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                } else if (mousePos.X == 5) {
+                                    bool alreadyInList = false;
+                                    for (int i = 0; i < BuyingItems.Count; i++) {
+                                        if (BuyingItems[i].ItemID == DialogueNPC.Shop.SoldItems[itemSlot]) {
+                                            if (BuyingItems[i].IsStackable) {
+                                                alreadyInList = true;
+                                                BuyingItems[i].ItemQuantity++;
+                                                break;
+                                            } else if (!BuyingItems[i].IsStackable) {
+                                                alreadyInList = true;
+                                                BuyingItems.Add(new Item(DialogueNPC.Shop.SoldItems[itemSlot]));
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    if (!alreadyInList) {
+                                        BuyingItems.Add(new Item(DialogueNPC.Shop.SoldItems[itemSlot]));
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if (mousePos.Y == DialogueConsole.Height - 6 && mousePos.X >= 1 && mousePos.X <= 11) {
+                            BuyingFromShop = true;
+                        } else {
+                            int itemSlot = mousePos.Y - 5;
+                            if (itemSlot >= 0 && itemSlot <= GameLoop.World.Player.Inventory.Length) {
+                                if (mousePos.X == 0) {
+                                    for (int i = 0; i < SellingItems.Count; i++) {
+                                        if (SellingItems[i].ItemID == GameLoop.World.Player.Inventory[itemSlot].ItemID && SellingItems[i].SubID == GameLoop.World.Player.Inventory[itemSlot].SubID) {
+                                            if (SellingItems[i].IsStackable && SellingItems[i].ItemQuantity > 1) {
+                                                SellingItems[i].ItemQuantity--;
+                                                break;
+                                            } else if (!SellingItems[i].IsStackable || SellingItems[i].ItemQuantity == 1) {
+                                                SellingItems.RemoveAt(i);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                } else if (mousePos.X == 5) {
+                                    bool alreadyInList = false;
+                                    
+                                    for (int i = 0; i < SellingItems.Count; i++) {
+                                        int thisItemCount = 0;
+                                        int alreadyInListCount = 0;
+                                        if (SellingItems[i].ItemID == GameLoop.World.Player.Inventory[itemSlot].ItemID && SellingItems[i].SubID == GameLoop.World.Player.Inventory[itemSlot].SubID) {
+                                            if (SellingItems[i].IsStackable) {
+                                                alreadyInList = true;
+                                                if (SellingItems[i].ItemQuantity < GameLoop.World.Player.Inventory[itemSlot].ItemQuantity) { 
+                                                    SellingItems[i].ItemQuantity++;
+                                                    break;
+                                                }
+                                            } else if (!SellingItems[i].IsStackable) {
+                                                for (int j = 0; j < GameLoop.World.Player.Inventory.Length; j++) {
+                                                    if (GameLoop.World.Player.Inventory[j].ItemID == SellingItems[i].ItemID && GameLoop.World.Player.Inventory[j].SubID == SellingItems[i].SubID) {
+                                                        thisItemCount++;
+                                                    }
+                                                }
+
+                                                for (int j = 0; j < SellingItems.Count; j++) {
+                                                    if (GameLoop.World.Player.Inventory[itemSlot].ItemID == SellingItems[j].ItemID && GameLoop.World.Player.Inventory[itemSlot].SubID == SellingItems[j].SubID) {
+                                                        alreadyInListCount++;
+                                                    }
+                                                }
+
+                                                if (alreadyInListCount < thisItemCount) {
+                                                    alreadyInList = true;
+                                                    SellingItems.Add(new Item(GameLoop.World.Player.Inventory[itemSlot]));
+                                                    break;
+                                                } else {
+                                                    alreadyInList = true;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (!alreadyInList) {
+                                        SellingItems.Add(new Item(GameLoop.World.Player.Inventory[itemSlot]));
+                                        SellingItems[SellingItems.Count - 1].ItemQuantity = 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (dialogueOption == "Gift") {
+                    if (mousePos.Y == 4 + GameLoop.World.Player.Inventory.Length) {
+                        dialogueOption = "None";
+                    } else if (mousePos.Y >= 2 && mousePos.Y <= 2 + GameLoop.World.Player.Inventory.Length) {
+                        int slot = mousePos.Y - 2;
+                        int itemID = GameLoop.CommandManager.RemoveOneItem(GameLoop.World.Player, slot);
+
+                        if (itemID != -1 && itemID != 0) {
+                            string reaction = DialogueNPC.ReactGift(itemID);
+                            dialogueOption = "None";
+                            if (DialogueNPC.GiftResponses.ContainsKey(reaction))
+                                dialogueLatest = DialogueNPC.GiftResponses[reaction];
+                            else
+                                dialogueLatest = "Error - No response for " + reaction + " gift.";
+                        }
+                    }
+                } else if (dialogueOption == "None") {
+                    if (mousePos.Y == DialogueConsole.Height - 1) {
+                        dialogueOption = "Goodbye";
+                        if (DialogueNPC.Farewells.ContainsKey(DialogueNPC.RelationshipDescriptor())) {
+                            dialogueLatest = DialogueNPC.Farewells[DialogueNPC.RelationshipDescriptor()];
+                        } else {
+                            dialogueLatest = "Error: Greeting not found for relationship " + DialogueNPC.RelationshipDescriptor();
+                        }
+                    } else if (mousePos.Y <= DialogueConsole.Height - 4 && mousePos.Y >= DialogueConsole.Height - 12) {
+                        string chat = "";
+
+                        if (mousePos.Y == DialogueConsole.Height - 12)
+                            chat = DialogueNPC.ChitChats[chitChat1];
+                        else if (mousePos.Y == DialogueConsole.Height - 10)
+                            chat = DialogueNPC.ChitChats[chitChat2];
+                        else if (mousePos.Y == DialogueConsole.Height - 8)
+                            chat = DialogueNPC.ChitChats[chitChat3];
+                        else if (mousePos.Y == DialogueConsole.Height - 6)
+                            chat = DialogueNPC.ChitChats[chitChat4];
+                        else if (mousePos.Y == DialogueConsole.Height - 4)
+                            chat = DialogueNPC.ChitChats[chitChat5];
+
+                        if (chat != "") {
+                            string[] chatParts = chat.Split("~");
+
+                            if (chatParts.Length == 2) {
+                                dialogueLatest = chatParts[1];
+                                GameLoop.World.Player.MetNPCs[DialogueNPC.Name] += Int32.Parse(chatParts[0]);
+                                DialogueNPC.UpdateChitChats();
+                            }
+                        }
+                    } else if (mousePos.Y == DialogueConsole.Height - 15) { // Give item
+                        dialogueOption = "Gift";
+                    } else if (mousePos.Y == DialogueConsole.Height - 17) { // Open shop dialogue
+                        if (DialogueNPC.Shop != null && DialogueNPC.Shop.ShopOpen(DialogueNPC))
+                            dialogueOption = "Shop";
+                    }
+                }
+            }
+        }
+
+
 
 
 
@@ -559,19 +1192,33 @@ namespace LofiHollow.UI {
                         GameLoop.CommandManager.MoveActorTo(GameLoop.World.Player, GameLoop.World.Player.Position, GameLoop.World.Player.MapPos + new Point3D(1, 0, 0));
                     }
                 } else {
-                    if (GameHost.Instance.Keyboard.IsKeyDown(Key.W)) { GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(0, -1)); }
-                    if (GameHost.Instance.Keyboard.IsKeyDown(Key.S)) { GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(0, 1)); }
-                    if (GameHost.Instance.Keyboard.IsKeyDown(Key.A)) { GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(-1, 0)); }
-                    if (GameHost.Instance.Keyboard.IsKeyDown(Key.D)) { GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(1, 0)); }
+                    if (GameHost.Instance.Keyboard.IsKeyDown(Key.W)) { 
+                        GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(0, -1));
+                        GameLoop.UIManager.UpdateVision();
+                    }
+                    if (GameHost.Instance.Keyboard.IsKeyDown(Key.S)) { 
+                        GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(0, 1));
+                        GameLoop.UIManager.UpdateVision();
+                    }
+                    if (GameHost.Instance.Keyboard.IsKeyDown(Key.A)) { 
+                        GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(-1, 0));
+                        GameLoop.UIManager.UpdateVision();
+                    }
+                    if (GameHost.Instance.Keyboard.IsKeyDown(Key.D)) {
+                        GameLoop.CommandManager.MoveActorBy(GameLoop.World.Player, new Point(1, 0));
+                        GameLoop.UIManager.UpdateVision();
+                    }
                     if (GameHost.Instance.Keyboard.IsKeyDown(Key.LeftShift) && GameHost.Instance.Keyboard.IsKeyPressed(Key.OemPeriod)) {
                         if (GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(GameLoop.World.Player.Position).Name == "Down Stairs") {
                             GameLoop.CommandManager.MoveActorTo(GameLoop.World.Player, GameLoop.World.Player.Position, GameLoop.World.Player.MapPos + new Point3D(0, 0, -1));
+                            GameLoop.UIManager.UpdateVision();
                         }
                     }
 
                     if (GameHost.Instance.Keyboard.IsKeyDown(Key.LeftShift) && GameHost.Instance.Keyboard.IsKeyPressed(Key.OemComma)) {
                         if (GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(GameLoop.World.Player.Position).Name == "Up Stairs") {
                             GameLoop.CommandManager.MoveActorTo(GameLoop.World.Player, GameLoop.World.Player.Position, GameLoop.World.Player.MapPos + new Point3D(0, 0, 1));
+                            GameLoop.UIManager.UpdateVision();
                         }
                     }
 
@@ -650,12 +1297,34 @@ namespace LofiHollow.UI {
                     GameLoop.World.SaveMapToFile(GameLoop.World.maps[GameLoop.World.Player.MapPos], GameLoop.World.Player.MapPos);
                 }
 
+                if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F5)) {
+                    LimitedVision = !LimitedVision;
+
+                    if (!LimitedVision) {
+                        for (int i = 0; i < GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles.Length; i++) {
+                            GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Unshade();
+                            GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].IsVisible = true;
+                        }
+                    } else {
+                        UpdateVision();
+                    }
+                }
+
+                if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F8)) {
+                    GameLoop.World.Player.MetNPCs["Cobalt"] = 100;
+                }
+                if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F7)) {
+                    GameLoop.World.Player.MetNPCs["Cobalt"] = -100;
+                }
+
+
+
                 if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F3)) {
                     GameLoop.World.SavePlayer(); 
                 }
 
                 if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F2)) {
-                    GameLoop.World.Player.Inventory[5] = new Item(6);
+                    MessageLog.Add(GameLoop.World.Player.MapPos.ToString() + " | " + GameLoop.World.Player.Position.ToString());
                 }
             } else if (selectedMenu == "Sign") {
                 if (GameHost.Instance.Keyboard.HasKeysPressed) {
@@ -677,11 +1346,11 @@ namespace LofiHollow.UI {
                     MessageLog.Add("Close door where?");
                 }
 
-                Point mousePos = new MouseScreenObjectState(SidebarConsole, GameHost.Instance.Mouse).CellPosition - new Point(0, 26);
+                Point mousePos = new MouseScreenObjectState(SidebarConsole, GameHost.Instance.Mouse).CellPosition - new Point(0, 33);
                 if (mousePos.X > 0) { // Clicked in Sidebar
-                    if (GameHost.Instance.Mouse.LeftClicked) { 
+                    if (GameHost.Instance.Mouse.LeftClicked) {
                         int slot = mousePos.Y;
-                        if (slot >= 0 && slot <= 6)
+                        if (slot >= 0 && slot <= 15)
                             GameLoop.CommandManager.UnequipItem(GameLoop.World.Player, slot); 
                     }
                 }
@@ -692,7 +1361,8 @@ namespace LofiHollow.UI {
                 if (GameHost.Instance.Keyboard.IsKeyReleased(Key.W)) { targetDir = new Point(0, -1); } 
 
                 if (targetType == "Door" && targetDir != new Point(0, 0)) { 
-                    GameLoop.World.maps[GameLoop.World.Player.MapPos].ToggleDoor(GameLoop.World.Player.Position + targetDir, false);
+                    GameLoop.World.maps[GameLoop.World.Player.MapPos].ToggleDoor(GameLoop.World.Player.Position + targetDir);
+                    UpdateVision();
                     targetType = "Done";
                 } else if (targetType != "Door") {
                     targetType = "None";
@@ -719,10 +1389,15 @@ namespace LofiHollow.UI {
 
                 if (!GameHost.Instance.Keyboard.IsKeyDown(Key.LeftShift)) {
                     if (GameHost.Instance.Mouse.ScrollWheelValueChange < 0) {
-                        tileIndex++;
+                        if (tileIndex < GameLoop.World.tileLibrary.Count)
+                            tileIndex++;
+                        else
+                            tileIndex = 0;
                     } else if (GameHost.Instance.Mouse.ScrollWheelValueChange > 0) {
                         if (tileIndex > 0)
                             tileIndex--;
+                        else
+                            tileIndex = GameLoop.World.tileLibrary.Count - 1;
                     }
                 } else {
                     if (GameHost.Instance.Mouse.ScrollWheelValueChange < 0) {
@@ -737,17 +1412,13 @@ namespace LofiHollow.UI {
                 if (mousePos.X < 72 && mousePos.Y < 41 && mousePos.X >= 0 && mousePos.Y >= 0) {
                     if (GameHost.Instance.Mouse.LeftButtonDown) { 
                         if (GameLoop.World.tileLibrary.ContainsKey(tileIndex)) {
-                            TileBase tile = GameLoop.World.tileLibrary[tileIndex];
+                            TileBase tile = new TileBase(tileIndex);
                             tile.TileID = tileIndex;
                             if (mousePos.ToIndex(GameLoop.MapWidth) < GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles.Length) 
                                 GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[mousePos.ToIndex(GameLoop.MapWidth)] = tile; 
                         } else {
                             MessageLog.Add("No tile found");
                         } 
-                    }
-
-                    if (GameHost.Instance.Mouse.LeftClicked) {
-                        LoadMap(GameLoop.World.maps[GameLoop.World.Player.MapPos], false);
                     }
                 } else {
                     mousePos -= new Point(72, 0);
@@ -783,30 +1454,37 @@ namespace LofiHollow.UI {
             }
         }
 
-        public void LoadMap(Map map, bool firstLoad) {
+        public void LoadMap(Point3D pos, bool firstLoad) {
+            if (!GameLoop.World.maps.ContainsKey(pos)) { GameLoop.World.CreateMap(pos); }
+            Map map = GameLoop.World.maps[pos];
+
             if (firstLoad) {
                 MapConsole = new SadConsole.Console(GameLoop.MapWidth, GameLoop.MapHeight, map.Tiles);
                 CreateMapWindow(72, 42, map.MinimapTile.name);
+                
             } else { 
                 for (int i = 0; i < map.Tiles.Length; i++) {
-                    if (map.Tiles[i].Name == "Space" && GameLoop.World.maps.ContainsKey(GameLoop.World.Player.MapPos - new Point3D(0, 0, 1))) {
-                        TileBase below = GameLoop.World.maps[GameLoop.World.Player.MapPos - new Point3D(0, 0, 1)].Tiles[i];
-                        map.Tiles[i].SetNewFG(below.Foreground * 0.8f, below.Glyph);
+                    map.Tiles[i].Unshade();
+                    map.Tiles[i].IsVisible = false;
 
-                        if (below.Name == "Space" && GameLoop.World.maps.ContainsKey(GameLoop.World.Player.MapPos - new Point3D(0, 0, 2))) {
-                            TileBase newBelow = GameLoop.World.maps[GameLoop.World.Player.MapPos - new Point3D(0, 0, 2)].Tiles[i];
-                            map.Tiles[i].SetNewFG(newBelow.Foreground * 0.6f, newBelow.Glyph); 
+                    int depth = 0;
+                    TileBase tile = new TileBase(GameLoop.World.maps[GameLoop.World.Player.MapPos + new Point3D(0, 0, depth)].Tiles[i].TileID);
 
-                            if (newBelow.Name == "Space" && GameLoop.World.maps.ContainsKey(GameLoop.World.Player.MapPos - new Point3D(0, 0, 3))) {
-                                TileBase newBelow2 = GameLoop.World.maps[GameLoop.World.Player.MapPos - new Point3D(0, 0, 3)].Tiles[i];
-                                map.Tiles[i].SetNewFG(newBelow2.Foreground * 0.4f, newBelow2.Glyph);
-                                  
-                                if (newBelow2.Name == "Space" && GameLoop.World.maps.ContainsKey(GameLoop.World.Player.MapPos - new Point3D(0, 0, 4))) {
-                                    TileBase newBelow3 = GameLoop.World.maps[GameLoop.World.Player.MapPos - new Point3D(0, 0, 4)].Tiles[i];
-                                    map.Tiles[i].SetNewFG(newBelow3.Foreground * 0.2f, newBelow3.Glyph);
-                                }
-                            }
-                        } 
+                    if (map.Tiles[i].Name == "Space") {
+                        while (tile.Name == "Space" && GameLoop.World.maps.ContainsKey(GameLoop.World.Player.MapPos + new Point3D(0, 0, depth - 1))) {
+                            depth--;
+                            tile = new TileBase(GameLoop.World.maps[GameLoop.World.Player.MapPos + new Point3D(0, 0, depth)].Tiles[i].TileID);
+                        }
+
+                        float mult = Math.Max(0.0f, 1.0f + (depth * 0.2f));
+
+                        Color shaded = tile.Foreground * mult;
+
+                        map.Tiles[i].ForegroundR = shaded.R;
+                        map.Tiles[i].ForegroundG = shaded.G;
+                        map.Tiles[i].ForegroundB = shaded.B;
+                        map.Tiles[i].TileGlyph = tile.TileGlyph;
+                        map.Tiles[i].UpdateAppearance(); 
                     }
                 }
 
@@ -829,19 +1507,29 @@ namespace LofiHollow.UI {
                 foreach (Entity entity in map.Entities.Items) {
                     EntityRenderer.Add(entity);
                 }
+
+                for (int i = 0; i < GameLoop.World.npcLibrary.Count; i++) {
+                    NPC temp = GameLoop.World.npcLibrary[i];
+                    if (temp.MapPos == GameLoop.World.Player.MapPos || (temp.MapPos.X == GameLoop.World.Player.MapPos.X && temp.MapPos.Y == GameLoop.World.Player.MapPos.Y && temp.MapPos.Z < GameLoop.World.Player.MapPos.Z)) {
+                        EntityRenderer.Add(temp);
+                    }
+                }
+
+                FOV = new GoRogue.FOV(GameLoop.World.maps[GameLoop.World.Player.MapPos].MapFOV);
+
+                UpdateVision();
             }
         }
 
         private void RenderOverlays() {
             for (int i = 0; i < GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles.Length; i++) {
-                if (GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Name == "Bed") {
-                    MapConsole.AddDecorator(i, 1, new CellDecorator(Color.White, 14, Mirror.None));
-                } else if (GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Name == "Oak Tree") {
-                    MapConsole.AddDecorator(i, 1, new CellDecorator(new Color(0, 127, 0), 242, Mirror.None));
+                if (GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Dec != null) { 
+                    Decorator dec = GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Dec;
+                    MapConsole.AddDecorator(i, 1, new CellDecorator(new Color(dec.R, dec.G, dec.B, dec.A), dec.Glyph, Mirror.None)); 
                 } else {
                     MapConsole.ClearDecorators(i, 1);
                 }
-            }
+            } 
         }
 
         private void RenderSign() {
@@ -867,10 +1555,15 @@ namespace LofiHollow.UI {
             for (int i = 0; i < 27; i++) {
                 if (i < GameLoop.World.Player.Inventory.Length) {
                     Item item = GameLoop.World.Player.Inventory[i];
-                     
+
+                    string nameWithDurability = item.Name;
+
+                    if (item.Durability >= 0)
+                        nameWithDurability = "[" + item.Durability + "] " + item.Name;
+
                     InventoryConsole.Print(0, i + 1, item.AsColoredGlyph());
                     if (!item.IsStackable || (item.IsStackable && item.ItemQuantity == 1))
-                        InventoryConsole.Print(2, i + 1, new ColoredString(item.Name, invMoveIndex == i ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.Black));
+                        InventoryConsole.Print(2, i + 1, new ColoredString(nameWithDurability, invMoveIndex == i ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.Black));
                     else
                         InventoryConsole.Print(2, i + 1, new ColoredString(("(" + item.ItemQuantity + ") " + item.Name), invMoveIndex == i ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.Black));
                     
@@ -923,8 +1616,32 @@ namespace LofiHollow.UI {
 
                 BattleConsole.Print(0, 0, GameLoop.World.Player.Name + " (Lv. " + GameLoop.World.Player.Level + ")");
                 BattleConsole.Print(0, 1, new ColoredString(((char)3).ToString(), Color.Red, Color.Black));
-                BattleConsole.Print(0, 2, new ColoredString(((char)175).ToString(), Color.Lime, Color.Black));
-                BattleConsole.Print(0, 3, new ColoredString(((char)168).ToString(), Color.Cyan, Color.Black));
+
+                string WeaponDura = "Weapon Durability: ";
+                if (GameLoop.World.Player.Equipment[0].ItemID != 0 && GameLoop.World.Player.Equipment[0].Durability >= 0) {
+                    if (GameLoop.World.Player.Equipment[0].Durability > 0) {
+                        WeaponDura += GameLoop.World.Player.Equipment[0].Durability;
+                    } else {
+                        WeaponDura += "(Broken)";
+                    }
+                } else {
+                    WeaponDura += "(Unarmed)";
+                }
+
+                BattleConsole.Print(0, 2, new ColoredString(WeaponDura, Color.White, Color.Black));
+
+                string ArmorDura = "Armor Durability: ";
+                if (GameLoop.World.Player.Equipment[9].ItemID != 0 && GameLoop.World.Player.Equipment[9].Durability >= 0) {
+                    if (GameLoop.World.Player.Equipment[9].Durability > 0) {
+                        ArmorDura += GameLoop.World.Player.Equipment[9].Durability;
+                    } else {
+                        ArmorDura += "(Broken)";
+                    }
+                } else {
+                    ArmorDura += "(Unarmored)";
+                }
+
+                BattleConsole.Print(0, 3, new ColoredString(ArmorDura, Color.White, Color.Black));
                 BattleConsole.Print(1, 1, (GameLoop.World.Player.CurrentHP + "/" + GameLoop.World.Player.MaxHP), Color.Red, Color.Black); 
 
 
@@ -950,14 +1667,12 @@ namespace LofiHollow.UI {
                 BattleConsole.Print(0, 25, "[Close]".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
             } else if (selectedMenu == "BattleDone" && battleResult == "Level") {
                 BattleConsole.Print(0, 8, "Victory!".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
-                BattleConsole.Print(0, 10, ("You got " + GameLoop.BattleManager.Enemy.ExpGranted + " exp and levelled up!").Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
-                BattleConsole.Print(0, 12, "Pick a stat to recieve a boost:".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
-                BattleConsole.Print(0, 16, new ColoredString("Vitality".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 16 ? Color.Yellow : Color.White, Color.Black));
-                BattleConsole.Print(0, 18, new ColoredString("Speed".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 18 ? Color.Yellow : Color.White, Color.Black));
-                BattleConsole.Print(0, 20, new ColoredString("Attack".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 20 ? Color.Yellow : Color.White, Color.Black));
-                BattleConsole.Print(0, 22, new ColoredString("Defense".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 22 ? Color.Yellow : Color.White, Color.Black));
-                BattleConsole.Print(0, 24, new ColoredString("Magic Attack".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 24 ? Color.Yellow : Color.White, Color.Black));
-                BattleConsole.Print(0, 26, new ColoredString("Magic Defense".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 26 ? Color.Yellow : Color.White, Color.Black));
+                BattleConsole.Print(0, 10, ("You got " + GameLoop.BattleManager.Enemy.ExpGranted + " exp and leveled up!").Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
+                BattleConsole.Print(0, 12, "Pick a class to advance a level in:".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
+
+                for (int i = 0; i < GameLoop.World.Player.ClassLevels.Count; i++) {
+                    BattleConsole.Print(0, 14 + (i * 2), new ColoredString((GameLoop.World.Player.ClassLevels[i].Name + " [" + GameLoop.World.Player.ClassLevels[i].ClassLevels + "]").Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 14 + (i * 2) ? Color.Yellow : Color.White, Color.Black));
+                }
             } else if (selectedMenu == "BattleDone" && battleResult == "LevelDone") {
                 BattleConsole.Print(0, 8, "Victory!".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
                 BattleConsole.Print(0, 10, ("You got " + GameLoop.BattleManager.Enemy.ExpGranted + " exp and levelled up!").Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
@@ -983,33 +1698,16 @@ namespace LofiHollow.UI {
                 }
 
                 BattleConsole.Print(0, 30, new ColoredString("[DONE]".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 30 ? Color.Yellow : Color.White, Color.Black));
-            } else if (selectedMenu == "BattleDone") {
+            } else if (selectedMenu == "BattleDone" && battleResult == "Fled") {
                 BattleConsole.Print(0, 10, "You escaped!".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
                 BattleConsole.Print(0, 25, new ColoredString("[Close]".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 25 ? Color.Yellow : Color.White, Color.Black));
+            } else if (selectedMenu == "BattleDone" && battleResult == "Died") {
+                BattleConsole.Print(0, 10, "You died!".Align(HorizontalAlignment.Center, BattleConsole.Width - 2));
+                BattleConsole.Print(0, 25, new ColoredString("[Respawn]".Align(HorizontalAlignment.Center, BattleConsole.Width - 2), mousePos.Y == 25 ? Color.Yellow : Color.White, Color.Black));
             }
         }
 
-        private void RenderMoves() {
-            Point mousePos = new MouseScreenObjectState(MoveConsole, GameHost.Instance.Mouse).CellPosition;
-
-            MoveConsole.Clear();
-            MoveConsole.Print(0, 0, "        NAME        | PHY | COST | ACC | POW ");
-            MoveConsole.DrawLine(new Point(0, 1), new Point(MoveConsole.Width - 1, 1), (char)196, Color.Orange, Color.Black);
-
-            for (int i = 0; i < GameLoop.World.Player.KnownMoves.Count; i++) {
-                Move move = GameLoop.World.moveLibrary[GameLoop.World.Player.KnownMoves[i]];
-                string name = move.Name.Align(HorizontalAlignment.Left, 20);
-                string phys = move.IsPhysical ? "  Y  " : "  N  ";
-                string cost = move.Cost.ToString().Align(HorizontalAlignment.Center, 6);
-                string acc = move.Accuracy.ToString().Align(HorizontalAlignment.Center, 5);
-                string pow = move.Power.ToString().Align(HorizontalAlignment.Center, 5);
-
-                string full = name + "|" + phys + "|" + cost + "|" + acc + "|" + pow;
-
-                MoveConsole.Print(0, i + 2, new ColoredString(full, mousePos.Y == i+2 ? Color.Yellow : Color.White, Color.Black));
-            }
-        }
-
+        
         private void RenderBattleInv() {
             Point mousePos = new MouseScreenObjectState(InvConsole, GameHost.Instance.Mouse).CellPosition;
             InvConsole.Clear();
@@ -1018,7 +1716,12 @@ namespace LofiHollow.UI {
 
             for (int i = 0; i < GameLoop.World.Player.Inventory.Length; i++) {
                 Item item = GameLoop.World.Player.Inventory[i];
-                string name = item.Name.Align(HorizontalAlignment.Left, 20);
+                string nameWithDurability = item.Name;
+
+                if (item.Durability >= 0)
+                    nameWithDurability = "[" + item.Durability + "] " + item.Name;
+
+                string name = nameWithDurability.Align(HorizontalAlignment.Left, 20);
                 string qty = item.ItemQuantity.ToString().Align(HorizontalAlignment.Center, 5);
                 string desc = item.Description.Align(HorizontalAlignment.Center, 36);
 
@@ -1088,23 +1791,7 @@ namespace LofiHollow.UI {
             }
         }
 
-        private void CaptureMoveClicks() {
-            Point mousePos = new MouseScreenObjectState(MoveConsole, GameHost.Instance.Mouse).CellPosition - new Point (0, 2);
-                //.PixelLocationToSurface(12, 12) - new Point(24, 14);
-             
-
-            if (mousePos.X >= 0 && mousePos.X <= 47 && mousePos.Y >= 0 && mousePos.Y <= 30) {
-                if (GameHost.Instance.Mouse.LeftClicked) {
-                    if (GameLoop.World.Player.KnownMoves.Count > mousePos.Y) {
-                       // moveIndex = GameLoop.World.Player.KnownMoves[mousePos.Y];
-                        MoveWindow.IsVisible = false;
-                    }
-                }
-            }
-        }
-
-
-
+        
         private void CaptureBattleClicks() {
             if (selectedMenu == "Battle") {
                 Point mousePos = new MouseScreenObjectState(BattleConsole, GameHost.Instance.Mouse).CellPosition; 
@@ -1115,10 +1802,6 @@ namespace LofiHollow.UI {
 
                     if (mousePos.Y == 32) {
                         GameLoop.BattleManager.ResolveTurn("Attack", true, PlayerFirst);
-                    }
-
-                    if (mousePos.Y == 33) {
-                        MoveWindow.IsVisible = true;
                     }
 
                     if (mousePos.Y == 34) {
@@ -1148,7 +1831,15 @@ namespace LofiHollow.UI {
                 Point mousePos = new MouseScreenObjectState(BattleConsole, GameHost.Instance.Mouse).CellPosition;
                 if (GameHost.Instance.Mouse.LeftClicked) {
                     if (battleResult == "Level") {
-                         // DO ALL THE LEVEL-UP SELECTIONS
+                        // DO ALL THE LEVEL-UP SELECTIONS
+
+                        if (mousePos.Y >= 14) {
+                            int slot = (mousePos.Y / 2) - 7;
+                            if (GameLoop.World.Player.ClassLevels.Count > slot && slot >= 0) {
+                                GameLoop.World.Player.ApplyLevel(slot);
+                                battleResult = "LevelDone";
+                            }
+                        } 
 
                     } else if (battleResult == "LevelDone") {
                         if (mousePos.Y == 25) { 
@@ -1246,9 +1937,9 @@ namespace LofiHollow.UI {
 
             for (int x = GameLoop.World.Player.MapPos.X - 4; x < GameLoop.World.Player.MapPos.X + 5; x++) {
                 for (int y = GameLoop.World.Player.MapPos.Y - 4; y < GameLoop.World.Player.MapPos.Y + 5; y++) {
-                    if (GameLoop.World.maps.ContainsKey(new Point3D(x, y, GameLoop.World.Player.MapPos.Z))) {
+                    if (minimap.ContainsKey(new Point3D(x, y, GameLoop.World.Player.MapPos.Z))) {
                         Point3D modifiedPos = new Point3D(x, y, 0) - GameLoop.World.Player.MapPos;
-                        SidebarConsole.Print(modifiedPos.X + 21, modifiedPos.Y + 4, GameLoop.World.maps[new Point3D(x, y, GameLoop.World.Player.MapPos.Z)].MinimapTile.AsColoredGlyph());
+                        SidebarConsole.Print(modifiedPos.X + 21, modifiedPos.Y + 4, minimap[new Point3D(x, y, GameLoop.World.Player.MapPos.Z)].AsColoredGlyph());
                     }
                 }
             }
@@ -1298,12 +1989,12 @@ namespace LofiHollow.UI {
                     ColoredString copperString = new ColoredString("CP:" + GameLoop.World.Player.CopperCoins, new Color(184, 115, 51), Color.Black);
                     ColoredString silverString = new ColoredString("SP:" + GameLoop.World.Player.SilverCoins, Color.Silver, Color.Black);
                     ColoredString goldString = new ColoredString("GP:" + GameLoop.World.Player.GoldCoins, Color.Yellow, Color.Black);
-                    ColoredString platinumString = new ColoredString("PP:" + GameLoop.World.Player.PlatinumCoins, Color.White, Color.Black);
+                    ColoredString JadeString = new ColoredString("JP:" + GameLoop.World.Player.JadeCoins, new Color(0, 168, 107), Color.Black);
 
                     SidebarConsole.Print(0, 13, copperString);
                     SidebarConsole.Print(0, 14, silverString);
                     SidebarConsole.Print(13, 13, goldString);
-                    SidebarConsole.Print(13, 14, platinumString);
+                    SidebarConsole.Print(13, 14, JadeString);
 
                     SidebarConsole.DrawLine(new Point(0, 15), new Point(25, 15), (char)196, Color.Orange, Color.Black);
 
@@ -1315,9 +2006,9 @@ namespace LofiHollow.UI {
                     int damageBonus = GameLoop.World.Player.GetDamageBonus(true);
                     string damageString = damageBonus > 0 ? "+" + damageBonus : damageBonus.ToString();
 
-                    string weaponDice = GameLoop.World.Player.Equipment[0].Weapon != null ? GameLoop.World.Player.Equipment[0].Weapon.DamageDice : GameLoop.World.Player.UnarmedDice;
+                    string weaponDice = (GameLoop.World.Player.Equipment[0].Weapon != null && GameLoop.World.Player.Equipment[0].Durability > 0) ? GameLoop.World.Player.Equipment[0].Weapon.DamageDice : GameLoop.World.Player.UnarmedDice;
 
-                    int armorClass = GameLoop.World.Player.GetAC(0);
+                    int armorClass = GameLoop.World.Player.GetAC();
 
                     SidebarConsole.Print(0, y++, "To-Hit: " + bonusString);
                     SidebarConsole.Print(0, y++, "To-Dam: " + damageString);
@@ -1332,12 +2023,17 @@ namespace LofiHollow.UI {
                     y++;
 
                     for (int i = 0; i < 9; i++) {
-                        Item item = GameLoop.World.Player.Inventory[i]; 
+                        Item item = GameLoop.World.Player.Inventory[i];
+
+                        string nameWithDurability = item.Name;
+
+                        if (item.Durability >= 0)
+                            nameWithDurability = "[" + item.Durability + "] " + item.Name;
 
                         SidebarConsole.Print(0, y, "|");
                         SidebarConsole.Print(1, y, item.AsColoredGlyph());
                         if (!item.IsStackable || (item.IsStackable && item.ItemQuantity == 1))
-                            SidebarConsole.Print(3, y, new ColoredString(item.Name, i == hotbarSelect ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.TransparentBlack));
+                            SidebarConsole.Print(3, y, new ColoredString(nameWithDurability, i == hotbarSelect ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.TransparentBlack));
                         else
                             SidebarConsole.Print(3, y, new ColoredString(("(" + item.ItemQuantity + ") " + item.Name), i == hotbarSelect ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.TransparentBlack));
 
@@ -1352,9 +2048,15 @@ namespace LofiHollow.UI {
                     for (int i = 0; i < 16; i++) {
                         Item item =  GameLoop.World.Player.Equipment[i];
 
+                        string nameWithDurability = item.Name;
+
+                        if (item.Durability >= 0)
+                            nameWithDurability = "[" + item.Durability + "] " + item.Name;
+
+
                         SidebarConsole.Print(0, y, "|");
                         SidebarConsole.Print(1, y, item.AsColoredGlyph());
-                        SidebarConsole.Print(3, y, new ColoredString(item.Name, mousePos.Y == y ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.TransparentBlack));
+                        SidebarConsole.Print(3, y, new ColoredString(nameWithDurability, mousePos.Y == y ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.TransparentBlack));
                         y++;
                     }
 
@@ -1387,6 +2089,26 @@ namespace LofiHollow.UI {
             
             MapWindow.Show();
             MapWindow.IsVisible = false;
+        }
+
+        public void CreateDialogueWindow(int width, int height, string title) {
+            DialogueWindow = new Window(width, height);
+            DialogueWindow.CanDrag = false;
+            DialogueWindow.Position = new Point(11, 6);
+
+            int diaConWidth = width - 2;
+            int diaConHeight = height - 2;
+
+            DialogueConsole = new SadConsole.Console(diaConWidth, diaConHeight);
+            DialogueConsole.Position = new Point(1, 1);
+            DialogueWindow.Title = title.Align(HorizontalAlignment.Center, diaConWidth, (char)196);
+
+
+            DialogueWindow.Children.Add(DialogueConsole);
+            Children.Add(DialogueWindow); 
+             
+            DialogueWindow.Show();
+            DialogueWindow.IsVisible = false;
         }
 
         public void CreateSidebarWindow(int width, int height, string title) {
@@ -1432,19 +2154,6 @@ namespace LofiHollow.UI {
             BattleWindow.Show();
             BattleWindow.IsVisible = false;
 
-
-            MoveWindow = new Window(47, 32);
-            MoveWindow.CanDrag = false;
-            MoveWindow.Position = new Point((BattleWindow.Width - MoveWindow.Width) / 2, (BattleWindow.Height - MoveWindow.Height) / 2);
-
-            MoveConsole = new SadConsole.Console(45, 30);
-            MoveConsole.Position = new Point(1, 1);
-            MoveWindow.Title = "".Align(HorizontalAlignment.Center, 20, (char)196);
-
-            MoveWindow.Children.Add(MoveConsole);
-            BattleWindow.Children.Add(MoveWindow);
-            MoveWindow.Show();
-            MoveWindow.IsVisible = false;
 
             InvWindow = new Window(67, 32);
             InvWindow.CanDrag = false;
@@ -1628,6 +2337,52 @@ namespace LofiHollow.UI {
             if (target == 18) return 17;
 
             return 99;
+        }
+
+        public void UpdateVision() {
+            if (LimitedVision) {
+                FOV.Calculate(GameLoop.World.Player.Position.X, GameLoop.World.Player.Position.Y, GameLoop.World.Player.Vision);
+                foreach (var position in FOV.NewlyUnseen) {
+                    GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(new Point(position.X, position.Y)).Shade();
+                }
+
+                foreach (var position in FOV.NewlySeen) {
+                    GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(new Point(position.X, position.Y)).IsVisible = true;
+                    GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(new Point(position.X, position.Y)).Unshade();
+                }
+            }
+        }
+
+        public ColoredString ConvertCoppers(int copperValue) {
+            int coinsLeft = copperValue;
+            int Jade = copperValue / 1000;
+
+            coinsLeft = coinsLeft - (Jade * 1000);
+            int gold = coinsLeft / 100;
+
+            coinsLeft = coinsLeft - (gold * 100);
+            int silver = coinsLeft / 10;
+
+            coinsLeft = coinsLeft - (silver * 10);
+            int copper = coinsLeft;
+
+            ColoredString build = new ColoredString("", Color.White, Color.Black);
+
+            ColoredString copperString = new ColoredString(copper + "c", new Color(184, 115, 51), Color.Black);
+            ColoredString silverString = new ColoredString(silver + "s ", Color.Silver, Color.Black);
+            ColoredString goldString = new ColoredString(gold + "g ", Color.Yellow, Color.Black);
+            ColoredString JadeString = new ColoredString(Jade + "j ", new Color(0, 168, 107), Color.Black);
+
+            if (Jade > 0)
+                build += JadeString;
+            if (gold > 0)
+                build += goldString;
+            if (silver > 0)
+                build += silverString;
+            if (copper > 0)
+                build += copperString;
+
+            return build;
         }
     }
 }

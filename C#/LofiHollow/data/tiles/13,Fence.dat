@@ -7,7 +7,7 @@
   "ForegroundR": 155,
   "ForegroundG": 103,
   "ForegroundB": 60,
-  "TileGlyph": 179,
+  "TileGlyph": 259,
   "Decorators": [],
   "Foreground": {
     "_packedValue": 4282148763
@@ -15,7 +15,7 @@
   "Background": {
     "_packedValue": 4278190080
   },
-  "Glyph": 179,
+  "Glyph": 259,
   "Mirror": 0,
   "GlyphCharacter": "³",
   "IsVisible": true,

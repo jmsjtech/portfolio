@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using LofiHollow.Entities;
 using System.IO;
 using Newtonsoft.Json;
+using LofiHollow.Entities.NPC;
 
 namespace LofiHollow {
     public class World { 
@@ -17,27 +18,41 @@ namespace LofiHollow {
         public Dictionary<int, ClassDef> classLibrary = new Dictionary<int, ClassDef>();
         public Dictionary<int, Race> raceLibrary = new Dictionary<int, Race>();
         public Dictionary<int, Skill> skillLibrary = new Dictionary<int, Skill>();
+        public Dictionary<int, NPC> npcLibrary = new Dictionary<int, NPC>();
+        public Dictionary<string, Template> templateLibrary = new Dictionary<string, Template>();
 
 
         public bool DoneInitializing = false;
          
         public Player Player { get; set; }
+
          
         public World() {
+            LoadTemplateDefinitions();
             LoadSkillDefinitions(); 
             LoadTileDefinitions();
-            LoadItemDefinitions();
-            LoadMoveDefinitions();
+            LoadItemDefinitions(); 
             LoadRaceDefinitions();
             LoadClassDefinitions(); 
             LoadMonsterDefinitions();
-             
+            LoadNPCDefinitions();
         }
 
         public void InitPlayer() {
             CreatePlayer();
             CreateMap(Player.MapPos);
 
+            if (Directory.Exists("./data/")) {
+                string json = System.IO.File.ReadAllText("./data/minimap.dat");
+                Dictionary<string, MinimapTile> minimap = JsonConvert.DeserializeObject<Dictionary<string, MinimapTile>>(json);
+
+                foreach (KeyValuePair<string, MinimapTile> kv in minimap) {
+                    string posString = kv.Key.Substring(1, kv.Key.Length - 2);
+                    string[] coords = posString.Split(",");
+                    Point3D pos = new Point3D(Int32.Parse(coords[0]), Int32.Parse(coords[1]), Int32.Parse(coords[2]));
+                    GameLoop.UIManager.minimap.Add(pos, kv.Value);
+                }
+            } 
         }
 
         public void MakeShipWreckage() {
@@ -98,6 +113,35 @@ namespace LofiHollow {
             }*/
         }
 
+        public void LoadTemplateDefinitions() {
+            if (Directory.Exists("./data/templates/")) {
+                string[] tileFiles = Directory.GetFiles("./data/templates/");
+
+                foreach (string fileName in tileFiles) {
+                    string json = File.ReadAllText(fileName);
+
+                    Template template = JsonConvert.DeserializeObject<Template>(json);
+
+                    templateLibrary.Add(template.Name, template);
+                }
+            }
+        }
+
+        public void LoadNPCDefinitions() {
+            if (Directory.Exists("./data/npcs/")) {
+                string[] tileFiles = Directory.GetFiles("./data/npcs/");
+
+                foreach (string fileName in tileFiles) {
+                    string json = File.ReadAllText(fileName);
+
+                    NPC npc = JsonConvert.DeserializeObject<NPC>(json);
+
+                    npcLibrary.Add(npc.npcID, npc);
+                }
+            }
+
+        }
+
         public void LoadSkillDefinitions() { 
             if (Directory.Exists("./data/skills/")) {
                 string[] skillFiles = Directory.GetFiles("./data/skills/");
@@ -154,64 +198,34 @@ namespace LofiHollow {
             }
         }
 
+        public bool LoadMapAt(Point3D mapPos) {
+            if (Directory.Exists("./data/maps/")) {
+                string json = System.IO.File.ReadAllText("./data/maps/" + mapPos.X + "," + mapPos.Y + "," + mapPos.Z + ".dat");
+                Map map = JsonConvert.DeserializeObject<Map>(json);
+                maps.Add(mapPos, map);
+                return true;
+            }
+
+            return false;
+        }
+
         public void LoadExistingMaps() {
-            if (Directory.Exists("./maps/")) {
-                string[] mapFiles = Directory.GetFiles("./maps/");
+            if (Directory.Exists("./data/maps/")) {
+                string[] mapFiles = Directory.GetFiles("./data/maps/");
 
                 foreach (string fileName in mapFiles) {
-                    string posString = fileName.Substring(7, fileName.Length - 11);
+                    string json = File.ReadAllText(fileName);
+                    Map map = JsonConvert.DeserializeObject<Map>(json);
+
+                    string[] strings = fileName.Split("/");
+                    string posString = strings[3].Substring(0, strings[3].Length - 4);
+
                     int x = Int32.Parse(posString.Split(',')[0]);
                     int y = Int32.Parse(posString.Split(',')[1]);
                     int z = Int32.Parse(posString.Split(',')[2]);
-                    bool Resave = false;
+
+                    maps.Add(new Point3D(x, y, z), map);
                      
-                    string[] lines = File.ReadAllLines(fileName);
-
-                    Map newMap = new Map(70, 40);
-                    int index = -1;
-
-                    foreach (string line in lines) {
-                        TileBase tile;
-
-                        if (index < 0) {
-                            string[] header = line.Split('|');
-                            newMap.MinimapTile.name = header[0];
-                            newMap.MinimapTile.ch = header[1][0];
-
-                            int fgR = Int32.Parse(header[2]);
-                            int fgG = Int32.Parse(header[3]);
-                            int fgB = Int32.Parse(header[4]);
-
-                            int bgR = Int32.Parse(header[5]);
-                            int bgG = Int32.Parse(header[6]);
-                            int bgB = Int32.Parse(header[7]);
-
-                            newMap.MinimapTile.fg = new Color(fgR, fgG, fgB);
-                            newMap.MinimapTile.bg = new Color(bgR, bgG, bgB);
-
-                            newMap.PlayerCanBuild = header[8] == "true" ? true : false;
-
-                            if (header.Length > 9) {
-                                newMap.AmbientMonsters = header[9] == "true" ? true : false;
-                            } else { 
-                                newMap.AmbientMonsters = false;
-                                Resave = true;
-                            }
-                        } else {
-                            tile = new TileBase(tileLibrary[Int32.Parse(line)]);
-                            
-                            newMap.Tiles[index] = tile;
-                        }
-                        index++;
-
-                    }
-                    
-                    maps.Add(new Point3D(x, y, z), newMap);
-
-                    if (Resave) {
-                        GameLoop.UIManager.MessageLog.Add("Resaved map at " + x + ", " + y);
-                        SaveMapToFile(newMap, new Point3D(x, y, z));
-                    } 
                 }
             } else {
                 System.Console.WriteLine("Failed to load map directory");
@@ -219,17 +233,11 @@ namespace LofiHollow {
         }
 
         public void SaveMapToFile(Map map, Point3D pos) {
-            string path = "./maps/" + pos.X + "," + pos.Y + "," + pos.Z + ".dat";
+            string path = "./data/maps/" + pos.X + "," + pos.Y + "," + pos.Z + ".dat";
 
             using (StreamWriter output = new StreamWriter(path)) {
-                MinimapTile minimap = map.MinimapTile;
-                output.WriteLine(minimap.name + "|" + minimap.ch + "|" +
-                    minimap.fg.R + "|" + minimap.fg.G + "|" + minimap.fg.B + "|" + 
-                    minimap.bg.R + "|" + minimap.bg.G + "|" + minimap.bg.B + "|" + 
-                    map.PlayerCanBuild.ToString().ToLower() + "|" + map.AmbientMonsters.ToString().ToLower());
-                foreach (TileBase tile in map.Tiles) {
-                    output.WriteLine(tile.TileID);
-                }
+                string jsonString = JsonConvert.SerializeObject(map, Formatting.Indented);
+                output.WriteLine(jsonString);
             } 
         }
 
@@ -260,7 +268,7 @@ namespace LofiHollow {
             }
 
 
-            GameLoop.UIManager.LoadMap(maps[Player.MapPos], false);
+            GameLoop.UIManager.LoadMap(Player.MapPos, false);
             GameLoop.UIManager.EntityRenderer.Add(Player); 
         }
 
@@ -268,29 +276,31 @@ namespace LofiHollow {
 
         public void CreateMap(Point3D pos) {
             if (!maps.ContainsKey(pos)) {
-                Map newMap  = new Map(GameLoop.MapWidth, GameLoop.MapHeight);
+                if (!LoadMapAt(pos)) {
+                    Map newMap = new Map(GameLoop.MapWidth, GameLoop.MapHeight);
 
-                if (pos.Z < 0) {
-                    for (int i = 0; i < newMap.Tiles.Length; i++) {  
-                        newMap.Tiles[i] = new TileBase(31);
+                    if (pos.Z < 0) {
+                        for (int i = 0; i < newMap.Tiles.Length; i++) {
+                            newMap.Tiles[i] = new TileBase(31);
+                        }
+
+                        if (Player.MapPos.Z > pos.Z) {
+                            newMap.Tiles[Player.Position.ToIndex(GameLoop.MapWidth)] = new TileBase(29);
+                        }
                     }
 
-                    if (Player.MapPos.Z > pos.Z) { 
-                        newMap.Tiles[Player.Position.ToIndex(GameLoop.MapWidth)] = new TileBase(29);
+                    if (pos.Z > 0) {
+                        for (int i = 0; i < newMap.Tiles.Length; i++) {
+                            newMap.Tiles[i] = new TileBase(32);
+                        }
+
+                        if (Player.MapPos.Z < pos.Z) {
+                            newMap.Tiles[Player.Position.ToIndex(GameLoop.MapWidth)] = new TileBase(30);
+                        }
                     }
+
+                    maps.Add(pos, newMap);
                 }
-
-                if (pos.Z > 0) {
-                    for (int i = 0; i < newMap.Tiles.Length; i++) { 
-                        newMap.Tiles[i] = new TileBase(32);
-                    }
-
-                    if (Player.MapPos.Z < pos.Z) {  
-                        newMap.Tiles[Player.Position.ToIndex(GameLoop.MapWidth)] = new TileBase(30);
-                    }
-                }
-
-                maps.Add(pos, newMap);
             }
         } 
 
@@ -298,9 +308,10 @@ namespace LofiHollow {
             Player = new Player(Color.Yellow);
             Player.Position = new Point(25, 25);
             Player.MapPos = new Point3D(3, 1, 0);
-            Player.Name = "Player"; 
- 
-            GameLoop.UIManager.LoadMap(maps[Player.MapPos], true);
+            Player.Name = "Player";
+
+
+            GameLoop.UIManager.LoadMap(Player.MapPos, true);
             GameLoop.UIManager.EntityRenderer.Add(Player);
             Player.ZIndex = 10;
 
@@ -314,6 +325,7 @@ namespace LofiHollow {
         public void FreshStart() {
             Player.MaxHP = Int32.Parse(Player.ClassLevels[0].HitDie.Split("d")[1]) + Player.GetMod("CON");
             Player.CurrentHP = Player.MaxHP;
+            LoadMapAt(Player.MapPos);
             MakeShipWreckage();
 
             Player.Inventory[0] = new Item(36);

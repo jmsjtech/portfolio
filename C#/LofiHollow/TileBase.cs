@@ -3,6 +3,7 @@ using SadRogue.Primitives;
 using SadConsole;
 using Newtonsoft.Json;
 using System.Runtime.Serialization;
+using LofiHollow.TileData;
 
 namespace LofiHollow {
     [JsonObject(MemberSerialization.OptIn)]
@@ -27,6 +28,14 @@ namespace LofiHollow {
         public int ForegroundB = 0;
         [JsonProperty]
         public int TileGlyph = 0;
+
+
+        [JsonProperty]
+        public Decorator Dec;
+
+        [JsonProperty]
+        public LockOwner Lock;
+
 
         [JsonProperty]
         public SkillableTile SkillableTile = null;
@@ -57,6 +66,9 @@ namespace LofiHollow {
             TileGlyph = other.TileGlyph;
             SkillableTile = other.SkillableTile;
 
+            Dec = other.Dec;
+            Lock = other.Lock;
+
             Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
             Glyph = TileGlyph;
         } 
@@ -76,6 +88,9 @@ namespace LofiHollow {
                 TileGlyph = other.TileGlyph;
                 SkillableTile = other.SkillableTile;
 
+                Dec = other.Dec;
+                Lock = other.Lock;
+
                 Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
                 Glyph = TileGlyph;
             }
@@ -89,6 +104,14 @@ namespace LofiHollow {
         public void UpdateAppearance() {
             Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
             Glyph = TileGlyph;
+        }
+
+        public void Shade() {
+            Foreground = new Color(ForegroundR, ForegroundG, ForegroundB, 150);
+        }
+
+        public void Unshade() {
+            Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
         }
     }
 }

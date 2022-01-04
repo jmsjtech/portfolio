@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using SadConsole;
-using SadRogue.Primitives; 
+using SadRogue.Primitives;
+using LofiHollow.Entities.NPC;
 
 namespace LofiHollow.Entities {
     [JsonObject(MemberSerialization.OptIn)]
@@ -59,7 +60,7 @@ namespace LofiHollow.Entities {
         [JsonProperty]
         public int GoldCoins = 0;
         [JsonProperty]
-        public int PlatinumCoins = 0;
+        public int JadeCoins = 0;
 
         [JsonProperty]
         public int Level = 1;
@@ -71,6 +72,8 @@ namespace LofiHollow.Entities {
         public Race Race = new Race();
         [JsonProperty]
         public List<string> KnownLanguages = new List<string>();
+        [JsonProperty]
+        public int Vision = 36;
 
 
         // Stuff for monsters
@@ -98,14 +101,13 @@ namespace LofiHollow.Entities {
         public List<string> WeaponProficiencies = new List<string>();
 
 
-
-        public List<int> KnownMoves = new List<int>();
+        [JsonProperty]
+        public List<string> Templates = new List<string>();
 
         [JsonProperty]
         public List<ItemDrop> DropTable = new List<ItemDrop>();
 
-        [JsonProperty]
-        public Point3D MapPos = new Point3D(0, 0, 0);
+        
 
         [JsonProperty]
         public Dictionary<string, Skill> Skills = new Dictionary<string, Skill>();
@@ -133,19 +135,18 @@ namespace LofiHollow.Entities {
             ForegroundR = foreground.R;
             ForegroundG = foreground.G;
             ForegroundB = foreground.B;
+             
 
-            KnownMoves.Add(0);
+            Equipment = new Item[16];
+            for (int i = 0; i < Equipment.Length; i++) {
+                Equipment[i] = new Item(0);
+            }
 
             if (initInventory) {
                 Inventory = new Item[9];
-                Equipment = new Item[16];
 
                 for (int i = 0; i < Inventory.Length; i++) {
                     Inventory[i] = new Item(0);
-                }
-
-                for (int i = 0; i < Equipment.Length; i++) {
-                    Equipment[i] = new Item(0);
                 }
             }
         }
@@ -186,9 +187,27 @@ namespace LofiHollow.Entities {
             CurrentHP = MaxHP;
         }
 
-        public int GetAC(int miscMod) {
-            // TODO: Add armor bonus
-            return 10 + GetMod("DEX") + (-1 * SizeMod) + NaturalArmor + DeflectionMod + miscMod;
+        public int GetAC() {
+            int miscMod = 0;
+            int dexMod = GetMod("DEX");
+            int naturalArmor = NaturalArmor;
+
+            if (Equipment[9].ItemID != 0 && Equipment[9].Durability > 0 && Equipment[9].Armor != null) {
+                miscMod += Equipment[9].Armor.ArmorBonus;
+                if (dexMod > Equipment[9].Armor.MaxDexBonus)
+                    dexMod = Equipment[9].Armor.MaxDexBonus;
+            }
+
+            foreach (ClassFeature feature in ClassFeatures) {
+                string[] split = feature.BonusTo.Split(",");
+                if (split[0] == "AC") {
+                    if (split[1] == "Natural Armor") {
+                        naturalArmor += feature.NumericalBonus;
+                    }
+                }
+            }
+
+            return 10 + dexMod + (-1 * SizeMod) + naturalArmor + DeflectionMod + miscMod;
         }
 
         public int FortSave(int miscMod) { return BaseFort + GetMod("CON") + FortMod + miscMod; }
@@ -242,9 +261,12 @@ namespace LofiHollow.Entities {
 
 
 
-        public int ExpToLevel() {
+        public int ExpToLevel(int level = -1) {
+            if (level == -1)
+                level = Level;
+
             if (ExpTrack == "Slow") {
-                switch(Level) {
+                switch(level) {
                     case 1: return 3000;
                     case 2: return 7500;
                     case 3: return 14000;
@@ -268,7 +290,7 @@ namespace LofiHollow.Entities {
             }
 
             if (ExpTrack == "Medium") {
-                switch (Level) {
+                switch (level) {
                     case 1: return 2000;
                     case 2: return 5000;
                     case 3: return 9000;
@@ -292,7 +314,7 @@ namespace LofiHollow.Entities {
             }
 
             if (ExpTrack == "Fast") {
-                switch (Level) {
+                switch (level) {
                     case 1: return 1300;
                     case 2: return 3300;
                     case 3: return 6000;
@@ -384,48 +406,53 @@ namespace LofiHollow.Entities {
                     return false;
                 }
 
-                if (map.GetTile(newPosition).SkillableTile != null) {
-                    SkillableTile tile = map.GetTile(newPosition).SkillableTile;
-                    if (map.GetTile(newPosition).Name == tile.HarvestableName) {
-                        if (Skills.ContainsKey(tile.RequiredSkill)) {
-                            if (Skills[tile.RequiredSkill].Level >= tile.RequiredLevel) {
-                                if (Equipment[0].ItemCategory == tile.HarvestTool || Inventory[GameLoop.UIManager.hotbarSelect].ItemCategory == tile.HarvestTool) {
-                                    if (HasInventorySlotOpen()) {
-                                        GameLoop.CommandManager.AddItemToInv(this, new Item(tile.ItemGiven));
-                                        GameLoop.UIManager.MessageLog.Add(tile.HarvestMessage);
+                // Interact with skilling tiles
+                if (ID == GameLoop.World.Player.ID) {
+                    if (newPosition.X < GameLoop.MapWidth && newPosition.X >= 0 && newPosition.Y < GameLoop.MapHeight && newPosition.Y >= 0) {
+                        if (map.GetTile(newPosition).SkillableTile != null) {
+                            SkillableTile tile = map.GetTile(newPosition).SkillableTile;
+                            if (map.GetTile(newPosition).Name == tile.HarvestableName) {
+                                if (Skills.ContainsKey(tile.RequiredSkill)) {
+                                    if (Skills[tile.RequiredSkill].Level >= tile.RequiredLevel) {
+                                        if (Equipment[0].ItemCategory == tile.HarvestTool || Inventory[GameLoop.UIManager.hotbarSelect].ItemCategory == tile.HarvestTool) {
+                                            if (HasInventorySlotOpen()) {
+                                                GameLoop.CommandManager.AddItemToInv(this, new Item(tile.ItemGiven));
+                                                GameLoop.UIManager.MessageLog.Add(tile.HarvestMessage);
 
-                                        int choppedChance = GameLoop.rand.Next(100) + 1;
+                                                int choppedChance = GameLoop.rand.Next(100) + 1;
 
-                                        if (choppedChance < 33) {
-                                            GameLoop.CommandManager.AddItemToInv(this, new Item(tile.DepletedItem));
-                                            map.GetTile(newPosition).Name = tile.DepletedName;
-                                            GameLoop.UIManager.MessageLog.Add(tile.DepleteMessage);
-                                            Skills[tile.RequiredSkill].Experience += tile.ExpOnDeplete;
+                                                if (choppedChance < 33) {
+                                                    GameLoop.CommandManager.AddItemToInv(this, new Item(tile.DepletedItem));
+                                                    map.GetTile(newPosition).Name = tile.DepletedName;
+                                                    GameLoop.UIManager.MessageLog.Add(tile.DepleteMessage);
+                                                    Skills[tile.RequiredSkill].Experience += tile.ExpOnDeplete;
+                                                } else {
+                                                    Skills[tile.RequiredSkill].Experience += tile.ExpOnHarvest;
+                                                }
+
+                                                if (Skills[tile.RequiredSkill].Experience >= Skills[tile.RequiredSkill].ExpToLevel()) {
+                                                    Skills[tile.RequiredSkill].Experience -= Skills[tile.RequiredSkill].ExpToLevel();
+                                                    Skills[tile.RequiredSkill].Level++;
+                                                    GameLoop.UIManager.MessageLog.Add(new ColoredString("You leveled " + tile.RequiredSkill + " to " + Skills[tile.RequiredSkill].Level + "!", Color.Cyan, Color.Black));
+                                                }
+                                            } else {
+                                                GameLoop.UIManager.MessageLog.Add(new ColoredString("Your inventory is full.", Color.Red, Color.Black));
+                                            }
                                         } else {
-                                            Skills[tile.RequiredSkill].Experience += tile.ExpOnHarvest;
-                                        }
-
-                                        if (Skills[tile.RequiredSkill].Experience >= Skills[tile.RequiredSkill].ExpToLevel()) {
-                                            Skills[tile.RequiredSkill].Experience -= Skills[tile.RequiredSkill].ExpToLevel();
-                                            Skills[tile.RequiredSkill].Level++;
-                                            GameLoop.UIManager.MessageLog.Add(new ColoredString("You leveled " + tile.RequiredSkill + " to " + Skills[tile.RequiredSkill].Level + "!", Color.Cyan, Color.Black));
+                                            GameLoop.UIManager.MessageLog.Add(new ColoredString("You don't have the right tool equipped.", Color.Red, Color.Black));
                                         }
                                     } else {
-                                        GameLoop.UIManager.MessageLog.Add(new ColoredString("Your inventory is full.", Color.Red, Color.Black));
+                                        GameLoop.UIManager.MessageLog.Add(new ColoredString("That requires level " + tile.RequiredLevel + " " + tile.RequiredSkill + ".", Color.Red, Color.Black));
                                     }
-                                } else {
-                                    GameLoop.UIManager.MessageLog.Add(new ColoredString("You don't have the right tool equipped.", Color.Red, Color.Black));
                                 }
                             } else {
-                                GameLoop.UIManager.MessageLog.Add(new ColoredString("That requires level " + tile.RequiredLevel + " " + tile.RequiredSkill + ".", Color.Red, Color.Black));
+                                GameLoop.UIManager.MessageLog.Add(new ColoredString("That's not harvestable yet, come back in a " + tile.RestoreTime + ".", Color.Red, Color.Black));
                             }
                         }
-                    } else {
-                        GameLoop.UIManager.MessageLog.Add(new ColoredString("That's not harvestable yet, come back in a " + tile.RestoreTime + ".", Color.Red, Color.Black));
                     }
                 }
 
-
+                // Slope movement (UP slope)
                 if (map.GetTile(Position).Name == "Up Slope" && positionChange == new Point(0, -1)) {
                     if (!map.IsTileWalkable(Position + positionChange)) {
                         // This is an up slope, move up a map instead of up on the current map
@@ -435,10 +462,11 @@ namespace LofiHollow.Entities {
                         if (!GameLoop.World.maps.ContainsKey(MapPos + new Point3D(0, 0, -1))) { GameLoop.World.CreateMap(MapPos + new Point3D(0, 0, -1)); }
                         MapPos += new Point3D(0, 0, -1);
                     }
-                    GameLoop.UIManager.LoadMap(GameLoop.World.maps[MapPos], false);
+                    GameLoop.UIManager.LoadMap(MapPos, false);
                     return true;
                 }
 
+                // Slope movement (DOWN slope)
                 if (map.GetTile(Position).Name == "Down Slope" && positionChange == new Point(0, 1)) {
                     if (!map.IsTileWalkable(Position + positionChange)) {
                         // This is an up slope, move up a map instead of up on the current map
@@ -448,10 +476,11 @@ namespace LofiHollow.Entities {
                         if (!GameLoop.World.maps.ContainsKey(MapPos + new Point3D(0, 0, -1))) { GameLoop.World.CreateMap(MapPos + new Point3D(0, 0, -1)); }
                         MapPos += new Point3D(0, 0, -1);
                     }
-                    GameLoop.UIManager.LoadMap(GameLoop.World.maps[MapPos], false);
+                    GameLoop.UIManager.LoadMap(MapPos, false);
                     return true;
                 }
 
+                // Slope movement (LEFT slope)
                 if (map.GetTile(Position).Name == "Left Slope" && positionChange == new Point(-1, 0)) {
                     if (!map.IsTileWalkable(Position + positionChange)) {
                         // This is an up slope, move up a map instead of up on the current map
@@ -461,10 +490,11 @@ namespace LofiHollow.Entities {
                         if (!GameLoop.World.maps.ContainsKey(MapPos + new Point3D(0, 0, -1))) { GameLoop.World.CreateMap(MapPos + new Point3D(0, 0, -1)); }
                         MapPos += new Point3D(0, 0, -1);
                     }
-                    GameLoop.UIManager.LoadMap(GameLoop.World.maps[MapPos], false);
+                    GameLoop.UIManager.LoadMap(MapPos, false);
                     return true;
                 }
 
+                // Slope movement (RIGHT slope)
                 if (map.GetTile(Position).Name == "Right Slope" && positionChange == new Point(1, 0)) {
                     if (!map.IsTileWalkable(Position + positionChange)) {
                         // This is an up slope, move up a map instead of up on the current map
@@ -474,110 +504,142 @@ namespace LofiHollow.Entities {
                         if (!GameLoop.World.maps.ContainsKey(MapPos + new Point3D(0, 0, -1))) { GameLoop.World.CreateMap(MapPos + new Point3D(0, 0, -1)); }
                         MapPos += new Point3D(0, 0, -1);
                     }
-                    GameLoop.UIManager.LoadMap(GameLoop.World.maps[MapPos], false);
+                    GameLoop.UIManager.LoadMap(MapPos, false);
                     return true;
                 }
 
-                if (map.IsTileWalkable(Position +  positionChange)) {
-                    // if there's a monster here,
-                    // do a bump attack
-                    Monster monster = map.GetEntityAt<Monster>(Position + positionChange);
-                    if (monster != null) {
-                       // GameLoop.CommandManager.Attack(this, monster);
-                        return true;
-                    }
 
-                    TileBase tile = map.GetTile(Position + positionChange);
-                    if (tile.Name == "Sign") {
-                        GameLoop.UIManager.SignText(Position + positionChange, MapPos);
-                        return true;
-                    }
-
-                    Position += positionChange;
-
-
-                    if (ID == GameLoop.World.Player.ID) {
-                        if (map.Tiles[Position.ToIndex(GameLoop.MapWidth)].SpawnsMonsters || map.AmbientMonsters) {
-                            if (GameLoop.rand.Next(20) == 0) {
-                                int monsterID = GameLoop.BattleManager.GetEncounter(map.MinimapTile.name, map.Tiles[Position.ToIndex(GameLoop.MapWidth)].Name);
-                                if (monsterID != -1) {
-                                    if (GameLoop.World.monsterLibrary.ContainsKey(monsterID)) {
-                                        Monster temp = GameLoop.World.monsterLibrary[monsterID];
-                                        Monster mon = new Monster(temp.MonsterID, temp.Appearance.Foreground, temp.Appearance.Glyph);
-                                        
-                                        for (int i = 0; i < temp.DropTable.Count; i++) {
-                                            mon.DropTable.Add(temp.DropTable[i]);
-                                        }
-
-                                        for (int i = 0; i < temp.KnownMoves.Count; i++) {
-                                            mon.KnownMoves.Add(temp.KnownMoves[i]);
-                                        }
-
-                                        int NormalizedMapPos = Math.Abs(MapPos.X) + Math.Abs(MapPos.Y) + Math.Abs(MapPos.Z);
-
-                                        GameLoop.BattleManager.StartBattle(mon, NormalizedMapPos - 2);
-                                    } else {
-                                        GameLoop.UIManager.MessageLog.Add("Monster ID wasn't in library.");
-                                    }
-                                } else {
-                                    GameLoop.UIManager.MessageLog.Add("Failed to get an encounter for (" + map.MinimapTile.name + ") [" +  map.Tiles[Position.ToIndex(GameLoop.MapWidth)].Name + "]");
-                                }
-                                
-                            }
-                        }
-                    }
-
-
-                    return true;
-                }
-
-                if (map.ToggleDoor(Position + positionChange, true)) { 
-                    return true;
-                }
-
-                Point newPos = Position + positionChange;
-                bool movedMaps = false;
                 
-                if (newPos.X < 0) {
+                bool movedMaps = false;
+
+                // Moved off the map (left)
+                if (newPosition.X < 0) {
                     if (!GameLoop.World.maps.ContainsKey(MapPos + new Point3D(-1, 0, 0))) { GameLoop.World.CreateMap(MapPos + new Point3D(-1, 0, 0)); }
 
                     MapPos += new Point3D(-1, 0, 0);
-                    Position = new Point(GameLoop.MapWidth-1, newPos.Y);
+                    Position = new Point(GameLoop.MapWidth - 1, newPosition.Y);
                     movedMaps = true;
                 }
-                
-                if (newPos.X >= GameLoop.MapWidth) {
+
+                // Moved off the map (right)
+                if (newPosition.X >= GameLoop.MapWidth) {
                     if (!GameLoop.World.maps.ContainsKey(MapPos + new Point3D(1, 0, 0))) { GameLoop.World.CreateMap(MapPos + new Point3D(1, 0, 0)); }
 
                     MapPos += new Point3D(1, 0, 0);
-                    Position = new Point(0, newPos.Y);
+                    Position = new Point(0, newPosition.Y);
                     movedMaps = true;
-                } 
-                if (newPos.Y < 0) {
+                }
+
+                // Moved off the map (up)
+                if (newPosition.Y < 0) {
                     if (!GameLoop.World.maps.ContainsKey(MapPos + new Point3D(0, -1, 0))) { GameLoop.World.CreateMap(MapPos + new Point3D(0, -1, 0)); }
 
                     MapPos += new Point3D(0, -1, 0);
-                    Position = new Point(newPos.X, GameLoop.MapHeight - 1);
+                    Position = new Point(newPosition.X, GameLoop.MapHeight - 1);
                     movedMaps = true;
-                } 
-                
-                if (newPos.Y >= GameLoop.MapHeight) {
+                }
+
+                // Moved off the map (down)
+                if (newPosition.Y >= GameLoop.MapHeight) {
                     if (!GameLoop.World.maps.ContainsKey(MapPos + new Point3D(0, 1, 0))) { GameLoop.World.CreateMap(MapPos + new Point3D(0, 1, 0)); }
 
                     MapPos += new Point3D(0, 1, 0);
-                    Position = new Point(newPos.X, 0);
+                    Position = new Point(newPosition.X, 0);
                     movedMaps = true;
-                } 
+                }
 
                 if (movedMaps && ID == GameLoop.World.Player.ID) {
-                    GameLoop.UIManager.LoadMap(GameLoop.World.maps[MapPos], false);
+                    GameLoop.UIManager.LoadMap(MapPos, false);
                     return true;
+                }
+
+                if (newPosition.X >= 0 && newPosition.X <= GameLoop.MapWidth && newPosition.Y >= 0 && newPosition.Y <= GameLoop.MapHeight) {
+                    if (map.GetTile(newPosition).Name == "Door") {
+                        if (map.GetTile(newPosition).Lock.Closed) {
+                            if (map.GetTile(newPosition).Lock.CanOpen()) {
+                                map.ToggleDoor(newPosition);
+                                return false;
+                            } else {
+                                GameLoop.UIManager.MessageLog.Add(new ColoredString("The door won't budge. Must be locked.", Color.Brown, Color.Black));
+                                return false;
+                            }
+                        }
+                    } 
+
+                    if (map.IsTileWalkable(Position + positionChange)) {
+                        // if there's an NPC here, initiate dialogue
+                        if (ID == GameLoop.World.Player.ID) {
+                            for (int i = 0; i < GameLoop.UIManager.EntityRenderer.Entities.Count; i++) {
+                                if (GameLoop.UIManager.EntityRenderer.Entities[i] is NPC.NPC) {
+                                    if (GameLoop.UIManager.EntityRenderer.Entities[i].Position == newPosition) {
+                                        GameLoop.UIManager.DialogueNPC = (NPC.NPC)GameLoop.UIManager.EntityRenderer.Entities[i];
+                                        GameLoop.UIManager.selectedMenu = "Dialogue";
+                                        GameLoop.UIManager.DialogueWindow.IsVisible = true;
+
+                                        if (GameLoop.World.Player.MetNPCs.ContainsKey(GameLoop.UIManager.DialogueNPC.Name)) {
+                                            if (GameLoop.UIManager.DialogueNPC.Greetings.ContainsKey(GameLoop.UIManager.DialogueNPC.RelationshipDescriptor())) {
+                                                GameLoop.UIManager.dialogueLatest = GameLoop.UIManager.DialogueNPC.Greetings[GameLoop.UIManager.DialogueNPC.RelationshipDescriptor()];
+                                            } else {
+                                                GameLoop.UIManager.dialogueLatest = "Error: Greeting not found for relationship " + GameLoop.UIManager.DialogueNPC.RelationshipDescriptor();
+                                            }
+                                        } else {
+                                            GameLoop.UIManager.dialogueLatest = GameLoop.UIManager.DialogueNPC.Introduction;
+                                            GameLoop.World.Player.MetNPCs.Add(GameLoop.UIManager.DialogueNPC.Name, 0);
+                                        }
+
+                                        GameLoop.UIManager.DialogueNPC.UpdateChitChats();
+
+                                        return false;
+                                    }
+                                }
+                            }
+
+                            TileBase tile = map.GetTile(Position + positionChange);
+                            if (tile.Name == "Sign") {
+                                GameLoop.UIManager.SignText(Position + positionChange, MapPos);
+                                return true;
+                            }
+                        }
+
+                        Position += positionChange;
+
+                        // Chance for encounter if it's the player moving
+                        if (ID == GameLoop.World.Player.ID) {
+                            if (map.Tiles[Position.ToIndex(GameLoop.MapWidth)].SpawnsMonsters || map.AmbientMonsters) {
+                                if (GameLoop.rand.Next(20) == 0) {
+                                    int monsterID = GameLoop.BattleManager.GetEncounter(map.MinimapTile.name, map.Tiles[Position.ToIndex(GameLoop.MapWidth)].Name);
+                                    if (monsterID != -1) {
+                                        if (GameLoop.World.monsterLibrary.ContainsKey(monsterID)) {
+                                            Monster temp = GameLoop.World.monsterLibrary[monsterID];
+                                            Monster mon = new Monster(temp.MonsterID, temp.Appearance.Foreground, temp.Appearance.Glyph);
+
+                                            for (int i = 0; i < temp.DropTable.Count; i++) {
+                                                mon.DropTable.Add(temp.DropTable[i]);
+                                            }
+
+                                            int NormalizedMapPos = Math.Abs(MapPos.X) + Math.Abs(MapPos.Y) + Math.Abs(MapPos.Z);
+
+                                            GameLoop.BattleManager.StartBattle(mon);
+                                        } else {
+                                            GameLoop.UIManager.MessageLog.Add("Monster ID wasn't in library.");
+                                        }
+                                    } else {
+                                        GameLoop.UIManager.MessageLog.Add("Failed to get an encounter for (" + map.MinimapTile.name + ") [" + map.Tiles[Position.ToIndex(GameLoop.MapWidth)].Name + "]");
+                                    }
+
+                                }
+                            }
+                        }
+
+
+                        return true;
+                    }
                 }
             }
             return false;
         }
 
-        public bool MoveTo(Point newPosition, Point3D mapLoc) {
+        public bool MoveTo(Point newPosition, Point3D mapLoc) { 
             bool movedMaps = false;
             Position = newPosition;
 
@@ -587,10 +649,46 @@ namespace LofiHollow.Entities {
             MapPos = mapLoc;
 
             if (movedMaps && ID == GameLoop.World.Player.ID) {
-                GameLoop.UIManager.LoadMap(GameLoop.World.maps[MapPos], false);
+                GameLoop.UIManager.LoadMap(MapPos, false);
             }
 
             return true;
         } 
+
+
+        public int DamageCheck(int damage, string damageType) {
+            int moddedDamage = damage;
+
+            foreach (ClassFeature feature in ClassFeatures) {
+                string[] split = feature.BonusTo.Split(",");
+                if (split.Length > 1) {
+                    if (split[0] == damageType) {
+                        if (split[1] == "Immune") {
+                            moddedDamage = 0;
+                        } else {
+                            int dam = Int32.Parse(split[1]);
+                            moddedDamage -= dam;
+                        }
+                    }
+                }
+            }
+
+            return moddedDamage;
+        }
+
+        public bool CheckImmunity(string check) {
+            foreach (ClassFeature feature in ClassFeatures) {
+                string[] split = feature.BonusTo.Split(",");
+                if (split.Length > 1) {
+                    if (split[0] == check) {
+                        if (split[1] == "Immune") {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 }

@@ -1,7 +1,7 @@
 {
   "TileID": 28,
   "IsBlockingMove": true,
-  "IsBlockingLOS": false,
+  "IsBlockingLOS": true,
   "SpawnsMonsters": false,
   "Name": "Tree",
   "ForegroundR": 0,

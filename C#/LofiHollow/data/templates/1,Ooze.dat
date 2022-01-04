@@ -1,0 +1,68 @@
+{
+  "TemplateID": 1,
+  "Name": "Ooze",
+  "Prefix": false,
+  "CRmod": 0,
+  "STRbonus": 0,
+  "DEXbonus": 0,
+  "CONbonus": 0,
+  "INTbonus": 0,
+  "WISbonus": 0,
+  "CHAbonus": 0,
+  "Features": [
+    {
+      "Name": "Mindless",
+      "Selection": "",
+      "BonusTo": "Mind-affecting,Immune",
+      "NumericalBonus": 0
+    },
+	{
+      "Name": "Poison Immunity",
+      "Selection": "",
+      "BonusTo": "Poison,Immune",
+      "NumericalBonus": 0
+    },
+	{
+      "Name": "Sleep Immunity",
+      "Selection": "",
+      "BonusTo": "Sleep,Immune",
+      "NumericalBonus": 0
+    },
+	{
+      "Name": "Paralysis Immunity",
+      "Selection": "",
+      "BonusTo": "Paralysis,Immune",
+      "NumericalBonus": 0
+    },
+	{
+      "Name": "Polymorph Immunity",
+      "Selection": "",
+      "BonusTo": "Polymorph,Immune",
+      "NumericalBonus": 0
+    },
+	{
+      "Name": "Stun Immunity",
+      "Selection": "",
+      "BonusTo": "Stun,Immune",
+      "NumericalBonus": 0
+    },
+	{
+      "Name": "Critical Hit Immunity",
+      "Selection": "",
+      "BonusTo": "Critical Hits,Immune",
+      "NumericalBonus": 0
+    },
+	{
+      "Name": "Precision Damage Immunity",
+      "Selection": "",
+      "BonusTo": "Precision,Immune",
+      "NumericalBonus": 0
+    },
+	{
+      "Name": "Bludgeoning Damage Immunity",
+      "Selection": "",
+      "BonusTo": "Bludgeoning,Immune",
+      "NumericalBonus": 0
+    }
+  ]
+}

@@ -1,7 +1,10 @@
 ﻿MINIMUM SHIPPABLE REQUIREMENTS
 - (DONE) Combat and levelling system implemented
 - (DONE) Inventory implemented
-- Stationary NPCs with the dialogue system and shops implemented
+- NPCs schedules
+- NPC dialogue system (gifts, chitchat, missions)
+- NPC shops
+- Finish the levelling system
 - Save/Load game
 - Main menu
 - Finish the main town
@@ -13,6 +16,7 @@ Dumb Ideas that could be fun/funny:
 - Jump button that moves you up a level and hovers you there for a second)
 - - Build up velocity by running before a jump to move tiles while you're in the air, up to 4 tiles of velocity
 - - Maybe as a reward for a dungeon? You get spring shoes and can then jump, spring shoes required to enter/complete the next dungeon
+- Small chance for an NPC named "the devil" to appear on top of a chopped hickory tree, secret mission to beat him at a rhythm game when you speak to him
 
 
 
@@ -40,6 +44,16 @@ Skills
 - (DONE) Make skill actions grant experience to the correct skill
 - Make a UI to display all skill progress in a window (hotkey 'C'?)
 - (DONE) Block skill actions if you don't have the requisite level
+- Skills
+- - Gathering Skills (Anything that can use SkillableTile)
+- - - (DONE) Woodcutting
+- - - Fishing
+- - - Mining
+- - Processing Skills (Use an existing workshop tile to turn something into something else)
+- - - Smithing (Furnace)
+- - - Cooking (Oven/Campfire/Stove). When you can cook food, implement a hunger mechanic with it
+- - Crafting Skills (Access via menu interface that lists all recipes, and their requirements by skill)
+- - - Carpentry (Furniture and other wooden goods)
 
 
 
@@ -60,20 +74,16 @@ Saving/Loading
 - - Load all save-specific maps after the main map loading, overwriting the base maps.
 
 
-Crafting
-- Carpentry: Wooden crafts and furniture
-- - At the least, make and place functional chests
-
-
 
 Farming
 - Have to buy the plot of land where the farm is first
 - Hoe - Turn dirt into tilled land (only on owned land tiles)
 - Seeds: only plantable in the correct season
-- - Spring Crops:
-- - Summer Crops:
-- - Fall Crops:
-- - Winter Crops:
+- - Spring Crops: Turnip, Potato, Cucumber, Cabbage, Strawberry, Garlic, Green Bean, Parsnip, Rhubarb
+- - Summer Crops: Onion, Pumpkin, Watermelon, Melon, Tomato, Paprika, Corn, Pineapple, Blueberry, 
+- - Fall Crops: Carrot, Sweet Potato, Spinach, Eggplant, Bell Pepper, Artichoke, Beet, Bok Choy, Cranberry, Eggplant, Grapes
+- - Winter Crops: Radish, Broccoli, Kale
+- - Year Round: Wheat, Soybean, Rice, Sugar cane, Chili pepper, Bamboo, Flax, Cotton, Tea leaves
 
 
 Shop Mode
@@ -86,36 +96,25 @@ Shop Mode
 
 
 
-
-Moves (+ Spells)
-- (DONE) Use selected move button
-- (DONE) Menu to change selected move
-- (DONE) Physical moves may have an energy cost associated with using them
-- (DONE) Magical moves have a mana cost associated with using them
-- (DONE) Move Structure: Name, Physical/Magical, Use Cost, Accuracy, Power, Type?
-- (DONE) Load moves from file
-
-
-
 More Combat Improvements
 - Limit item stacks to a definable quantity
-- Limited number of uses for weapons and armor before it breaks (requiring repairing in town)
-- Monsters weak or strong to individual damage types
-- Define some monster templates that carry stats, immunities, and weaknesses to serve as monster building blocks
+- (DONE) Limited number of uses for weapons and armor before it breaks (requiring repairing in town)
+- (DONE) Monsters weak or strong to individual damage types
+- (DONE) Define some monster templates that carry stats, immunities, and weaknesses to serve as monster building blocks
 - - Templates can also be randomly assigned to a small portion of enemies to make for actual elites
 - Unequip items in combat
-- Switch all stats and attributes to (unnamed D20 system) clone?
+- (DONE) Switch all stats and attributes to (unnamed D20 system) clone?
 - - (DONE) Attributes + Attribute Modifiers
 - - (DONE) Armor Class to determine hits
-- - (DONE) Critical Strikes
-
-
-Serialization
-- (DONE) Load monsters via json files
-- Load items via json files
-- Load tiles via json files
-
-
+- - (DONE) Critical Strikes 
+- Have allies in combat vs multiple enemies
+- - Choose all ally attacks?
+- Full-round attack: Hit multiple times if you have a high enough Base Attack Bonus (extra attack at +6/+11/+15)
+- Standard action attacks: Single hit but allows a movement action to be taken
+- Movement action: Move towards or away from an enemy 
+- - If you have a flying speed, also able to move up
+- - If you have a burrowing speed, also able to move into the ground
+- If you move far enough away from an enemy, exit the battle
 
 
 
@@ -155,23 +154,100 @@ Items
 - (DONE) Item properties: ItemID, Name, Char, Foreground, ItemCategory, EquipSlot, 
 - (DONE) Load item definitions from file
 - (DONE) Pickup and drop items
-- Tools: Watering Can, Pickaxe, Axe, Hoe, Hammer, Fishing Pole
+- Tools: 
+- - Watering Can - Water crops, allowing them to grow.
+- - - Higher tier watering cans hold more water, and water more tiles at once
+- - Pickaxe - Used for mining
+- - - Higher tier pickaxes have more durability before needing to be repaired
+- - (DONE) Axe - Used for cutting down trees.
+- - - Higher tier axes have more durability before needing to be repaired
+- - Hoe - Turns dirt into tilled ground, allowing seeds to be planted
+- - - Higher tier hoes till more tiles at once
+- - Fishing Pole - Use at fishing spots (with bait?) to catch fish
+- - - Fish differ based on season, weather, and location
 - - Hammer: Construct tiles/furniture/anything that exists in the world, what you can make depends on construction level
 - (DONE) Equippable item slots: Hand, Off-hand, Head, Torso, Legs, Ring1, Ring2, Amulet
 
 
 Map Decorations
 - Town
-- - Bed, Bookshelf?, Actual door sprites
+- - (DONE) Bed
+- - (DONE) Bookshelf
+- - (DONE) Actual door sprites
 
 
 NPCs
-- Daily Route they follow - Time + Map Location + World Location (teleport to nodes they should already be at when out of the players sight)
+- Noonbreeze NPCs
+- - Tom (Owns the bar)
+- - General Store Owner
+- - Blacksmith
+- - Apothecary
+- - Cobalt (Scholar, frequents the library)
+- - Tailor
+- - Bakery / Cafe
+- - Butcher
+- - Clinic
+- - Innkeeper
+- - Inn housekeeping
+- - Cemetary groundskeeper
+- Courier's Guild
+- - Tak Deeb (Courier)
+- Adventurer's Guild
+- - Leader
+- - Merchant
+- - Worker
+- Merchant's Guild
+- - - Leader
+- - Phoebe (Pet / summon shop owner)
+- Docks / Mariner's Guild
+- - Leader
+- - Sailor
+- - Sailor
+- - Sailor
+- - Merchant
+- - Fisherman 
+
+
+
+
+
+- (DONE) Daily Route they follow - Time + Map Location + World Location (teleport to nodes they should already be at when out of the players sight)
+- - (DONE) NPC AI Structure: Schedules for Spring/Normal, Spring/Rain, Summer/Normal, Summer/Rain, Fall/Normal, Fall/Rain, Winter/Normal, Winter/Snow, Holiday, Birthday
+- - (DONE) Schedule structure: List of nodes
+- - (DONE) ScheduleNode structure: Time, MapPos, Position
+- - - (DONE) If the next node is on the same map, path to it
+- - - (DONE) If the next node is on another map, path towards the correct map edge and move off the current map
+- - - - (FIXED) There's some kind of bug where they don't path properly if they need to move left/right maps
+- - - (DONE) If the player isn't on the same map as the NPC or the target map, teleport the NPC to the node they should be at.
 - Dialogue system
-- - Chit-chat: 3 random options for different topics, each NPC has specific things they like and dislike talking about
-- - Gift: Give the NPC an item
+- - (DONE) Chit-chat: 5 random options for different topics, each NPC has specific things they like and dislike talking about
+- - - (DONE) Chit-chat topics
+- - - (DONE) Around town: Noonbreeze, the bar, the harvest, the weather
+- - - (DONE) The world: Current events, politics, The City, The Desert, The Forest, The Ocean, The Lake
+- - - (DONE) Gossip: Result depends on how this NPC feels about the NPC the gossip picks
+- - - (DONE) Guild-talk: Merchant Guild, Adventurer's Guild, Thieves Guild, Mariner's Guild
+- - - (DONE) Interactions: Annoy, Apologize, Bad Pun, Call Name, Cheer Up, Cry, Complain, Compliment, 
+			Entertain, Insult, Intimidate, Joke, Tease, Tell a Secret, Brag, Give an Opinion, Rude Gesture
+- - - (DONE) Hobbies: Cooking, Nature, Work, Sports, Dancing, Exercise, Books, Home, Jobs, Adventuring, Sleeping, Health, Music, Money
+			Fishing, Magic
+- - (DONE) Gift: Give the NPC an item
+- - - (DONE) NPCs have a list of liked, disliked, loved, and hated items.
+- - - Also make a list of universal items for each category that are overridden by specific NPC feelings
+- - - (DONE) Only give relationship benefits once per day for gifts
+- - - Check when a gift is given to see if it fills any current mission requirements
 - - Quest: Only shows up if the NPC has something they want done. Differentiate between full quests and simple tasks
-- - Nevermind: Exit the chat without saying anything
+- - (DONE) Nevermind: Exit the chat without saying anything
+- (DONE) Shop system
+- - (DONE) Shop structure: Shop ID, Sold goods, Bought goods, restock time, shop MapPos and Position
+- - (DONE) Only show the shop button (and allow it to be clicked) if the NPC is standing on their shop tile node
+- - (DONE) Only buys items they can afford that they're interested in
+- - - (DONE) Buy items they aren't interested in at a quarter value, otherwise buy at half value.
+- - - (DONE) Amount they pay for items influenced by relationship, but never more than half for unwanted items or 90% for wanted items
+- - (DONE) Sells a set list of items plus anything they've been sold
+- - - (DONE) Sells items for 150% of value base, influenced by relationship. Up to 200% if they hate you, down to 100% if they like you.
+- - (DONE) Player must specify what coins exactly they want to pay with. Decline insufficient payment. Allow player to either ask for change or give the change as a gift
+- - - (DONE) If the player doesn't request change, add the leftover money to the NPCs money total and increase their relationship with the player
+- - - (SKIPPED) If the player wants change but the NPC doesn't have the coins required, make the NPC apologize and explain they lack the coins.
 
 
 
@@ -188,23 +264,12 @@ UI
 - - (DONE) While inventory is open, let the user move where in their inventory their items are
 - - (DONE) Initialize inventory slots to Empty
 - (DONE) Equipment Menu
-- Skill Menu
-- - Melee: Accuracy with melee attacks and what tier of weapon you can use
-- - Construction: Build things that get placed in the world (walls, floors, furniture, etc)
-- - Crafting: Craft items that can't be placed
-- - Mining: 
+
 
 
 Effects System
 - Affliction length is measured in world seconds
 
-
-
-Map Editor:
-- (DONE) Load tile definitions from file
-- (DONE) Let the user place any already defined tile
-- (DONE) Let the user edit the minimap tile freely
-- Only generate new maps in empty spots if in map editing mode, otherwise say you can't go there in message log
 
 
 Map
@@ -221,8 +286,7 @@ Map
 - - Inn (Allows the player to pay some gold for a room, must pay cost each night)
 - - Cemetary (Graves that act like signs)
 - - Library (Bookcases act like signs?)
-- - Clinic (Pay for healing)
-- - Hot Spring (Restore energy)
+- - Clinic (Pay for healing) 
 - - Cafe / Bakery
 - - Butcher (Buys meat from the player, sells common meats)
 - - Docks

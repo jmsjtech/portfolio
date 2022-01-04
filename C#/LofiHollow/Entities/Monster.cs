@@ -34,7 +34,7 @@ namespace LofiHollow.Entities {
                 HitDice = temp.HitDice;
                 CR = temp.CR;
                 InitiativeMod = temp.InitiativeMod;
-                
+                Templates = temp.Templates;
             }
         }
     }

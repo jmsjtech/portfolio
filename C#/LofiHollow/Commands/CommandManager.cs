@@ -10,7 +10,7 @@ namespace LofiHollow.Commands {
 
         } 
 
-        public bool MoveActorBy(Actor actor, Point position) {
+        public bool MoveActorBy(Actor actor, Point position) { 
             return actor.MoveBy(position);
         }
 
@@ -56,15 +56,14 @@ namespace LofiHollow.Commands {
             }
         }
 
-        public void AddItemToInv(Actor actor, Item item) {
-            bool putInInv = false;
+        public void AddItemToInv(Actor actor, Item item) { 
             if (item != null) {
                 for (int i = 0; i < actor.Inventory.Length; i++) {
                     if (actor.Inventory[i].ItemID == item.ItemID && actor.Inventory[i].SubID == item.SubID && item.IsStackable) {
                         actor.Inventory[i].ItemQuantity++;
 
-                        GameLoop.UIManager.dropTable.Remove(item);
-                        putInInv = true;
+                        if(GameLoop.UIManager.dropTable.Contains(item))
+                            GameLoop.UIManager.dropTable.Remove(item); 
                         return;
                     }
                 }
@@ -72,38 +71,22 @@ namespace LofiHollow.Commands {
                 for (int i = 0; i < actor.Inventory.Length; i++) {
                     if (actor.Inventory[i].ItemID == 0) {
                         actor.Inventory[i] = item;
-                        GameLoop.UIManager.dropTable.Remove(item);
-                        putInInv = true;
+                        if (GameLoop.UIManager.dropTable.Contains(item))
+                            GameLoop.UIManager.dropTable.Remove(item); 
                         return;
                     }
                 }
-            }
+            } 
 
-            if (!putInInv) {
-                item.Position = actor.Position;
-                GameLoop.World.maps[actor.MapPos].Entities.Add(item, new GoRogue.Coord(actor.Position.X, actor.Position.Y));
-                GameLoop.UIManager.EntityRenderer.Add(item);
-            }
+            item.Position = actor.Position;
+            GameLoop.World.maps[actor.MapPos].Entities.Add(item, new GoRogue.Coord(actor.Position.X, actor.Position.Y));
+            GameLoop.UIManager.EntityRenderer.Add(item); 
         }
 
         public string UseItem(Actor actor, Item item) {
-            if (item.ItemID == 7) {
+            if (item.Heal != null) {
                 if (actor.CurrentHP != actor.MaxHP) {
-                    int healAmount = GoRogue.DiceNotation.Dice.Roll("1d8");
-
-                    if (actor.CurrentHP + healAmount > actor.MaxHP) {
-                        healAmount = actor.MaxHP - actor.CurrentHP;
-                    }
-
-                    actor.CurrentHP += healAmount;
-                    return "t|Healed " + healAmount + " hit points!";
-
-                } else {
-                    return "f|You're already at max HP!";
-                }
-            } else if (item.ItemID == 8) {
-                if (actor.CurrentHP != actor.MaxHP) {
-                    int healAmount = GoRogue.DiceNotation.Dice.Roll("2d8");
+                    int healAmount = GoRogue.DiceNotation.Dice.Roll(item.Heal.HealAmount);
 
                     if (actor.CurrentHP + healAmount > actor.MaxHP) {
                         healAmount = actor.MaxHP - actor.CurrentHP;
@@ -132,7 +115,7 @@ namespace LofiHollow.Commands {
         }
 
         public void UnequipItem(Actor actor, int slot) {
-            if (slot >= 0 && slot <= 6) {
+            if (slot >= 0 && slot <= 15) {
                 if (actor.Equipment[slot].ItemID != 0) {
                     for (int i = 0; i < actor.Inventory.Length; i++) {
                         if (actor.Inventory[i].ItemID == 0) {
@@ -142,6 +125,23 @@ namespace LofiHollow.Commands {
                     }
                 }
             }
+        }
+
+        public int RemoveOneItem(Actor actor, int slot) {
+            int returnID = -1;
+            if (slot >= 0 && slot <= actor.Inventory.Length) {
+                if (actor.Inventory[slot].ItemID != 0) {
+                    if (!actor.Inventory[slot].IsStackable || (actor.Inventory[slot].IsStackable && actor.Inventory[slot].ItemQuantity == 1)) {
+                        returnID = actor.Inventory[slot].ItemID;
+                        actor.Inventory[slot] = new Item(0);
+                    } else if (actor.Inventory[slot].IsStackable && actor.Inventory[slot].ItemQuantity > 1) {
+                        actor.Inventory[slot].ItemQuantity--;
+                        returnID = actor.Inventory[slot].ItemID;
+                    }
+                }
+            }
+
+            return returnID;
         }
     }
 }

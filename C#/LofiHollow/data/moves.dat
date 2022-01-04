@@ -1,6 +1,0 @@
-# ID / Name / Type / IsPhysical / Cost / Accuracy / Power
-0|Slash|Cut|true|0|70|10
-1|Stab|Pierce|true|0|50|20
-2|Magic Missile|Force|false|5|100|30
-3|Heavy Strike|Cut|true|5|70|30
-4|Wobble|None|true|0|100|0

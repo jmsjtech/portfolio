@@ -30,6 +30,9 @@ namespace LofiHollow {
         [JsonProperty]
         public string WillSaveProg = "Bad";
 
+        [JsonProperty]
+        public List<List<ClassFeature>> ClassFeatures = new List<List<ClassFeature>>();
+        
 
         [JsonConstructor]
         public ClassDef() {

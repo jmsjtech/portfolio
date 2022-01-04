@@ -1,7 +1,7 @@
 {
   "TileID": 37,
   "IsBlockingMove": true,
-  "IsBlockingLOS": false,
+  "IsBlockingLOS": true,
   "SpawnsMonsters": false,
   "Name": "Mountain",
   "ForegroundR": 100,

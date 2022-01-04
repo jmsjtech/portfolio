@@ -38,10 +38,12 @@ namespace LofiHollow {
         } 
 
         private static void Update(object sender, GameHost e) {
-            World.Player.TimeLastTicked++;
-            if (World.Player.TimeLastTicked >= 60) {
-                World.Player.TimeLastTicked = 0;
-                World.Player.TickTime();
+            if (UIManager != null && UIManager.selectedMenu == "None") {
+                World.Player.TimeLastTicked++;
+                if (World.Player.TimeLastTicked >= 60) {
+                    World.Player.TimeLastTicked = 0;
+                    World.Player.TickTime();
+                }
             }
         }
 
@@ -56,9 +58,11 @@ namespace LofiHollow {
             BattleManager = new BattleManager();
 
 
-            World.LoadExistingMaps();
-
+            //  World.LoadExistingMaps();
+            World.LoadMapAt(new Point3D(1, 3, 0));
             World.InitPlayer();
+
+            
              
 
             SadConsole.Game.Instance.MonoGameInstance.Window.Title = "Lofi Hollow";

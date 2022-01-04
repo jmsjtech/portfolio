@@ -1,7 +1,7 @@
 {
   "TileID": 21,
   "IsBlockingMove": true,
-  "IsBlockingLOS": false,
+  "IsBlockingLOS": true,
   "SpawnsMonsters": false,
   "Name": "Brick Wall",
   "ForegroundR": 171,

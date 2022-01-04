@@ -9,8 +9,12 @@ namespace LofiHollow {
     [JsonObject(MemberSerialization.OptIn)]
     public class ClassFeature {
         [JsonProperty]
-        string Name = "";
+        public string Name = "";
         [JsonProperty]
-        string Selection = "";
+        public string Selection = "";
+        [JsonProperty]
+        public string BonusTo = "";
+        [JsonProperty]
+        public int NumericalBonus = 0;
     }
 }
