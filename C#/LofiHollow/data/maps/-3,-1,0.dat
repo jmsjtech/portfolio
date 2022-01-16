@@ -1,4 +1,11 @@
 {
+  "MonsterWeights": {
+    "1": 45,
+    "2": 45,
+    "3": 10
+  },
+  "MinimumMonsters": 5,
+  "MaximumMonsters": 10,
   "Tiles": [
     {
       "TileID": 11,
@@ -40269,6 +40276,5 @@
       "_packedValue": 4278190080
     }
   },
-  "PlayerCanBuild": false,
-  "AmbientMonsters": false
+  "PlayerCanBuild": false
 }

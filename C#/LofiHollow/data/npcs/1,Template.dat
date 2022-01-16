@@ -1,191 +1,22 @@
 {
+  "Name": "",
   "npcID": 1,
   "Occupation": "",
   "AI": {
-    "SpringNormal": {
-      "Nodes": [
-        {
-          "DayMinutes": 555,
-          "MapPos": {
-			"X": 0,
-			"Y": 0,
-			"Z": -1
-		  },
-          "Position": {
-            "X": 0,
-            "Y": 0
-          }
-        }
-      ],
-      "NextNodeTime": 0,
-      "CurrentNode": 0
-    },
-    "SpringRain": {
-      "Nodes": [
-        {
-          "DayMinutes": 555,
-          "MapPos": {
-			"X": 0,
-			"Y": 0,
-			"Z": -1
-		  },
-          "Position": {
-            "X": 0,
-            "Y": 0
-          }
-        }
-      ],
-      "NextNodeTime": 0,
-      "CurrentNode": 0
-    },
-    "SummerNormal": {
-      "Nodes": [
-        {
-          "DayMinutes": 555,
-          "MapPos": {
-			"X": 0,
-			"Y": 0,
-			"Z": -1
-		  },
-          "Position": {
-            "X": 0,
-            "Y": 0
-          }
-        }
-      ],
-      "NextNodeTime": 0,
-      "CurrentNode": 0
-    },
-    "SummerRain": {
-      "Nodes": [
-        {
-          "DayMinutes": 555,
-          "MapPos": {
-			"X": 0,
-			"Y": 0,
-			"Z": -1
-		  },
-          "Position": {
-            "X": 0,
-            "Y": 0
-          }
-        }
-      ],
-      "NextNodeTime": 0,
-      "CurrentNode": 0
-    },
-    "FallNormal": {
-      "Nodes": [
-        {
-          "DayMinutes": 555,
-          "MapPos": {
-			"X": 0,
-			"Y": 0,
-			"Z": -1
-		  },
-          "Position": {
-            "X": 0,
-            "Y": 0
-          }
-        }
-      ],
-      "NextNodeTime": 0,
-      "CurrentNode": 0
-    },
-    "FallRain": {
-      "Nodes": [
-        {
-          "DayMinutes": 555,
-          "MapPos": {
-			"X": 0,
-			"Y": 0,
-			"Z": -1
-		  },
-          "Position": {
-            "X": 0,
-            "Y": 0
-          }
-        }
-      ],
-      "NextNodeTime": 0,
-      "CurrentNode": 0
-    },
-    "WinterNormal": {
-      "Nodes": [
-        {
-          "DayMinutes": 555,
-          "MapPos": {
-			"X": 0,
-			"Y": 0,
-			"Z": -1
-		  },
-          "Position": {
-            "X": 0,
-            "Y": 0
-          }
-        }
-      ],
-      "NextNodeTime": 0,
-      "CurrentNode": 0
-    },
-    "WinterSnow": {
-      "Nodes": [
-        {
-          "DayMinutes": 555,
-          "MapPos": {
-			"X": 0,
-			"Y": 0,
-			"Z": -1
-		  },
-          "Position": {
-            "X": 0,
-            "Y": 0
-          }
-        }
-      ],
-      "NextNodeTime": 0,
-      "CurrentNode": 0
-    },
-    "Holiday": {
-      "Nodes": [
-        {
-          "DayMinutes": 555,
-          "MapPos": {
-			"X": 0,
-			"Y": 0,
-			"Z": -1
-		  },
-          "Position": {
-            "X": 0,
-            "Y": 0
-          }
-        }
-      ],
-      "NextNodeTime": 0,
-      "CurrentNode": 0
-    },
-    "Birthday": {
-      "Nodes": [
-        {
-          "DayMinutes": 555,
-          "MapPos": {
-			"X": 0,
-			"Y": 0,
-			"Z": -1
-		  },
-          "Position": {
-            "X": 0,
-            "Y": 0
-          }
-        }
-      ],
-      "NextNodeTime": 0,
-      "CurrentNode": 0
-    },
+    "SpringNormal": { },
+    "SpringRain": { },
+    "SummerNormal": { },
+    "SummerRain": { },
+    "FallNormal": { },
+    "FallRain": { },
+    "WinterNormal": { },
+    "WinterSnow": { },
+    "Holiday": { },
+    "Birthday": { },
 	"Default": {
       "Nodes": [
         {
-          "DayMinutes": 555,
+          "DayMinutes": 540,
           "MapPos": {
 			"X": 0,
 			"Y": 0,
@@ -201,8 +32,8 @@
       "CurrentNode": 0
     }
   },
-  "BirthMonth": 1,
-  "BirthDay": 2,
+  "BirthMonth": 5,
+  "BirthDay": 10,
   "Introduction": "",
   "Greetings": {
 	"Nemesis": "",
@@ -241,8 +72,7 @@
 	"Gossip": "-1~negative",
 	"the Merchant's Guild": "0~neutral",
 	"the Adventurer's Guild": "0~neutral",
-	"the Thieves Guild": "0~neutral",
-	"the Mariner's Guild": "0~neutral",
+	"the Thieves Guild": "0~neutral", 
 	"the Library": "0~neutral",
 	"(Annoy)": "0~neutral",
 	"(Apologize)": "0~neutral",
@@ -291,8 +121,8 @@
   "LikedGiftIDs": [],
   "LovedGiftIDs": [],
   "Shop": {
-	"ShopName": "",
-	"WanderingVendor": true,
+	"ShopName": "Jet's Workshop",
+	"WanderingVendor": false,
 	"Position": {
 		"X": 0,
 		"Y": 0
@@ -300,46 +130,28 @@
 	"MapPos": {
 		"X": 0,
 		"Y": 0,
-		"Z": 0
+		"Z": -1
 	},
 	"SoldItems": [3, 6, 36],
-	"BuyCategory": -1
-  },
-  "CopperCoins": 0,
-  "SilverCoins": 0,
-  "GoldCoins": 0,
-  "PlatinumCoins": 0,
+	"BuyCategory": -2
+  }, 
   "MapPos": {
     "X": 0,
-    "Y": 1,
-    "Z": 0
+    "Y": 0,
+    "Z": -1
+  },
+  "Position": {
+    "X": 0,
+    "Y": 0
   },
   "Skills": {},
   "ForegroundR": 0,
   "ForegroundG": 0,
   "ForegroundB": 0,
-  "ActorGlyph": 32,
-  "Effect": null,
-  "Appearance": {
-    "Decorators": [],
-    "Foreground": {
-      "_packedValue": 4294967295
-    },
-    "Background": {
-      "_packedValue": 0
-    },
-    "Glyph": 64,
-    "Mirror": 0,
-    "IsVisible": true
-  },
+  "ActorGlyph": 64, 
   "Children": [],
   "ChildrenLocked": true,
   "Components": [],
-  "Position": {
-    "X": 20,
-    "Y": 20
-  },
-  "Name": "Cobalt",
   "ZIndex": 0,
   "IsVisible": true,
   "IsEnabled": true,

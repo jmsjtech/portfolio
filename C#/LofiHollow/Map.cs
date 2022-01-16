@@ -4,10 +4,17 @@ using SadRogue.Primitives;
 using LofiHollow.Entities;
 using Newtonsoft.Json;
 using LofiHollow.TileData;
+using System.Collections.Generic;
 
 namespace LofiHollow {
     [JsonObject(MemberSerialization.OptIn)]
     public class Map {
+        [JsonProperty]
+        public Dictionary<int,int> MonsterWeights = new Dictionary<int, int>();
+        [JsonProperty]
+        public int MinimumMonsters = 0;
+        [JsonProperty]
+        public int MaximumMonsters = 0;
         [JsonProperty]
         public TileBase[] Tiles;
         [JsonProperty]
@@ -20,8 +27,7 @@ namespace LofiHollow {
 
         [JsonProperty]
         public bool PlayerCanBuild = false;
-        [JsonProperty]
-        public bool AmbientMonsters = false;
+       
 
         public GoRogue.MultiSpatialMap<Entity> Entities;
         public GoRogue.Pathing.FastAStar MapPath;
@@ -48,7 +54,9 @@ namespace LofiHollow {
          
         public bool IsTileWalkable(Point location) { 
             if (location.X < 0 || location.Y < 0 || location.X >= Width || location.Y >= Height)
-                return false; 
+                return false;
+            if (GetEntityAt<Monster>(location) != null)
+                return false;
             return !Tiles[location.Y * Width + location.X].IsBlockingMove;
         }
 
@@ -83,22 +91,100 @@ namespace LofiHollow {
             return Entities.GetItems(new GoRogue.Coord(location.X, location.Y)).OfType<T>().FirstOrDefault();
         }
 
+        public T GetEntityAt<T>(Point location, string name) where T : Entity {
+            var allItems = Entities.GetItems(new GoRogue.Coord(location.X, location.Y)).OfType<T>().ToList();
+
+            if (allItems.Count > 1) {
+                for (int i = 0; i < allItems.Count; i++) {
+                    if (allItems[i].Name == name) {
+                        return allItems[i];
+                    }
+                }
+            }
+
+            return Entities.GetItems(new GoRogue.Coord(location.X, location.Y)).OfType<T>().FirstOrDefault();
+        }
+
         public TileBase GetTile(Point location) {
             return Tiles[location.ToIndex(GameLoop.MapWidth)];
         }
-         
+
+        public void SetTile(Point location, TileBase tile) {
+           Tiles[location.ToIndex(GameLoop.MapWidth)] = tile;
+        }
+
         public void Remove(Entity entity) { 
             Entities.Remove(entity);
-            entity.PositionChanged -= OnPositionChange;
+            entity.PositionChanged -= OnPositionChange; 
         }
          
         public void Add(Entity entity) { 
             Entities.Add(entity, new GoRogue.Coord(entity.Position.X, entity.Position.Y));
-            entity.PositionChanged += OnPositionChange;
+            entity.PositionChanged += OnPositionChange; 
         }
 
         private void OnPositionChange(object sender, SadConsole.ValueChangedEventArgs<Point> e) {
             Entities.Move(sender as Entity, new GoRogue.Coord(e.NewValue.X, e.NewValue.Y)); 
+        } 
+
+
+        public void PopulateMonsters(Point3D MapPos) {
+            int diff = MaximumMonsters - MinimumMonsters;
+            int monsterAmount = GameLoop.rand.Next(diff) + MinimumMonsters;
+
+            int weight = 0;
+
+            if (MonsterWeights.Count > 1) {
+                foreach(KeyValuePair<int, int> kv in MonsterWeights) {
+                    weight += kv.Value;
+                }
+            } else if (MonsterWeights.Count == 1) {
+                weight = MonsterWeights.ElementAt(0).Value;
+            }
+
+            int count1 = 0;
+            int count2 = 0;
+            int count3 = 0;
+
+            for (int i = 0; i < monsterAmount; i++) {
+                if (MonsterWeights.Count > 0) {
+                    int randomInWeight = GameLoop.rand.Next(weight);
+                    int weightCount = 0;
+                    int randomID = 0;
+
+                   
+                    for (int j = 0; j < MonsterWeights.Count; j++) {
+                        if (randomInWeight <= weightCount + MonsterWeights.ElementAt(j).Value) {
+                            randomID = MonsterWeights.ElementAt(j).Key;
+                            if (randomID == 1)
+                                count1++;
+                            else if (randomID == 2)
+                                count2++;
+                            else if (randomID == 3)
+                                count3++;
+                            break;
+                        } else {
+                            weightCount += MonsterWeights.ElementAt(j).Value;
+                        }
+                    }
+
+                    Monster monster = new Monster(randomID);
+
+                    monster.Position = new Point(GameLoop.rand.Next(Width), GameLoop.rand.Next(Height));
+                    
+                    while (!IsTileWalkable(monster.Position) || GetEntityAt<Monster>(monster.Position) != null) {
+                        monster.Position = new Point(GameLoop.rand.Next(Width), GameLoop.rand.Next(Height));
+                    }
+
+                    monster.MapPos = MapPos;
+
+                    monster.SetupStats();
+                    monster.SetExpGranted();
+
+                    GameLoop.CommandManager.SpawnMonster(monster);
+                   // GameLoop.CommandManager.SendMonster(monster);
+                }
+            } 
         } 
     }
 }

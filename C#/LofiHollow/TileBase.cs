@@ -113,5 +113,9 @@ namespace LofiHollow {
         public void Unshade() {
             Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
         }
+
+        public ColoredString AsColoredGlyph() {
+            return new ColoredString(((char) TileGlyph).ToString(), Foreground, Background);
+        }
     }
 }

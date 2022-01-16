@@ -7,6 +7,8 @@ using Microsoft.Xna.Framework.Graphics;
 using LofiHollow.UI;
 using LofiHollow.Commands;
 using LofiHollow.Entities;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace LofiHollow {
     class GameLoop {
@@ -18,7 +20,8 @@ namespace LofiHollow {
         public static UIManager UIManager;
         public static World World;
         public static CommandManager CommandManager;
-        public static BattleManager BattleManager;
+
+        public static NetworkManager NetworkManager;
 
 
         public static Random rand;
@@ -26,7 +29,7 @@ namespace LofiHollow {
         public static void Main(string[] args) {
             // Setup the engine and create the main window.
             SadConsole.Game.Create(GameWidth, GameHeight, "./fonts/Cheepicus48.font");
-           
+             
 
             // Hook the start event so we can add consoles to the system.
             GameHost.Instance.OnStart = Init;
@@ -34,16 +37,46 @@ namespace LofiHollow {
             
             // Start the game.
             SadConsole.Game.Instance.Run(); 
-            SadConsole.Game.Instance.Dispose();
+            SadConsole.Game.Instance.Dispose(); 
         } 
 
         private static void Update(object sender, GameHost e) {
-            if (UIManager != null && UIManager.selectedMenu == "None") {
-                World.Player.TimeLastTicked++;
-                if (World.Player.TimeLastTicked >= 60) {
-                    World.Player.TimeLastTicked = 0;
-                    World.Player.TickTime();
+            if (UIManager != null) {
+                if (NetworkManager == null || NetworkManager.lobbyManager == null || NetworkManager.isHost) {
+                    World.Player.TimeLastTicked++;
+                    if (World.Player.TimeLastTicked >= 60) {
+                        World.Player.TimeLastTicked = 0;
+                        World.Player.Clock.TickTime();
+                    }
                 }
+
+                List<Point3D> UpdatedMaps = new List<Point3D>();
+
+                if (World.maps[World.Player.MapPos].Entities.Count > 0) {
+                    var entities = World.maps[World.Player.MapPos].Entities.Items.ToList();
+                    foreach (Entity ent in entities) {
+                        if (ent is Monster) {
+                            ((Monster)ent).Update();
+                        }
+                    } 
+
+                    UpdatedMaps.Add(World.Player.MapPos);
+                }
+                 
+                foreach (KeyValuePair<long, Player> kv in World.otherPlayers) {
+                    if (!UpdatedMaps.Contains(kv.Value.MapPos)) {
+                        if (World.maps[kv.Value.MapPos].Entities.Count > 0) {
+                            foreach (Entity ent in World.maps[kv.Value.MapPos].Entities.Items) {
+                                if (ent is Monster) {
+                                    ((Monster)ent).Update();
+                                }
+                            }
+                            UpdatedMaps.Add(kv.Value.MapPos);
+                        }
+                    }
+                } 
+
+                UpdatedMaps.Clear(); 
             }
         }
 
@@ -55,17 +88,14 @@ namespace LofiHollow {
 
             
             CommandManager = new CommandManager();
-            BattleManager = new BattleManager();
-
 
             //  World.LoadExistingMaps();
             World.LoadMapAt(new Point3D(1, 3, 0));
-            World.InitPlayer();
-
-            
-             
+            World.InitPlayer(); 
 
             SadConsole.Game.Instance.MonoGameInstance.Window.Title = "Lofi Hollow";
+
+
         }
     }
 }

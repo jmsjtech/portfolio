@@ -15,8 +15,8 @@ namespace LofiHollow {
             bg = inBG;
         }
 
-        public ColoredGlyph AsColoredGlyph() {
-            return new ColoredGlyph(fg, bg, ch);
+        public ColoredString AsColoredGlyph() {
+            return new ColoredString(ch.ToString(), fg, bg); 
         }
 
     }

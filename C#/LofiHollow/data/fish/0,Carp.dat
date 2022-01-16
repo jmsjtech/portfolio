@@ -1,0 +1,17 @@
+{
+  "FishID": 0,
+  "Name": "Carp",
+  "Season": "Any",
+  "EarliestTime": 0,
+  "LatestTime": 1440,
+  "CatchLocation": "Any",
+  "MinWeightKG": 0.5,
+  "MaxWeightKG": 4.0,
+  "CoppersPerKG": 1,
+  "RequiredLevel": 1,
+  "GrantedExp": 20,
+  "colR": 253,
+  "colG": 253,
+  "colB": 150,
+  "glyph": 284
+}

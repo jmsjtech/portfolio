@@ -3,6 +3,9 @@ using SadRogue.Primitives;
 using System.Text;
 using LofiHollow.Entities;
 using GoRogue.DiceNotation;
+using SadConsole;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace LofiHollow.Commands {
     public class CommandManager {
@@ -10,12 +13,37 @@ namespace LofiHollow.Commands {
 
         } 
 
-        public bool MoveActorBy(Actor actor, Point position) { 
-            return actor.MoveBy(position);
+        public bool MoveActorBy(Actor actor, Point position) {
+            bool moved = actor.MoveBy(position);
+            if (moved) {
+                if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
+                    GameLoop.NetworkManager.BroadcastMsg("movePlayer;" + GameLoop.NetworkManager.ownID + ";" + actor.Position.X + ";" + actor.Position.Y + ";" 
+                        + actor.MapPos.X + ";" + actor.MapPos.Y + ";" + actor.MapPos.Z);
+                }
+
+                if (actor.ScreenAppearance == null) {
+                    actor.UpdateAppearance(); 
+                }
+                actor.UpdatePosition();
+            }
+
+            
+
+
+            return moved;
         }
 
         public bool MoveActorTo(Actor actor, Point position, Point3D mapPos) {
-            return actor.MoveTo(position, mapPos);
+            bool moved = actor.MoveTo(position, mapPos);
+
+            if (moved) {
+                if (actor.ScreenAppearance == null) {
+                    actor.UpdateAppearance();
+                }
+                actor.UpdatePosition();
+            }
+
+            return moved;
         } 
 
         public void DropItem(Actor actor, int slot) {
@@ -23,12 +51,54 @@ namespace LofiHollow.Commands {
                 if (GameLoop.World.itemLibrary.ContainsKey(actor.Inventory[slot].ItemID)) {
                     Item item = actor.Inventory[slot]; 
                     item.Position = actor.Position;
+                    item.MapPos = actor.MapPos;
 
-                    GameLoop.World.maps[actor.MapPos].Entities.Add(item, new GoRogue.Coord(actor.Position.X, actor.Position.Y));
-                    GameLoop.UIManager.EntityRenderer.Add(item);
+                    
                     actor.Inventory[slot] = new Item(0);
+
+                    SendItem(item);
+                    SpawnItem(item);
                 }
             }
+        }
+
+        public void SendItem(Item item) {
+            string json = JsonConvert.SerializeObject(item, Formatting.Indented);
+            string msg = "spawnItem;" + json;
+            if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null)
+                GameLoop.NetworkManager.BroadcastMsg(msg);
+        }
+
+        public void SpawnItem(Item item) {
+            if (!GameLoop.World.maps.ContainsKey(item.MapPos))
+                GameLoop.World.LoadMapAt(item.MapPos);
+
+            GameLoop.World.maps[item.MapPos].Add(item);
+            if (item.MapPos == GameLoop.World.Player.MapPos) {
+                GameLoop.UIManager.Map.EntityRenderer.Add(item);
+            }
+
+            GameLoop.UIManager.Map.SyncMapEntities(GameLoop.World.maps[GameLoop.World.Player.MapPos]);
+        }
+
+        public void SendPickup(Item item) {
+            string json = JsonConvert.SerializeObject(item, Formatting.Indented);
+            string msg = "destroyItem;" + json;
+            if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null)
+                GameLoop.NetworkManager.BroadcastMsg(msg);
+        }
+
+        public void DestroyItem(Item item) {
+            if (!GameLoop.World.maps.ContainsKey(item.MapPos))
+                GameLoop.World.LoadMapAt(item.MapPos);
+
+            Item localCopy = GameLoop.World.maps[item.MapPos].GetEntityAt<Item>(item.Position, item.Name);
+            if (localCopy != null) {
+                GameLoop.World.maps[item.MapPos].Entities.Remove(localCopy);
+                GameLoop.UIManager.Map.EntityRenderer.Remove(localCopy);
+            }
+
+            GameLoop.UIManager.Map.SyncMapEntities(GameLoop.World.maps[GameLoop.World.Player.MapPos]);
         }
 
         public void PickupItem(Actor actor) {
@@ -38,8 +108,8 @@ namespace LofiHollow.Commands {
                     if (actor.Inventory[i].ItemID == item.ItemID && actor.Inventory[i].SubID == item.SubID && item.IsStackable) {
                         actor.Inventory[i].ItemQuantity++;
 
-                        GameLoop.World.maps[actor.MapPos].Entities.Remove(item);
-                        GameLoop.UIManager.EntityRenderer.Remove(item);
+                        DestroyItem(item);
+                        SendPickup(item);
 
                         return;
                     }
@@ -48,8 +118,8 @@ namespace LofiHollow.Commands {
                 for (int i = 0; i < actor.Inventory.Length; i++) {
                     if (actor.Inventory[i].ItemID == 0) {
                         actor.Inventory[i] = item;
-                        GameLoop.World.maps[actor.MapPos].Entities.Remove(item);
-                        GameLoop.UIManager.EntityRenderer.Remove(item);
+                        DestroyItem(item);
+                        SendPickup(item);
                         break;
                     }
                 }
@@ -60,27 +130,22 @@ namespace LofiHollow.Commands {
             if (item != null) {
                 for (int i = 0; i < actor.Inventory.Length; i++) {
                     if (actor.Inventory[i].ItemID == item.ItemID && actor.Inventory[i].SubID == item.SubID && item.IsStackable) {
-                        actor.Inventory[i].ItemQuantity++;
-
-                        if(GameLoop.UIManager.dropTable.Contains(item))
-                            GameLoop.UIManager.dropTable.Remove(item); 
+                        actor.Inventory[i].ItemQuantity++; 
                         return;
                     }
                 }
 
                 for (int i = 0; i < actor.Inventory.Length; i++) {
                     if (actor.Inventory[i].ItemID == 0) {
-                        actor.Inventory[i] = item;
-                        if (GameLoop.UIManager.dropTable.Contains(item))
-                            GameLoop.UIManager.dropTable.Remove(item); 
+                        actor.Inventory[i] = item; 
                         return;
                     }
                 }
             } 
 
             item.Position = actor.Position;
-            GameLoop.World.maps[actor.MapPos].Entities.Add(item, new GoRogue.Coord(actor.Position.X, actor.Position.Y));
-            GameLoop.UIManager.EntityRenderer.Add(item); 
+            item.MapPos = actor.MapPos;
+            SpawnItem(item);
         }
 
         public string UseItem(Actor actor, Item item) {
@@ -142,6 +207,206 @@ namespace LofiHollow.Commands {
             }
 
             return returnID;
+        }
+
+        public void SendMonster(Monster monster) {
+            string json = JsonConvert.SerializeObject(monster, Formatting.Indented);
+            string msg = "spawnMonster;" + json;
+            if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null)
+                GameLoop.NetworkManager.BroadcastMsg(msg);
+        }
+
+
+        public void SpawnMonster(Monster monster) {
+            GameLoop.World.maps[monster.MapPos].Add(monster);
+
+            monster.UpdateAppearance();
+            if (monster.MapPos == GameLoop.World.Player.MapPos) {
+                //  GameLoop.UIManager.Map.EntityRenderer.Add(monster);
+                if (monster.ScreenAppearance == null)
+                    monster.UpdateAppearance();
+                GameLoop.UIManager.Map.MapConsole.Children.Add(monster.ScreenAppearance);
+                GameLoop.UIManager.Map.SyncMapEntities(GameLoop.World.maps[GameLoop.World.Player.MapPos]);
+            }
+        }
+
+        public void MoveMonster(string id, Point3D MapPos, Point newPos) {
+            foreach (Entity ent in GameLoop.World.maps[MapPos].Entities.Items) {
+                if (ent is Monster) {
+                    Monster mon = (Monster)ent;
+                    if (mon.UniqueID == id) {
+                        mon.MoveTo(newPos, MapPos);
+                    }
+                }
+            }
+        }
+
+        public void DamageMonster(string id, Point3D MapPos, int damage, string battleString, string color) {
+            foreach (Entity ent in GameLoop.World.maps[MapPos].Entities.Items) {
+                if (ent is Monster) {
+                    Monster mon = (Monster) ent;
+                    if (mon.UniqueID == id) {
+                        Color stringColor = color == "Green" ? Color.Green : color == "Red" ? Color.Red : Color.White;
+
+                        mon.CurrentHP -= damage;
+                        if (MapPos == GameLoop.World.Player.MapPos) {
+                            GameLoop.UIManager.AddMsg(new ColoredString(battleString, stringColor, Color.Black));
+                        }
+
+
+                        if (mon.CurrentHP <= 0) {
+                            mon.Death(false);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void DamagePlayer(long id, int damage, string battleString, string color) {
+            Color hitColor = color == "Green" ? Color.Green : color == "Red" ? Color.Red : Color.White;
+            if (!GameLoop.World.otherPlayers.ContainsKey(id)) {
+                if (GameLoop.NetworkManager.ownID == id) {
+                    GameLoop.World.Player.CurrentHP -= damage;
+                   
+                    
+                    GameLoop.UIManager.AddMsg(new ColoredString(battleString, hitColor, Color.Black));
+                } else {
+                    return;
+                }
+            } else { 
+                GameLoop.World.otherPlayers[id].CurrentHP -= damage;
+
+                if (GameLoop.World.otherPlayers[id].CurrentHP <= 0) {
+                    GameLoop.World.otherPlayers[id].PlayerDied(); 
+                }
+
+                if (GameLoop.World.otherPlayers[id].MapPos == GameLoop.World.Player.MapPos)
+                    GameLoop.UIManager.AddMsg(new ColoredString(battleString, hitColor, Color.Black));
+            }
+        }
+
+
+
+        public void Attack(Actor attacker, Actor defender, bool melee) {
+            if (attacker == GameLoop.World.Player || defender == GameLoop.World.Player) {
+                int attackRoll = GoRogue.DiceNotation.Dice.Roll("1d20");
+                int attackBonus = attacker.RollAttack(true);
+                int newDamage = 0;
+
+                ColoredString battleString;
+                string battleColor = "White";
+
+                if (attackRoll + attackBonus >= defender.GetAC()) {
+                    string weaponDice = attacker.UnarmedDice;
+                    string damageType = "Bludgeoning";
+                    int minCrit = 20;
+                    int critMod = 2;
+                    if (attacker.Equipment != null) {
+                        if (attacker.Equipment[0].Weapon != null && attacker.Equipment[0].Durability > 0) {
+                            weaponDice = attacker.Equipment[0].Weapon.DamageDice;
+                            minCrit = attacker.Equipment[0].Weapon.MinCrit;
+                            critMod = attacker.Equipment[0].Weapon.CritMod;
+                            attacker.Equipment[0].Durability--;
+                        }
+
+                        if (attacker.Equipment[0].Weapon != null)
+                            damageType = attacker.Equipment[0].Weapon.DamageType;
+                    }
+
+
+
+                    string moddedDice = weaponDice;
+
+                    if (attacker.GetMod("STR") > 0)
+                        moddedDice += "+" + attacker.GetMod("STR");
+                    else
+                        moddedDice += "-" + Math.Abs(attacker.GetMod("STR"));
+
+                    int damage = GoRogue.DiceNotation.Dice.Roll(moddedDice);
+
+                    if (damage < 0)
+                        damage = 0;
+
+                    newDamage = defender.DamageCheck(damage, damageType);
+
+
+                    if (newDamage > 0) {
+                        newDamage += attacker.CheckForBonus("Damage", "");
+
+                        if (attackRoll >= minCrit) {
+                            int confirmCrit = attacker.RollAttack(false) + attacker.CheckForBonus("Critical", "Confirm");
+
+
+
+                            if (confirmCrit >= defender.GetAC()) {
+                                if (!defender.CheckImmunity("Critical Hits")) {
+                                    critMod += attacker.CheckForBonus("Critical", "Multiplier");
+
+                                    if (critMod == 2) {
+                                        newDamage += GoRogue.DiceNotation.Dice.Roll(weaponDice);
+                                        newDamage += attacker.CheckForBonus("Damage", "");
+                                    } else {
+                                        newDamage += (critMod - 1) * GoRogue.DiceNotation.Dice.Roll(weaponDice);
+                                        newDamage += (critMod - 1) * attacker.CheckForBonus("Damage", "");
+                                    }
+
+                                    battleString = new ColoredString(attacker.Name + " hit " + defender.Name + " for " + newDamage + " damage. Critical Hit!", Color.Green, Color.Black);
+                                    battleColor = "Green";
+                                } else {
+                                    battleString = new ColoredString(attacker.Name + " hit " + defender.Name + " for " + newDamage + " damage.", Color.White, Color.Black);
+                                }
+                            } else {
+                                battleString = new ColoredString(attacker.Name + " hit " + defender.Name + " for " + newDamage + " damage.", Color.White, Color.Black);
+                            }
+                        } else {
+                            battleString = new ColoredString(attacker.Name + " hit " + defender.Name + " for " + newDamage + " damage.", Color.White, Color.Black);
+                        }
+                    } else {
+                        battleString = new ColoredString(attacker.Name + " hit, but " + defender.Name + " took no damage!", Color.White, Color.Black);
+                    }
+
+                    defender.CurrentHP -= newDamage;
+
+                    if (defender.Equipment[9].Durability > 0 && newDamage > 0)
+                        defender.Equipment[9].Durability--;
+                } else {
+                    battleString = new ColoredString(attacker.Name + " attacked " + defender.Name + ", but missed!", Color.White, Color.Black);
+                }
+
+                if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
+                    if (defender is Monster) {
+                        Monster mon = (Monster)defender;
+                        string netmsg = "damageMonster;" + mon.UniqueID + ";" + mon.MapPos.X + ";" + mon.MapPos.Y + ";" + mon.MapPos.Z + ";" + newDamage + ";" + battleString.String + ";" + battleColor;
+                        GameLoop.NetworkManager.BroadcastMsg(netmsg);
+                    } else if (defender is Player) {
+                        Player player = (Player)defender;
+                        if (player == GameLoop.World.Player) {
+                            string netmsg = "damagePlayer;" + GameLoop.NetworkManager.ownID + ";" + newDamage + ";" + battleString.String + ";" + battleColor;
+                            GameLoop.NetworkManager.BroadcastMsg(netmsg);
+                        } else {
+                            foreach (KeyValuePair<long, Player> kv in GameLoop.World.otherPlayers) {
+                                if (player == kv.Value) {
+                                    string netmsg = "damagePlayer;" + kv.Key + ";" + newDamage + ";" + battleString.String + ";" + battleColor;
+                                    GameLoop.NetworkManager.BroadcastMsg(netmsg);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (attacker.MapPos == GameLoop.World.Player.MapPos)
+                    GameLoop.UIManager.AddMsg(battleString);
+
+                if (defender.CurrentHP <= 0) {
+                    if (defender is Monster) {
+                        attacker.Experience += defender.ExpGranted;
+                        defender.Death();
+                    } else if (defender is Player) {
+                        ((Player)defender).PlayerDied();
+                    }
+                }
+            }
         }
     }
 }

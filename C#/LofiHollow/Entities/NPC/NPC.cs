@@ -53,7 +53,7 @@ namespace LofiHollow.Entities.NPC {
         [JsonConstructor]
         public NPC() : base(Color.White, '@') {
             Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
-            Appearance.Glyph = ActorGlyph;
+            Appearance.Glyph = ActorGlyph; 
         }
 
 
@@ -65,21 +65,29 @@ namespace LofiHollow.Entities.NPC {
             ActorGlyph = other.ActorGlyph;
 
             Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
-            Appearance.Glyph = ActorGlyph;
+            Appearance.Glyph = ActorGlyph; 
         }
 
         public void Update(bool newSchedule) {
             if (newSchedule || AI.Current == null) {
-                string season = GameLoop.World.Player.GetSeason();
+                string season = GameLoop.World.Player.Clock.GetSeason();
 
-                if (GameLoop.World.Player.IsItThisDay(BirthMonth, BirthDay))
+                if (GameLoop.World.Player.Clock.IsItThisDay(BirthMonth, BirthDay))
                     season = "Birthday";
 
 
                 AI.SetSchedule(season, "Sunny");
             }
 
-            AI.MoveTowardsNode(GameLoop.World.Player.GetCurrentTime(), this);
+            Point oldPos = new Point(Position.X, Position.Y);
+            AI.MoveTowardsNode(GameLoop.World.Player.Clock.GetCurrentTime(), this);
+
+            if (oldPos != Position) {
+                if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
+                    string msg = "moveNPC;" + npcID + ";" + Position.X + ";" + Position.Y + ";" + MapPos.X + ";" + MapPos.Y + ";" + MapPos.Z;
+                    GameLoop.NetworkManager.BroadcastMsg(msg);
+                }
+            }
         }
 
         public string RelationshipDescriptor() {
@@ -120,7 +128,7 @@ namespace LofiHollow.Entities.NPC {
         }
 
         public bool IsBirthday() {
-            return GameLoop.World.Player.IsItThisDay(BirthMonth, BirthDay);
+            return GameLoop.World.Player.Clock.IsItThisDay(BirthMonth, BirthDay);
         }
 
 
@@ -144,11 +152,11 @@ namespace LofiHollow.Entities.NPC {
                 fifth = GameLoop.rand.Next(0, ChitChats.Count);
 
 
-            GameLoop.UIManager.chitChat1 = ChitChats.ElementAt(first).Key;
-            GameLoop.UIManager.chitChat2 = ChitChats.ElementAt(second).Key;
-            GameLoop.UIManager.chitChat3 = ChitChats.ElementAt(third).Key;
-            GameLoop.UIManager.chitChat4 = ChitChats.ElementAt(fourth).Key;
-            GameLoop.UIManager.chitChat5 = ChitChats.ElementAt(fifth).Key;
+            GameLoop.UIManager.DialogueWindow.chitChat1 = ChitChats.ElementAt(first).Key;
+            GameLoop.UIManager.DialogueWindow.chitChat2 = ChitChats.ElementAt(second).Key;
+            GameLoop.UIManager.DialogueWindow.chitChat3 = ChitChats.ElementAt(third).Key;
+            GameLoop.UIManager.DialogueWindow.chitChat4 = ChitChats.ElementAt(fourth).Key;
+            GameLoop.UIManager.DialogueWindow.chitChat5 = ChitChats.ElementAt(fifth).Key;
         }
 
         public string ReactGift(int ID) {

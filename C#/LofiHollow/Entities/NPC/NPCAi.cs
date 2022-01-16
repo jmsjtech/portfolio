@@ -76,7 +76,7 @@ namespace LofiHollow.Entities.NPC {
             if (season == "Holiday") { Current = Holiday; }
             if (season == "Birthday") { Current = Birthday; }
 
-            if (Current == null) {
+            if (Current.Nodes == null) {
                 Current = Default;
             }
 
@@ -167,8 +167,13 @@ namespace LofiHollow.Entities.NPC {
             }
 
             if (CurrentPath == null) {
-                CurrentPath = GameLoop.World.maps[npc.MapPos].MapPath.ShortestPath(new GoRogue.Coord(npc.Position.X, npc.Position.Y), new GoRogue.Coord(edgeX, edgeY));
-                pathPos = 0;
+                if (!GameLoop.World.maps.ContainsKey(npc.MapPos))
+                    GameLoop.World.LoadMapAt(npc.MapPos);
+
+                if (GameLoop.World.maps.ContainsKey(npc.MapPos)) {
+                    CurrentPath = GameLoop.World.maps[npc.MapPos].MapPath.ShortestPath(new GoRogue.Coord(npc.Position.X, npc.Position.Y), new GoRogue.Coord(edgeX, edgeY));
+                    pathPos = 0;
+                }
             }
 
             if (pathPos > 0)
@@ -225,9 +230,9 @@ namespace LofiHollow.Entities.NPC {
 
                     if (recentlyMovedMaps) {
                         if (npc.MapPos != GameLoop.World.Player.MapPos || (npc.MapPos.X == GameLoop.World.Player.MapPos.X && npc.MapPos.Y == GameLoop.World.Player.MapPos.Y && npc.MapPos.Z > GameLoop.World.Player.MapPos.Z)) {
-                            GameLoop.UIManager.EntityRenderer.Remove(npc);
+                            GameLoop.UIManager.Map.EntityRenderer.Remove(npc);
                         } else {
-                            GameLoop.UIManager.EntityRenderer.Add(npc);
+                            GameLoop.UIManager.Map.EntityRenderer.Add(npc);
                         }
                         CurrentPath = null;
                         pathPos = 0;

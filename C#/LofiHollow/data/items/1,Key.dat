@@ -1,27 +1,27 @@
 {
-  "ItemID": 2,
+  "ItemID": 1,
   "ItemQuantity": 1,
   "IsStackable": false,
-  "ShortDesc": "A bit of bone",
+  "ShortDesc": "A simple brass key",
   "Description": "",
-  "AverageValue": 2,
-  "Weight": 0.1,
+  "AverageValue": 5,
+  "Weight": 1,
   "ItemCategory": -1,
   "EquipSlot": -1,
-  "ForegroundR": 255,
-  "ForegroundG": 255,
-  "ForegroundB": 255,
-  "ItemGlyph": 47,
-  "Effect": null,
+  "ForegroundR": 181,
+  "ForegroundG": 166,
+  "ForegroundB": 66,
+  "ItemGlyph": 281,
+  "Effect": null, 
   "Appearance": {
     "Decorators": [],
     "Foreground": {
-      "_packedValue": 4294967295
+      "_packedValue": 4278190335
     },
     "Background": {
       "_packedValue": 0
     },
-    "Glyph": 47,
+    "Glyph": 20,
     "Mirror": 0,
     "IsVisible": true
   },
@@ -32,7 +32,7 @@
     "X": 0,
     "Y": 0
   },
-  "Name": "Bone",
+  "Name": "Copper Ore",
   "ZIndex": 0,
   "IsVisible": true,
   "IsEnabled": true,

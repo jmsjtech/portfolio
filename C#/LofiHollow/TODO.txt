@@ -2,8 +2,8 @@
 - (DONE) Combat and levelling system implemented
 - (DONE) Inventory implemented
 - NPCs schedules
-- NPC dialogue system (gifts, chitchat, missions)
-- NPC shops
+- (DONE) NPC dialogue system (gifts, chitchat, missions)
+- (DONE) NPC shops
 - Finish the levelling system
 - Save/Load game
 - Main menu
@@ -30,7 +30,6 @@ Menu
 - - - (DONE) Select level 1 class
 - - - (DONE) Select experience track
 - - - (DONE) Select race
-- - - Pick feats
 - - - Pick spells if a caster class
 - (DONE) Load existing game
 - - (DONE) List all existing saves in save directory by player name and in-game date
@@ -42,7 +41,7 @@ Skills
 - Depleted tiles turn back into the normal tile once enough time has passed
 - (DONE) Set up the proper experience scale
 - (DONE) Make skill actions grant experience to the correct skill
-- Make a UI to display all skill progress in a window (hotkey 'C'?)
+- (DONE) Make a UI to display all skill progress in a window (hotkey 'K')
 - (DONE) Block skill actions if you don't have the requisite level
 - Skills
 - - Gathering Skills (Anything that can use SkillableTile)
@@ -55,13 +54,50 @@ Skills
 - - Crafting Skills (Access via menu interface that lists all recipes, and their requirements by skill)
 - - - Carpentry (Furniture and other wooden goods)
 
+Fishing
+- Fish have to fight back to make the minigame engaging
+- Possible to catch trash items, which are always available (so you can always technically fish)
+- Fill out the fishopedia with at least 1 unique fish per combination of zone, season, and time 
+- Zones: River, Beach, Lake
+- Seasons: Spring, Summer, Fall, Winter, Holiday
+- Times: Morning (before 11am), Day (11am - 5pm), Evening (5pm - 9pm), Night (9pm - 2am)
+- Level brackets: 1, 10, 20, 30, 40, 50, 60, 70, 80, 90
+- Total number of fish needed: 3 zones x 5 seasons x 4 times x 10 levels = 600. Also add 10 extra fish that show up everywhere
+- Have a visible Fish-o-pedia in-game that fills out with information on fish you've actually caught.
+- - Include a minimum caught weight, maximum caught weight, their value when sold, location info, and level requirement
 
-
+Minigames
+- Card-based Minigames
+- - Solitaire
+- - Blackjack
+- - Poker
+- Casino Games
+- - Roulette
+- - Slot machine
+- - Pachinko?
+- Skilling Minigames
+- - Fishing
+- Arcade games / Computer? / Console
+- - Use a built-in scripting language to make and run them in-game
+- - Arcade machines have one built-in game they play
+- - Consoles have carts you can swap out to play different games
+- - Computers have disks you can switch and also an OS wrapped with other functions
 
 Quests / Story Missions?
 - Keep a log of all missions the player has started and completed
 - Make new quests acquirable if you meet the requirements
 - Mission object structure: Mission ID, Name, Current stage, Required mission(s), Required NPC relationship, Required stats, Required time, season, or year.
+- "Cutscene" dialogue paths
+
+
+
+Daily Routine
+- at 2am, you pass out and wake up at 9am.
+- if you sleep of your own volition, you wake up at 6am instead
+- Block chit-chat, gifts, and mission dialogue if any needs is too low
+- - Implement needs: Sleep, Hunger
+
+
 
 
 Saving/Loading
@@ -102,52 +138,19 @@ More Combat Improvements
 - (DONE) Monsters weak or strong to individual damage types
 - (DONE) Define some monster templates that carry stats, immunities, and weaknesses to serve as monster building blocks
 - - Templates can also be randomly assigned to a small portion of enemies to make for actual elites
-- Unequip items in combat
 - (DONE) Switch all stats and attributes to (unnamed D20 system) clone?
 - - (DONE) Attributes + Attribute Modifiers
 - - (DONE) Armor Class to determine hits
 - - (DONE) Critical Strikes 
-- Have allies in combat vs multiple enemies
-- - Choose all ally attacks?
 - Full-round attack: Hit multiple times if you have a high enough Base Attack Bonus (extra attack at +6/+11/+15)
-- Standard action attacks: Single hit but allows a movement action to be taken
-- Movement action: Move towards or away from an enemy 
-- - If you have a flying speed, also able to move up
-- - If you have a burrowing speed, also able to move into the ground
-- If you move far enough away from an enemy, exit the battle
+- Standard action attacks: Only hit once, but recover twice as fast.
 
 
 
-Monsters / Combat
-- (DONE) Monsters drop items when they die
-- (DONE) Have a list of moves possible instead of just "attack"
-- (DONE) Equipment should influence stats (at least armor reducing income damage and weapon being factored into damage)
-- (DONE) Use items in combat
-- (DONE) Missed attacks and critical hits
-- (DONE) Move combat messages to the battle window instead of cluttering the log
-- (DONE) Combat is turn based, you vs one monster
-- (DONE) Monster fights back
-- (DONE) Don't do the monsters turn if it dies from your attack
-- (DONE) Increment player experience after combat and track when they should level up
-- (DONE) On level up, display a stat select screen instead of victory, let player choose a stat to prioritize
-- (DONE) Victory/Flee screen
-- (DONE) Flee chance based on player speed and monster speed
-- (DONE) Monsters encountered by walking in dangerous areas (ie forests, caves) or in tall grass on otherwise safe maps
-- (DONE) Stats: Health, Speed, Attack, Defense, M.Atk, M.Def. Level, experience, current/max health
-- - (DONE) Health: HP growth per level 
-- - (DONE) Speed: Faster unit goes first in combat (tie goes to player)
-- - (DONE) Attack: Determines damage with physical attacks
-- - (DONE) Defense: Physical damage reduction
-- - (DONE) Magic Attack: Damage with magical attacks
-- - (DONE) Magic Defense: Magical damage reduction
-- (DONE) Monster definitions from file
-- - (DONE) Level 0 base stats (When monster is generated in-game, add random amounts to each based on generated level)
-- - (DONE) Stat growth per level per stat (On level, add between 0 and max points)
-- - (DONE) Monster character
-- - (DONE) Name
-- - (DONE) Possible drops and their likelihood
-- - (DONE) List of moves the monster knows and can choose between
-
+(DONE) Monsters / Combat [First Sweep]
+(DONE) Multiplayer
+(DONE) Overworld combat
+(DONE) NPC Dialogue, Gifting, and Shops
 
 Items
 - (DONE) Stack stackable items if you already have them in your inventory
@@ -165,89 +168,67 @@ Items
 - - - Higher tier hoes till more tiles at once
 - - Fishing Pole - Use at fishing spots (with bait?) to catch fish
 - - - Fish differ based on season, weather, and location
+- - - Fishing Minigame: 
+- - - - Press a button to hook
+- - - - Hold to reel in when fish isn't fighting
+- - - - When fish is fighting reeling in increases line stress.
+- - - - Too much stress makes the line break, letting the fish escape
 - - Hammer: Construct tiles/furniture/anything that exists in the world, what you can make depends on construction level
 - (DONE) Equippable item slots: Hand, Off-hand, Head, Torso, Legs, Ring1, Ring2, Amulet
 
 
-Map Decorations
-- Town
-- - (DONE) Bed
-- - (DONE) Bookshelf
-- - (DONE) Actual door sprites
-
-
 NPCs
 - Noonbreeze NPCs
-- - Tom (Owns the bar)
-- - General Store Owner
-- - Blacksmith
-- - Apothecary
+- - Tom (Owns the bar) (Placed)
+- - Jasper (General Store Owner) (Placed)
+- - Jet (Blacksmith) (Placed)
+- - Emerald (Apothecary) Placed
+- - Rose (Apothecary)
 - - Cobalt (Scholar, frequents the library)
-- - Tailor
-- - Bakery / Cafe
-- - Butcher
-- - Clinic
-- - Innkeeper
-- - Inn housekeeping
-- - Cemetary groundskeeper
+- - Zephyr (Tailor) (Placed)
+- - Sapphire (Bakery / Cafe) (Placed)
+- - William (Butcher) (Placed)
+- - Willow (Clinic)
+- - Ash (Innkeeper) (Placed)
+- - Anemone (Inn housekeeping) (Placed, Greetings)
+- - Slate (Cemetary groundskeeper)
+- - Paprika (Sapphire's kid) (Placed)
+- - Saffron (Farm Supply) 
+- - Indigo (Inventor)
 - Courier's Guild
+- - Algae (Guild leader)
+- - Poppy (Guild worker)
 - - Tak Deeb (Courier)
+- - Vanilla (Guild worker)
 - Adventurer's Guild
-- - Leader
-- - Merchant
-- - Worker
+- - Cinnabar (Leader) (Placed)
+- - Kelp (Merchant) (Placed)
+- - Nickel (Worker) (Placed)
+- - Anise (becomes Cypress after missions) (Adventurer) (Placed)
 - Merchant's Guild
-- - - Leader
-- - Phoebe (Pet / summon shop owner)
-- Docks / Mariner's Guild
-- - Leader
-- - Sailor
-- - Sailor
-- - Sailor
-- - Merchant
-- - Fisherman 
+- - - Sterling (Leader)
+- - - Jasmine (Treasurer)
+- - - Iris (Local Trade)
+- - - Morganite (Regional Trade)
+- - - Cedar (Merchant)
+- - - Rose (Merchant)
+- - - Coral (Worker) 
+- Phoebe (Pet / summon shop owner)
+
+Desert Traders (Arrive during Holiday week, set up in the town square and offer tradegoods)
+- Cinnamon
+- Caraway
+- Parsley
+- Sorrel
+- Mint
 
 
-
-
-
-- (DONE) Daily Route they follow - Time + Map Location + World Location (teleport to nodes they should already be at when out of the players sight)
-- - (DONE) NPC AI Structure: Schedules for Spring/Normal, Spring/Rain, Summer/Normal, Summer/Rain, Fall/Normal, Fall/Rain, Winter/Normal, Winter/Snow, Holiday, Birthday
-- - (DONE) Schedule structure: List of nodes
-- - (DONE) ScheduleNode structure: Time, MapPos, Position
-- - - (DONE) If the next node is on the same map, path to it
-- - - (DONE) If the next node is on another map, path towards the correct map edge and move off the current map
-- - - - (FIXED) There's some kind of bug where they don't path properly if they need to move left/right maps
-- - - (DONE) If the player isn't on the same map as the NPC or the target map, teleport the NPC to the node they should be at.
-- Dialogue system
-- - (DONE) Chit-chat: 5 random options for different topics, each NPC has specific things they like and dislike talking about
-- - - (DONE) Chit-chat topics
-- - - (DONE) Around town: Noonbreeze, the bar, the harvest, the weather
-- - - (DONE) The world: Current events, politics, The City, The Desert, The Forest, The Ocean, The Lake
-- - - (DONE) Gossip: Result depends on how this NPC feels about the NPC the gossip picks
-- - - (DONE) Guild-talk: Merchant Guild, Adventurer's Guild, Thieves Guild, Mariner's Guild
-- - - (DONE) Interactions: Annoy, Apologize, Bad Pun, Call Name, Cheer Up, Cry, Complain, Compliment, 
-			Entertain, Insult, Intimidate, Joke, Tease, Tell a Secret, Brag, Give an Opinion, Rude Gesture
-- - - (DONE) Hobbies: Cooking, Nature, Work, Sports, Dancing, Exercise, Books, Home, Jobs, Adventuring, Sleeping, Health, Music, Money
-			Fishing, Magic
-- - (DONE) Gift: Give the NPC an item
-- - - (DONE) NPCs have a list of liked, disliked, loved, and hated items.
-- - - Also make a list of universal items for each category that are overridden by specific NPC feelings
-- - - (DONE) Only give relationship benefits once per day for gifts
-- - - Check when a gift is given to see if it fills any current mission requirements
-- - Quest: Only shows up if the NPC has something they want done. Differentiate between full quests and simple tasks
-- - (DONE) Nevermind: Exit the chat without saying anything
-- (DONE) Shop system
-- - (DONE) Shop structure: Shop ID, Sold goods, Bought goods, restock time, shop MapPos and Position
-- - (DONE) Only show the shop button (and allow it to be clicked) if the NPC is standing on their shop tile node
-- - (DONE) Only buys items they can afford that they're interested in
-- - - (DONE) Buy items they aren't interested in at a quarter value, otherwise buy at half value.
-- - - (DONE) Amount they pay for items influenced by relationship, but never more than half for unwanted items or 90% for wanted items
-- - (DONE) Sells a set list of items plus anything they've been sold
-- - - (DONE) Sells items for 150% of value base, influenced by relationship. Up to 200% if they hate you, down to 100% if they like you.
-- - (DONE) Player must specify what coins exactly they want to pay with. Decline insufficient payment. Allow player to either ask for change or give the change as a gift
-- - - (DONE) If the player doesn't request change, add the leftover money to the NPCs money total and increase their relationship with the player
-- - - (SKIPPED) If the player wants change but the NPC doesn't have the coins required, make the NPC apologize and explain they lack the coins.
+NPC names are themed based on where they're from
+- Noonbreeze: Flowers (Jasmine, Indigo, Poppy, Rose)
+- Ocean region: Sealife (Kelp, Coral, Anemone)
+- Forest region: Trees (Oak, Ash, Willow, Cedar)
+- City region: Minerals  (Sapphire, Flint, Jasper, etc)
+- Desert region: Spices (Paprika, Saffron, Anise, Vanilla, Cinnamon, Caraway)
 
 
 
@@ -289,7 +270,6 @@ Map
 - - Clinic (Pay for healing) 
 - - Cafe / Bakery
 - - Butcher (Buys meat from the player, sells common meats)
-- - Docks
 - - Clothier
 - (DONE) Lake + Lake Cabin
 - (DONE) Road from Noonbreeze to mountain

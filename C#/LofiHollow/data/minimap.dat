@@ -190,10 +190,10 @@
     }
   },
   "(2,0,0)": {
-    "name": "Town",
-    "ch": "",
+    "name": "Field",
+    "ch": ",",
     "fg": {
-      "_packedValue": 4284769380
+      "_packedValue": 4278222592
     },
     "bg": {
       "_packedValue": 4278190080
@@ -240,10 +240,10 @@
     }
   },
   "(2,1,0)": {
-    "name": "Town",
-    "ch": "",
+    "name": "Field",
+    "ch": ",",
     "fg": {
-      "_packedValue": 4284769380
+      "_packedValue": 4278222592
     },
     "bg": {
       "_packedValue": 4278190080
@@ -450,10 +450,10 @@
     }
   },
   "(2,2,0)": {
-    "name": "Town",
-    "ch": "",
+    "name": "Field",
+    "ch": ",",
     "fg": {
-      "_packedValue": 4284769380
+      "_packedValue": 4278222592
     },
     "bg": {
       "_packedValue": 4278190080

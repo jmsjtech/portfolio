@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using SadConsole;
+using SadRogue.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +17,22 @@ namespace LofiHollow {
         [JsonProperty]
         public int Level = 1;
         [JsonProperty]
-        public int Experience = 0;
+        public int Experience = 0; 
+
+        [JsonProperty]
+        public List<string> Uses = new List<string>();
 
         public int ExpToLevel() {
             return (int) (75 * Math.Pow(2, Level / 7));
+        }
+
+        public void GrantExp(int gained) {
+            Experience += gained;
+            if (Experience >= ExpToLevel()) {
+                Experience -= ExpToLevel();
+                Level++;
+                GameLoop.UIManager.AddMsg(new ColoredString("You leveled " + Name + " to " + Level + "!", Color.Cyan, Color.Black));
+            }
         }
 
         [JsonConstructor]

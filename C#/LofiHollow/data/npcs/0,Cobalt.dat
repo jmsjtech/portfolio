@@ -29,7 +29,7 @@
           }
         },
 		{
-          "DayMinutes": 580,
+          "DayMinutes": 600,
           "MapPos": {
 			"X": 0,
 			"Y": 1,
@@ -265,8 +265,7 @@
 	"Gossip": "-1~negative",
 	"the Merchant's Guild": "0~neutral",
 	"the Adventurer's Guild": "0~neutral",
-	"the Thieves Guild": "0~neutral",
-	"the Mariner's Guild": "0~neutral",
+	"the Thieves Guild": "0~neutral", 
 	"the Library": "0~neutral",
 	"Cooking": "2~more positive",
 	"Nature": "2~more positive",

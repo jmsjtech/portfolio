@@ -19,7 +19,12 @@ namespace LofiHollow {
         public Dictionary<int, Race> raceLibrary = new Dictionary<int, Race>();
         public Dictionary<int, Skill> skillLibrary = new Dictionary<int, Skill>();
         public Dictionary<int, NPC> npcLibrary = new Dictionary<int, NPC>();
+        public Dictionary<int, ClassFeature> featLibrary = new Dictionary<int, ClassFeature>();
+        public Dictionary<int, FishDef> fishLibrary = new Dictionary<int, FishDef>();
         public Dictionary<string, Template> templateLibrary = new Dictionary<string, Template>();
+
+
+        public Dictionary<long, Player> otherPlayers = new Dictionary<long, Player>();
 
 
         public bool DoneInitializing = false;
@@ -29,9 +34,10 @@ namespace LofiHollow {
          
         public World() {
             LoadTemplateDefinitions();
-            LoadSkillDefinitions(); 
+            LoadSkillDefinitions();
             LoadTileDefinitions();
-            LoadItemDefinitions(); 
+            LoadItemDefinitions();
+            LoadFishDefinitions();
             LoadRaceDefinitions();
             LoadClassDefinitions(); 
             LoadMonsterDefinitions();
@@ -50,31 +56,31 @@ namespace LofiHollow {
                     string posString = kv.Key.Substring(1, kv.Key.Length - 2);
                     string[] coords = posString.Split(",");
                     Point3D pos = new Point3D(Int32.Parse(coords[0]), Int32.Parse(coords[1]), Int32.Parse(coords[2]));
-                    GameLoop.UIManager.minimap.Add(pos, kv.Value);
+                    GameLoop.UIManager.Sidebar.minimap.Add(pos, kv.Value);
                 }
             } 
         }
 
         public void MakeShipWreckage() {
-            Item woodBit1 = new Item(1);
+            Item woodBit1 = new Item(7);
             woodBit1.Position = new Point(23, 24);
-            maps[new Point3D(3, 1, 0)].Entities.Add(woodBit1, new GoRogue.Coord(woodBit1.Position.X, woodBit1.Position.Y));
-            GameLoop.UIManager.EntityRenderer.Add(woodBit1);
+            woodBit1.MapPos = new Point3D(3, 1, 0);
+            GameLoop.CommandManager.SpawnItem(woodBit1); 
 
-            Item woodBit2 = new Item(1);
+            Item woodBit2 = new Item(7);
             woodBit2.Position = new Point(26, 23);
-            maps[new Point3D(3, 1, 0)].Entities.Add(woodBit2, new GoRogue.Coord(woodBit2.Position.X, woodBit2.Position.Y));
-            GameLoop.UIManager.EntityRenderer.Add(woodBit2);
+            woodBit2.MapPos = new Point3D(3, 1, 0);
+            GameLoop.CommandManager.SpawnItem(woodBit2);
 
-            Item woodBit3 = new Item(1);
+            Item woodBit3 = new Item(7);
             woodBit3.Position = new Point(25, 22);
-            maps[new Point3D(3, 1, 0)].Entities.Add(woodBit3, new GoRogue.Coord(woodBit3.Position.X, woodBit3.Position.Y));
-            GameLoop.UIManager.EntityRenderer.Add(woodBit3);
+            woodBit3.MapPos = new Point3D(3, 1, 0);
+            GameLoop.CommandManager.SpawnItem(woodBit3);
 
-            Item woodBit4 = new Item(1);
+            Item woodBit4 = new Item(7);
             woodBit4.Position = new Point(24, 25);
-            maps[new Point3D(3, 1, 0)].Entities.Add(woodBit4, new GoRogue.Coord(woodBit4.Position.X, woodBit4.Position.Y));
-            GameLoop.UIManager.EntityRenderer.Add(woodBit4);
+            woodBit4.MapPos = new Point3D(3, 1, 0);
+            GameLoop.CommandManager.SpawnItem(woodBit4);
         }
 
         public void LoadItemDefinitions() {
@@ -90,7 +96,21 @@ namespace LofiHollow {
                 }
             } 
         }
-         
+
+        public void LoadFishDefinitions() {
+            if (Directory.Exists("./data/fish/")) {
+                string[] tileFiles = Directory.GetFiles("./data/fish/");
+
+                foreach (string fileName in tileFiles) {
+                    string json = File.ReadAllText(fileName);
+
+                    FishDef fish = JsonConvert.DeserializeObject<FishDef>(json);
+
+                    fishLibrary.Add(fish.FishID, fish);
+                }
+            } 
+        }
+
 
         public void LoadTileDefinitions() {
             if (Directory.Exists("./data/tiles/")) {
@@ -200,11 +220,21 @@ namespace LofiHollow {
 
         public bool LoadMapAt(Point3D mapPos) {
             if (Directory.Exists("./data/maps/")) {
-                string json = System.IO.File.ReadAllText("./data/maps/" + mapPos.X + "," + mapPos.Y + "," + mapPos.Z + ".dat");
-                Map map = JsonConvert.DeserializeObject<Map>(json);
-                maps.Add(mapPos, map);
-                return true;
-            }
+                if (File.Exists("./data/maps/" + mapPos.X + "," + mapPos.Y + "," + mapPos.Z + ".dat")) {
+                    string json = System.IO.File.ReadAllText("./data/maps/" + mapPos.X + "," + mapPos.Y + "," + mapPos.Z + ".dat");
+                    Map map = JsonConvert.DeserializeObject<Map>(json);
+
+                    if (!maps.ContainsKey(mapPos)) {
+                        maps.Add(mapPos, map);
+                    } else {
+                        maps[mapPos] = map;
+                    }
+
+                    return true;
+                } else {
+                    return false;
+                }
+            } 
 
             return false;
         }
@@ -268,8 +298,8 @@ namespace LofiHollow {
             }
 
 
-            GameLoop.UIManager.LoadMap(Player.MapPos, false);
-            GameLoop.UIManager.EntityRenderer.Add(Player); 
+            GameLoop.UIManager.Map.LoadMap(Player.MapPos);
+         //   GameLoop.UIManager.Map.EntityRenderer.Add(Player); 
         }
 
 
@@ -311,8 +341,8 @@ namespace LofiHollow {
             Player.Name = "Player";
 
 
-            GameLoop.UIManager.LoadMap(Player.MapPos, true);
-            GameLoop.UIManager.EntityRenderer.Add(Player);
+            GameLoop.UIManager.Map.LoadMap(Player.MapPos);
+          //  GameLoop.UIManager.Map.EntityRenderer.Add(Player);
             Player.ZIndex = 10;
 
             DoneInitializing = true;

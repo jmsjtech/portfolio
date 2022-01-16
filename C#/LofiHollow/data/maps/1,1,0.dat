@@ -1,4 +1,7 @@
 {
+  "MonsterWeights": {},
+  "MinimumMonsters": 0,
+  "MaximumMonsters": 0,
   "Tiles": [
     {
       "TileID": 0,
@@ -5421,7 +5424,7 @@
     {
       "TileID": 27,
       "IsBlockingMove": false,
-      "IsBlockingLOS": false,
+      "IsBlockingLOS": true,
       "SpawnsMonsters": false,
       "Name": "Sign",
       "ForegroundR": 155,
@@ -6398,13 +6401,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -12857,13 +12862,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -12923,13 +12930,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -13493,13 +13502,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -15302,15 +15313,15 @@
       "SkillableTile": null
     },
     {
-      "TileID": 1,
-      "IsBlockingMove": true,
+      "TileID": 27,
+      "IsBlockingMove": false,
       "IsBlockingLOS": true,
       "SpawnsMonsters": false,
-      "Name": "Wall",
+      "Name": "Sign",
       "ForegroundR": 155,
       "ForegroundG": 103,
       "ForegroundB": 60,
-      "TileGlyph": 186,
+      "TileGlyph": 8,
       "Dec": null,
       "Lock": null,
       "SkillableTile": null
@@ -15386,15 +15397,15 @@
       "SkillableTile": null
     },
     {
-      "TileID": 1,
-      "IsBlockingMove": true,
+      "TileID": 27,
+      "IsBlockingMove": false,
       "IsBlockingLOS": true,
       "SpawnsMonsters": false,
-      "Name": "Wall",
+      "Name": "Sign",
       "ForegroundR": 155,
       "ForegroundG": 103,
       "ForegroundB": 60,
-      "TileGlyph": 186,
+      "TileGlyph": 8,
       "Dec": null,
       "Lock": null,
       "SkillableTile": null
@@ -16295,13 +16306,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -16389,13 +16402,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -18841,13 +18856,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -19061,13 +19078,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -19575,20 +19594,22 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
     {
       "TileID": 27,
       "IsBlockingMove": false,
-      "IsBlockingLOS": false,
+      "IsBlockingLOS": true,
       "SpawnsMonsters": false,
       "Name": "Sign",
       "ForegroundR": 155,
@@ -19854,7 +19875,7 @@
     {
       "TileID": 27,
       "IsBlockingMove": false,
-      "IsBlockingLOS": false,
+      "IsBlockingLOS": true,
       "SpawnsMonsters": false,
       "Name": "Sign",
       "ForegroundR": 155,
@@ -20036,7 +20057,7 @@
     {
       "TileID": 27,
       "IsBlockingMove": false,
-      "IsBlockingLOS": false,
+      "IsBlockingLOS": true,
       "SpawnsMonsters": false,
       "Name": "Sign",
       "ForegroundR": 155,
@@ -23732,7 +23753,7 @@
     {
       "TileID": 27,
       "IsBlockingMove": false,
-      "IsBlockingLOS": false,
+      "IsBlockingLOS": true,
       "SpawnsMonsters": false,
       "Name": "Sign",
       "ForegroundR": 155,
@@ -23994,7 +24015,7 @@
     {
       "TileID": 27,
       "IsBlockingMove": false,
-      "IsBlockingLOS": false,
+      "IsBlockingLOS": true,
       "SpawnsMonsters": false,
       "Name": "Sign",
       "ForegroundR": 155,
@@ -24526,7 +24547,7 @@
     {
       "TileID": 27,
       "IsBlockingMove": false,
-      "IsBlockingLOS": false,
+      "IsBlockingLOS": true,
       "SpawnsMonsters": false,
       "Name": "Sign",
       "ForegroundR": 155,
@@ -24747,13 +24768,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -25009,13 +25032,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -25090,15 +25115,15 @@
       "SkillableTile": null
     },
     {
-      "TileID": 2,
-      "IsBlockingMove": true,
+      "TileID": 27,
+      "IsBlockingMove": false,
       "IsBlockingLOS": true,
       "SpawnsMonsters": false,
-      "Name": "Wall",
+      "Name": "Sign",
       "ForegroundR": 155,
       "ForegroundG": 103,
       "ForegroundB": 60,
-      "TileGlyph": 205,
+      "TileGlyph": 8,
       "Dec": null,
       "Lock": null,
       "SkillableTile": null
@@ -25117,13 +25142,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -25533,13 +25560,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -25950,16 +25979,22 @@
       "SkillableTile": null
     },
     {
-      "TileID": 9,
+      "TileID": 39,
       "IsBlockingMove": false,
       "IsBlockingLOS": false,
       "SpawnsMonsters": false,
-      "Name": "Wood Floor",
-      "ForegroundR": 155,
-      "ForegroundG": 103,
-      "ForegroundB": 60,
-      "TileGlyph": 46,
-      "Dec": null,
+      "Name": "Bed",
+      "ForegroundR": 171,
+      "ForegroundG": 35,
+      "ForegroundB": 40,
+      "TileGlyph": 13,
+      "Dec": {
+        "Glyph": 14,
+        "R": 255,
+        "G": 255,
+        "B": 255,
+        "A": 255
+      },
       "Lock": null,
       "SkillableTile": null
     },
@@ -27279,13 +27314,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -27359,13 +27396,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -27762,43 +27801,43 @@
       "SkillableTile": null
     },
     {
-      "TileID": 9,
+      "TileID": 62,
       "IsBlockingMove": false,
       "IsBlockingLOS": false,
       "SpawnsMonsters": false,
-      "Name": "Wood Floor",
-      "ForegroundR": 155,
-      "ForegroundG": 103,
-      "ForegroundB": 60,
-      "TileGlyph": 46,
+      "Name": "Chair",
+      "ForegroundR": 110,
+      "ForegroundG": 66,
+      "ForegroundB": 33,
+      "TileGlyph": 273,
       "Dec": null,
       "Lock": null,
       "SkillableTile": null
     },
     {
-      "TileID": 9,
-      "IsBlockingMove": false,
+      "TileID": 63,
+      "IsBlockingMove": true,
       "IsBlockingLOS": false,
       "SpawnsMonsters": false,
-      "Name": "Wood Floor",
-      "ForegroundR": 155,
-      "ForegroundG": 103,
-      "ForegroundB": 60,
-      "TileGlyph": 46,
+      "Name": "Table",
+      "ForegroundR": 110,
+      "ForegroundG": 66,
+      "ForegroundB": 33,
+      "TileGlyph": 274,
       "Dec": null,
       "Lock": null,
       "SkillableTile": null
     },
     {
-      "TileID": 9,
+      "TileID": 62,
       "IsBlockingMove": false,
       "IsBlockingLOS": false,
       "SpawnsMonsters": false,
-      "Name": "Wood Floor",
-      "ForegroundR": 155,
-      "ForegroundG": 103,
-      "ForegroundB": 60,
-      "TileGlyph": 46,
+      "Name": "Chair",
+      "ForegroundR": 110,
+      "ForegroundG": 66,
+      "ForegroundB": 33,
+      "TileGlyph": 273,
       "Dec": null,
       "Lock": null,
       "SkillableTile": null
@@ -27820,7 +27859,7 @@
     {
       "TileID": 27,
       "IsBlockingMove": false,
-      "IsBlockingLOS": false,
+      "IsBlockingLOS": true,
       "SpawnsMonsters": false,
       "Name": "Sign",
       "ForegroundR": 155,
@@ -27904,7 +27943,7 @@
     {
       "TileID": 27,
       "IsBlockingMove": false,
-      "IsBlockingLOS": false,
+      "IsBlockingLOS": true,
       "SpawnsMonsters": false,
       "Name": "Sign",
       "ForegroundR": 155,
@@ -27930,16 +27969,22 @@
       "SkillableTile": null
     },
     {
-      "TileID": 9,
+      "TileID": 39,
       "IsBlockingMove": false,
       "IsBlockingLOS": false,
       "SpawnsMonsters": false,
-      "Name": "Wood Floor",
-      "ForegroundR": 155,
-      "ForegroundG": 103,
-      "ForegroundB": 60,
-      "TileGlyph": 46,
-      "Dec": null,
+      "Name": "Bed",
+      "ForegroundR": 171,
+      "ForegroundG": 35,
+      "ForegroundB": 40,
+      "TileGlyph": 13,
+      "Dec": {
+        "Glyph": 14,
+        "R": 255,
+        "G": 255,
+        "B": 255,
+        "A": 255
+      },
       "Lock": null,
       "SkillableTile": null
     },
@@ -28825,13 +28870,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -28891,13 +28938,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -29307,13 +29356,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -29710,15 +29761,15 @@
       "SkillableTile": null
     },
     {
-      "TileID": 62,
+      "TileID": 9,
       "IsBlockingMove": false,
       "IsBlockingLOS": false,
       "SpawnsMonsters": false,
-      "Name": "Chair",
-      "ForegroundR": 110,
-      "ForegroundG": 66,
-      "ForegroundB": 33,
-      "TileGlyph": 273,
+      "Name": "Wood Floor",
+      "ForegroundR": 155,
+      "ForegroundG": 103,
+      "ForegroundB": 60,
+      "TileGlyph": 46,
       "Dec": null,
       "Lock": null,
       "SkillableTile": null
@@ -29738,20 +29789,6 @@
       "SkillableTile": null
     },
     {
-      "TileID": 62,
-      "IsBlockingMove": false,
-      "IsBlockingLOS": false,
-      "SpawnsMonsters": false,
-      "Name": "Chair",
-      "ForegroundR": 110,
-      "ForegroundG": 66,
-      "ForegroundB": 33,
-      "TileGlyph": 273,
-      "Dec": null,
-      "Lock": null,
-      "SkillableTile": null
-    },
-    {
       "TileID": 9,
       "IsBlockingMove": false,
       "IsBlockingLOS": false,
@@ -29761,48 +29798,6 @@
       "ForegroundG": 103,
       "ForegroundB": 60,
       "TileGlyph": 46,
-      "Dec": null,
-      "Lock": null,
-      "SkillableTile": null
-    },
-    {
-      "TileID": 62,
-      "IsBlockingMove": false,
-      "IsBlockingLOS": false,
-      "SpawnsMonsters": false,
-      "Name": "Chair",
-      "ForegroundR": 110,
-      "ForegroundG": 66,
-      "ForegroundB": 33,
-      "TileGlyph": 273,
-      "Dec": null,
-      "Lock": null,
-      "SkillableTile": null
-    },
-    {
-      "TileID": 9,
-      "IsBlockingMove": false,
-      "IsBlockingLOS": false,
-      "SpawnsMonsters": false,
-      "Name": "Wood Floor",
-      "ForegroundR": 155,
-      "ForegroundG": 103,
-      "ForegroundB": 60,
-      "TileGlyph": 46,
-      "Dec": null,
-      "Lock": null,
-      "SkillableTile": null
-    },
-    {
-      "TileID": 19,
-      "IsBlockingMove": true,
-      "IsBlockingLOS": true,
-      "SpawnsMonsters": false,
-      "Name": "Stone Wall",
-      "ForegroundR": 130,
-      "ForegroundG": 130,
-      "ForegroundB": 130,
-      "TileGlyph": 241,
       "Dec": null,
       "Lock": null,
       "SkillableTile": null
@@ -29930,6 +29925,68 @@
       "ForegroundB": 60,
       "TileGlyph": 46,
       "Dec": null,
+      "Lock": null,
+      "SkillableTile": null
+    },
+    {
+      "TileID": 9,
+      "IsBlockingMove": false,
+      "IsBlockingLOS": false,
+      "SpawnsMonsters": false,
+      "Name": "Wood Floor",
+      "ForegroundR": 155,
+      "ForegroundG": 103,
+      "ForegroundB": 60,
+      "TileGlyph": 46,
+      "Dec": null,
+      "Lock": null,
+      "SkillableTile": null
+    },
+    {
+      "TileID": 9,
+      "IsBlockingMove": false,
+      "IsBlockingLOS": false,
+      "SpawnsMonsters": false,
+      "Name": "Wood Floor",
+      "ForegroundR": 155,
+      "ForegroundG": 103,
+      "ForegroundB": 60,
+      "TileGlyph": 46,
+      "Dec": null,
+      "Lock": null,
+      "SkillableTile": null
+    },
+    {
+      "TileID": 19,
+      "IsBlockingMove": true,
+      "IsBlockingLOS": true,
+      "SpawnsMonsters": false,
+      "Name": "Stone Wall",
+      "ForegroundR": 130,
+      "ForegroundG": 130,
+      "ForegroundB": 130,
+      "TileGlyph": 241,
+      "Dec": null,
+      "Lock": null,
+      "SkillableTile": null
+    },
+    {
+      "TileID": 39,
+      "IsBlockingMove": false,
+      "IsBlockingLOS": false,
+      "SpawnsMonsters": false,
+      "Name": "Bed",
+      "ForegroundR": 171,
+      "ForegroundG": 35,
+      "ForegroundB": 40,
+      "TileGlyph": 13,
+      "Dec": {
+        "Glyph": 14,
+        "R": 255,
+        "G": 255,
+        "B": 255,
+        "A": 255
+      },
       "Lock": null,
       "SkillableTile": null
     },
@@ -30732,29 +30789,29 @@
       "SkillableTile": null
     },
     {
-      "TileID": 64,
-      "IsBlockingMove": true,
+      "TileID": 9,
+      "IsBlockingMove": false,
       "IsBlockingLOS": false,
       "SpawnsMonsters": false,
-      "Name": "Counter",
-      "ForegroundR": 110,
-      "ForegroundG": 66,
-      "ForegroundB": 33,
-      "TileGlyph": 275,
+      "Name": "Wood Floor",
+      "ForegroundR": 155,
+      "ForegroundG": 103,
+      "ForegroundB": 60,
+      "TileGlyph": 46,
       "Dec": null,
       "Lock": null,
       "SkillableTile": null
     },
     {
-      "TileID": 64,
-      "IsBlockingMove": true,
+      "TileID": 9,
+      "IsBlockingMove": false,
       "IsBlockingLOS": false,
       "SpawnsMonsters": false,
-      "Name": "Counter",
-      "ForegroundR": 110,
-      "ForegroundG": 66,
-      "ForegroundB": 33,
-      "TileGlyph": 275,
+      "Name": "Wood Floor",
+      "ForegroundR": 155,
+      "ForegroundG": 103,
+      "ForegroundB": 60,
+      "TileGlyph": 46,
       "Dec": null,
       "Lock": null,
       "SkillableTile": null
@@ -31684,15 +31741,15 @@
       "SkillableTile": null
     },
     {
-      "TileID": 9,
+      "TileID": 62,
       "IsBlockingMove": false,
       "IsBlockingLOS": false,
       "SpawnsMonsters": false,
-      "Name": "Wood Floor",
-      "ForegroundR": 155,
-      "ForegroundG": 103,
-      "ForegroundB": 60,
-      "TileGlyph": 46,
+      "Name": "Chair",
+      "ForegroundR": 110,
+      "ForegroundG": 66,
+      "ForegroundB": 33,
+      "TileGlyph": 273,
       "Dec": null,
       "Lock": null,
       "SkillableTile": null
@@ -31880,16 +31937,22 @@
       "SkillableTile": null
     },
     {
-      "TileID": 9,
+      "TileID": 39,
       "IsBlockingMove": false,
       "IsBlockingLOS": false,
       "SpawnsMonsters": false,
-      "Name": "Wood Floor",
-      "ForegroundR": 155,
-      "ForegroundG": 103,
-      "ForegroundB": 60,
-      "TileGlyph": 46,
-      "Dec": null,
+      "Name": "Bed",
+      "ForegroundR": 171,
+      "ForegroundG": 35,
+      "ForegroundB": 40,
+      "TileGlyph": 13,
+      "Dec": {
+        "Glyph": 14,
+        "R": 255,
+        "G": 255,
+        "B": 255,
+        "A": 255
+      },
       "Lock": null,
       "SkillableTile": null
     },
@@ -32650,17 +32713,55 @@
       "SkillableTile": null
     },
     {
-      "TileID": 9,
-      "IsBlockingMove": false,
+      "TileID": 73,
+      "IsBlockingMove": true,
       "IsBlockingLOS": false,
       "SpawnsMonsters": false,
-      "Name": "Wood Floor",
+      "Name": "Chest",
       "ForegroundR": 155,
       "ForegroundG": 103,
       "ForegroundB": 60,
-      "TileGlyph": 46,
+      "TileGlyph": 277,
       "Dec": null,
-      "Lock": null,
+      "Lock": {
+        "AlwaysLocked": false,
+        "Owner": "",
+        "OwnerID": -1,
+        "RelationshipUnlock": 0,
+        "MissionUnlock": -1,
+        "UnlockTime": 0,
+        "LockTime": 9999,
+        "ClosedGlyph": 277,
+        "OpenedGlyph": 278,
+        "Closed": true,
+        "KeySubID": -1
+      },
+      "SkillableTile": null
+    },
+    {
+      "TileID": 73,
+      "IsBlockingMove": true,
+      "IsBlockingLOS": false,
+      "SpawnsMonsters": false,
+      "Name": "Chest",
+      "ForegroundR": 155,
+      "ForegroundG": 103,
+      "ForegroundB": 60,
+      "TileGlyph": 277,
+      "Dec": null,
+      "Lock": {
+        "AlwaysLocked": false,
+        "Owner": "",
+        "OwnerID": -1,
+        "RelationshipUnlock": 0,
+        "MissionUnlock": -1,
+        "UnlockTime": 0,
+        "LockTime": 9999,
+        "ClosedGlyph": 277,
+        "OpenedGlyph": 278,
+        "Closed": true,
+        "KeySubID": -1
+      },
       "SkillableTile": null
     },
     {
@@ -32678,44 +32779,42 @@
       "SkillableTile": null
     },
     {
-      "TileID": 9,
-      "IsBlockingMove": false,
+      "TileID": 74,
+      "IsBlockingMove": true,
       "IsBlockingLOS": false,
       "SpawnsMonsters": false,
-      "Name": "Wood Floor",
-      "ForegroundR": 155,
-      "ForegroundG": 103,
-      "ForegroundB": 60,
-      "TileGlyph": 46,
-      "Dec": null,
+      "Name": "Oven",
+      "ForegroundR": 127,
+      "ForegroundG": 127,
+      "ForegroundB": 127,
+      "TileGlyph": 279,
+      "Dec": {
+        "Glyph": 280,
+        "R": 255,
+        "G": 255,
+        "B": 255,
+        "A": 255
+      },
       "Lock": null,
       "SkillableTile": null
     },
     {
-      "TileID": 9,
-      "IsBlockingMove": false,
+      "TileID": 74,
+      "IsBlockingMove": true,
       "IsBlockingLOS": false,
       "SpawnsMonsters": false,
-      "Name": "Wood Floor",
-      "ForegroundR": 155,
-      "ForegroundG": 103,
-      "ForegroundB": 60,
-      "TileGlyph": 46,
-      "Dec": null,
-      "Lock": null,
-      "SkillableTile": null
-    },
-    {
-      "TileID": 9,
-      "IsBlockingMove": false,
-      "IsBlockingLOS": false,
-      "SpawnsMonsters": false,
-      "Name": "Wood Floor",
-      "ForegroundR": 155,
-      "ForegroundG": 103,
-      "ForegroundB": 60,
-      "TileGlyph": 46,
-      "Dec": null,
+      "Name": "Oven",
+      "ForegroundR": 127,
+      "ForegroundG": 127,
+      "ForegroundB": 127,
+      "TileGlyph": 279,
+      "Dec": {
+        "Glyph": 280,
+        "R": 255,
+        "G": 255,
+        "B": 255,
+        "A": 255
+      },
       "Lock": null,
       "SkillableTile": null
     },
@@ -34517,13 +34616,15 @@
       "Lock": {
         "AlwaysLocked": false,
         "Owner": "",
+        "OwnerID": -1,
         "RelationshipUnlock": 0,
         "MissionUnlock": -1,
         "UnlockTime": 0,
         "LockTime": 9999,
         "ClosedGlyph": 24,
         "OpenedGlyph": 23,
-        "Closed": true
+        "Closed": true,
+        "KeySubID": -1
       },
       "SkillableTile": null
     },
@@ -39538,6 +39639,5 @@
       "_packedValue": 4278190080
     }
   },
-  "PlayerCanBuild": false,
-  "AmbientMonsters": false
+  "PlayerCanBuild": false
 }

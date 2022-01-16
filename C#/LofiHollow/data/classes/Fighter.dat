@@ -9,20 +9,13 @@
   "RefSaveProg": "Bad",
   "WillSaveProg": "Bad",
   "ClassFeatures": [
+    [ ],
     [
       {
-        "Name": "Bonus feat",
+        "Name": "Fighter Accuracy",
         "Selection": "",
-        "BonusTo": "",
-        "NumericalBonus": 0
-      }
-    ],
-    [
-      {
-        "Name": "Bonus feat",
-        "Selection": "",
-        "BonusTo": "",
-        "NumericalBonus": 0
+        "BonusTo": "Attacks",
+        "NumericalBonus": 1
       },
       {
         "Name": "Bravery",
@@ -37,14 +30,20 @@
         "Selection": "",
         "BonusTo": "ArmorCheckPenalty",
         "NumericalBonus": -1
+      },
+	  {
+        "Name": "Fighter Armor",
+        "Selection": "",
+        "BonusTo": "DR,2",
+        "NumericalBonus": 0
       }
     ],
     [
       {
-        "Name": "Bonus feat",
+        "Name": "Fighter Damage",
         "Selection": "",
-        "BonusTo": "",
-        "NumericalBonus": 0
+        "BonusTo": "Damage",
+        "NumericalBonus": 2
       }
     ],
     [
@@ -57,10 +56,10 @@
     ],
     [
       {
-        "Name": "Bonus feat",
+        "Name": "Fighter Accuracy",
         "Selection": "",
-        "BonusTo": "",
-        "NumericalBonus": 0
+        "BonusTo": "Attacks",
+        "NumericalBonus": 1
       },
       {
         "Name": "Bravery",
@@ -75,14 +74,20 @@
         "Selection": "",
         "BonusTo": "ArmorCheckPenalty",
         "NumericalBonus": -2
+      },
+	  {
+        "Name": "Fighter Armor",
+        "Selection": "",
+        "BonusTo": "DR,2",
+        "NumericalBonus": 0
       }
     ],
     [
       {
-        "Name": "Bonus feat",
+        "Name": "Fighter Initiative",
         "Selection": "",
-        "BonusTo": "",
-        "NumericalBonus": 0
+        "BonusTo": "Initiative",
+        "NumericalBonus": 4
       }
     ],
     [
@@ -95,10 +100,10 @@
     ],
     [
       {
-        "Name": "Bonus feat",
+        "Name": "Fighter Damage",
         "Selection": "",
-        "BonusTo": "",
-        "NumericalBonus": 0
+        "BonusTo": "Damage",
+        "NumericalBonus": 2
       },
       {
         "Name": "Bravery",
@@ -113,14 +118,20 @@
         "Selection": "",
         "BonusTo": "ArmorCheckPenalty",
         "NumericalBonus": -3
+      },
+	  {
+        "Name": "Fighter Armor",
+        "Selection": "",
+        "BonusTo": "DR,2",
+        "NumericalBonus": 0
       }
     ],
     [
       {
-        "Name": "Bonus feat",
+        "Name": "Fighter Movement",
         "Selection": "",
-        "BonusTo": "",
-        "NumericalBonus": 0
+        "BonusTo": "Speed,Land",
+        "NumericalBonus": 5
       }
     ],
     [
@@ -133,10 +144,10 @@
     ],
     [
       {
-        "Name": "Bonus feat",
+        "Name": "Fighter Crits",
         "Selection": "",
-        "BonusTo": "",
-        "NumericalBonus": 0
+        "BonusTo": "Critical,Confirm",
+        "NumericalBonus": 99
       },
       {
         "Name": "Bravery",
@@ -151,14 +162,20 @@
         "Selection": "",
         "BonusTo": "ArmorCheckPenalty",
         "NumericalBonus": -4
+      },
+	  {
+        "Name": "Fighter Armor",
+        "Selection": "",
+        "BonusTo": "DR,2",
+        "NumericalBonus": 0
       }
     ],
     [
       {
-        "Name": "Bonus feat",
+        "Name": "Fighter Initiative",
         "Selection": "",
-        "BonusTo": "",
-        "NumericalBonus": 0
+        "BonusTo": "Initiative",
+        "NumericalBonus": 4
       }
     ],
     [
@@ -171,10 +188,10 @@
     ],
     [
       {
-        "Name": "Bonus feat",
+        "Name": "Fighter Movement",
         "Selection": "",
-        "BonusTo": "",
-        "NumericalBonus": 0
+        "BonusTo": "Speed,Land",
+        "NumericalBonus": 5
       },
       {
         "Name": "Bravery",
@@ -189,14 +206,20 @@
         "Selection": "",
         "BonusTo": "",
         "NumericalBonus": 0
+      },
+	  {
+        "Name": "Fighter Armor",
+        "Selection": "",
+        "BonusTo": "DR,2",
+        "NumericalBonus": 0
       }
     ],
     [
       {
-        "Name": "Bonus feat",
+        "Name": "Fighter Crits",
         "Selection": "",
-        "BonusTo": "",
-        "NumericalBonus": 0
+        "BonusTo": "Critical,Multiplier",
+        "NumericalBonus": 1
       },
       {
         "Name": "Weapon Mastery",

@@ -1,0 +1,57 @@
+{
+  "ItemID": 18,
+  "ItemQuantity": 1,
+  "IsStackable": false,
+  "ShortDesc": "Catches fish",
+  "Description": "",
+  "AverageValue": 15,
+  "Weight": 1,
+  "ItemCategory": 7,
+  "EquipSlot": 0,
+  "ForegroundR": 110,
+  "ForegroundG": 66,
+  "ForegroundB": 33,
+  "ItemGlyph": 282,
+  "Dec": {
+	"Glyph": 283,
+	"R": 255,
+	"G": 255,
+	"B": 255
+  },
+  "Effect": null,
+  "Weapon": {
+    "DamageDice": "1d6-5",
+	"CritMod": 2,
+	"MinCrit": 20,
+	"WeaponCategory": "Light",
+	"WeaponClass": "Martial",
+	"DamageType": "Bludgeoning"
+  },
+  "Appearance": {
+    "Decorators": [],
+    "Foreground": {
+      "_packedValue": 4278190335
+    },
+    "Background": {
+      "_packedValue": 0
+    },
+    "Glyph": 20,
+    "Mirror": 0,
+    "IsVisible": true
+  },
+  "Children": [],
+  "ChildrenLocked": true,
+  "Components": [],
+  "Position": {
+    "X": 0,
+    "Y": 0
+  },
+  "Name": "Fishing Rod",
+  "ZIndex": 0,
+  "IsVisible": true,
+  "IsEnabled": true,
+  "FocusedMode": 0,
+  "IsExclusiveMouse": false,
+  "UseKeyboard": true,
+  "UseMouse": true
+}

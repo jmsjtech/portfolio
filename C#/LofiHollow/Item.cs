@@ -3,6 +3,7 @@ using SadRogue.Primitives;
 using SadConsole;
 using Newtonsoft.Json;
 using System.Runtime.Serialization;
+using LofiHollow.TileData;
 
 namespace LofiHollow.Entities {
     [JsonObject(MemberSerialization.OptIn)]
@@ -38,7 +39,7 @@ namespace LofiHollow.Entities {
         // 5: Hammer
         // 6: Armor
         // 7: Fishing Rod
-        // 8: 
+        // 8: Raw Fish
         // 9: 
         // 10: 
         // 11: Consumable
@@ -71,6 +72,9 @@ namespace LofiHollow.Entities {
 
         [JsonProperty]
         public Heal Heal;
+
+        [JsonProperty]
+        public Decorator Dec;
 
         [JsonProperty]
         public int ForegroundR = 0;
@@ -119,6 +123,7 @@ namespace LofiHollow.Entities {
 
                 Weapon = temp.Weapon;
                 Heal = temp.Heal;
+                Dec = temp.Dec;
 
                 if (ID == 0)
                     ItemQuantity = 0;
@@ -145,6 +150,8 @@ namespace LofiHollow.Entities {
             ForegroundB = temp.ForegroundB;
             ItemGlyph = temp.ItemGlyph;
 
+            Dec = temp.Dec;
+
             Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
             Appearance.Glyph = ItemGlyph;
 
@@ -158,8 +165,9 @@ namespace LofiHollow.Entities {
         }
 
 
-        public ColoredGlyph AsColoredGlyph() {
-            return new ColoredGlyph(Appearance.Foreground, Color.Black, Appearance.Glyph);
+        public ColoredString AsColoredGlyph() {
+            ColoredString output = new ColoredString(Appearance.GlyphCharacter.ToString(), Appearance.Foreground, Color.Black);
+            return output;
         }
     }
 }
