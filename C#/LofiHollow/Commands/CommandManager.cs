@@ -130,7 +130,7 @@ namespace LofiHollow.Commands {
             if (item != null) {
                 for (int i = 0; i < actor.Inventory.Length; i++) {
                     if (actor.Inventory[i].ItemID == item.ItemID && actor.Inventory[i].SubID == item.SubID && item.IsStackable) {
-                        actor.Inventory[i].ItemQuantity++; 
+                        actor.Inventory[i].ItemQuantity += item.ItemQuantity; 
                         return;
                     }
                 }

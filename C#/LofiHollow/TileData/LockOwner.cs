@@ -1,21 +1,34 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace LofiHollow.TileData {
+    [JsonObject(MemberSerialization.OptIn)]
     public class LockOwner {
+        [JsonProperty]
         public bool AlwaysLocked = false; // whether or not the tile is locked always (true) or only locked outside the times below (false)
+        [JsonProperty]
         public string Owner = ""; // which NPC owns the tile, if any
+        [JsonProperty]
         public int OwnerID = -1;
+        [JsonProperty]
         public int RelationshipUnlock = 0; // how much relationship with the owner unlocks the tile at any time
+        [JsonProperty]
         public int MissionUnlock = -1; // which completed mission, if any, results in the lock being open always
+        [JsonProperty]
         public int UnlockTime = 550; // The day time expressed as minutes that the lock is open
+        [JsonProperty]
         public int LockTime = 600; // the day time expressed as minutes that the lock locks again
+        [JsonProperty]
         public int ClosedGlyph = 32;
+        [JsonProperty]
         public int OpenedGlyph = 32;
+        [JsonProperty]
         public bool Closed = true;
+        [JsonProperty]
         public int KeySubID = -1;
 
         public void UpdateOwner() { 
@@ -27,6 +40,7 @@ namespace LofiHollow.TileData {
                 }
             }
         }
+        
 
         public bool CanOpen() {
             if (Owner == "" && MissionUnlock == -1)

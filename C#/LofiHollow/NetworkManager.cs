@@ -19,6 +19,8 @@ namespace LofiHollow {
 		public long ownID;
 		public bool isHost = false;
 
+		public bool HostOwnsFarm = false;
+
 		public NetworkManager(bool second = false) {
 			
 			if (second) {
@@ -54,6 +56,13 @@ namespace LofiHollow {
 							GameLoop.World.otherPlayers.Add(id, newPlayer);
 							GameLoop.UIManager.Map.SyncMapEntities(GameLoop.World.maps[GameLoop.World.Player.MapPos]);
 						}
+						break;
+					case "hostFlags":
+						bool farm = bool.Parse(splitMsg[1]);
+
+
+
+						HostOwnsFarm = farm;
 						break;
 					case "registerPlayer":
 						Player player = JsonConvert.DeserializeObject<Player>(splitMsg[2]);
@@ -162,6 +171,12 @@ namespace LofiHollow {
 							GameLoop.World.LoadMapAt(tileMapPos);
 
 						GameLoop.World.maps[tileMapPos].SetTile(tilePos, tile);
+						GameLoop.World.maps[tileMapPos].GetTile(tilePos).UpdateAppearance();
+						if (GameLoop.UIManager.Map.FOV.CurrentFOV.Contains(new GoRogue.Coord(tilePos.X, tilePos.Y))) {
+							GameLoop.World.maps[tileMapPos].GetTile(tilePos).Unshade();
+						} else {
+							GameLoop.World.maps[tileMapPos].GetTile(tilePos).Shade(); 
+						} 
 						break;
 					case "spawnItem":
 						Item spawnItem = JsonConvert.DeserializeObject<Item>(splitMsg[1]);
@@ -184,11 +199,7 @@ namespace LofiHollow {
 						int mz = Int32.Parse(splitMsg[6]);
 						GameLoop.World.otherPlayers[moveID].MoveTo(new Point(x, y), new Point3D(mx, my, mz));
 
-						if (GameLoop.World.otherPlayers[moveID].MapPos != GameLoop.World.Player.MapPos || (GameLoop.World.otherPlayers[moveID].MapPos.X == GameLoop.World.Player.MapPos.X && GameLoop.World.otherPlayers[moveID].MapPos.Y == GameLoop.World.Player.MapPos.Y && GameLoop.World.otherPlayers[moveID].MapPos.Z > GameLoop.World.Player.MapPos.Z)) {
-							GameLoop.UIManager.Map.EntityRenderer.Remove(GameLoop.World.otherPlayers[moveID]);
-						} else {
-							GameLoop.UIManager.Map.EntityRenderer.Add(GameLoop.World.otherPlayers[moveID]);
-						}
+						GameLoop.UIManager.Map.UpdateVision(); 
 						break;
 					default:
 						GameLoop.UIManager.AddMsg(msg);
@@ -241,6 +252,9 @@ namespace LofiHollow {
 				string ownjson = JsonConvert.SerializeObject(GameLoop.World.Player, Formatting.Indented);
 				string ownmsg = "createPlayer;" + ownID + ";" + ownjson;
 				lobbyManager.SendNetworkMessage(lobbyId, userId, 0, Encoding.UTF8.GetBytes(ownmsg));
+
+				string hostFlags = "hostFlags;" + GameLoop.World.Player.OwnsFarm;
+				lobbyManager.SendNetworkMessage(lobbyId, userId, 0, Encoding.UTF8.GetBytes(hostFlags));
 
 				foreach (KeyValuePair<int, NPC> kv in GameLoop.World.npcLibrary) {
 					string msg = "moveNPC;" + kv.Value.npcID + ";" + kv.Value.Position.X + ";" + kv.Value.Position.Y + ";" + kv.Value.MapPos.X + ";" + kv.Value.MapPos.Y + ";" + kv.Value.MapPos.Z;

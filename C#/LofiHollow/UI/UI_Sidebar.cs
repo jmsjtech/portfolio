@@ -78,8 +78,61 @@ namespace LofiHollow.UI {
             if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F6)) {
                 for (int i = 0; i < GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles.Length; i++) {
                     TileBase tile = GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i];
-                    if (tile.Name == "Sign") {
-                        GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].IsBlockingLOS = true;
+                    if (tile.Name == "Dirt") {
+                        tile.ForegroundR = 152;
+                        tile.ForegroundG = 118;
+                        tile.ForegroundB = 84;
+                        tile.UpdateAppearance();
+                    }
+                }
+            }
+
+            if (GameHost.Instance.Mouse.LeftClicked) {
+                if (GameLoop.World.Player.Inventory[hotbarSelect].ItemID == 0) {
+                    Point mapPos = new MouseScreenObjectState(GameLoop.UIManager.Map.MapConsole, GameHost.Instance.Mouse).CellPosition;
+
+                    int distance = GoRogue.Lines.Get(new GoRogue.Coord(mapPos.X, mapPos.Y), new GoRogue.Coord(GameLoop.World.Player.Position.X, GameLoop.World.Player.Position.Y)).Count();
+                    if (distance < 5) {
+                        if (mapPos.X >= 0 && mapPos.X <= GameLoop.MapWidth && mapPos.Y >= 0 && mapPos.Y <= GameLoop.MapHeight) {
+                            TileBase tile = GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos);
+                            if (tile.Plant != null) {
+                                tile.Plant.Harvest(GameLoop.World.Player);
+                                if (tile.Plant.CurrentStage == -1) {
+                                    TileBase tilled = new TileBase(8);
+                                    tilled.Name = "Tilled Dirt";
+                                    tilled.TileGlyph = 34;
+                                    tilled.UpdateAppearance();
+
+                                    GameLoop.World.maps[GameLoop.World.Player.MapPos].SetTile(mapPos, tilled);
+                                    GameLoop.UIManager.Map.MapConsole.SetEffect(mapPos.X, mapPos.X, null);
+                                    tile.UpdateAppearance();
+
+                                    if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
+                                        string msg = "updateTile;" + mapPos.X + ";" + mapPos.Y + ";" + GameLoop.World.Player.MapPos.X + ";" +
+                                            GameLoop.World.Player.MapPos.Y + ";" + GameLoop.World.Player.MapPos.Z + ";" + JsonConvert.SerializeObject(tilled, Formatting.Indented);
+                                        GameLoop.NetworkManager.BroadcastMsg(msg);
+                                    }
+                                } else {
+                                    tile.UpdateAppearance();
+
+                                    if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
+                                        string msg = "updateTile;" + mapPos.X + ";" + mapPos.Y + ";" + GameLoop.World.Player.MapPos.X + ";" +
+                                            GameLoop.World.Player.MapPos.Y + ";" + GameLoop.World.Player.MapPos.Z + ";" + JsonConvert.SerializeObject(tile, Formatting.Indented);
+                                        GameLoop.NetworkManager.BroadcastMsg(msg);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else { 
+                    int tempCat = GameLoop.World.Player.Inventory[hotbarSelect].ItemCategory;
+
+                    if (tempCat == 4 || tempCat == 9) {
+                        if (GameLoop.World.Player.MapPos == new Point3D(-1, 0, 0) && !GameLoop.CheckFlag("farm")) { 
+                                GameLoop.UIManager.AddMsg(new ColoredString("You need to buy this land from the town hall first.", Color.Red, Color.Black));
+                        } else if (GameLoop.World.Player.MapPos != new Point3D(-1, 0, 0)) {
+                            GameLoop.UIManager.AddMsg(new ColoredString("You probably shouldn't do that here.", Color.Red, Color.Black));
+                        }
                     }
                 }
             }
@@ -90,6 +143,86 @@ namespace LofiHollow.UI {
                     if (GameLoop.World.Player.Inventory[hotbarSelect].ItemCategory == 7) { // Fishing rod
                         if (ChargeBar < 100) {
                             ChargeBar++;
+                        }
+                    }
+
+                    if (GameLoop.World.Player.Inventory[hotbarSelect].ItemCategory == 4) { // Clicked with a hoe
+                        Point mapPos = new MouseScreenObjectState(GameLoop.UIManager.Map.MapConsole, GameHost.Instance.Mouse).CellPosition;
+
+                        int distance = GoRogue.Lines.Get(new GoRogue.Coord(mapPos.X, mapPos.Y), new GoRogue.Coord(GameLoop.World.Player.Position.X, GameLoop.World.Player.Position.Y)).Count();
+                        if (distance < 5) {
+                            if (mapPos.X >= 0 && mapPos.X <= GameLoop.MapWidth && mapPos.Y >= 0 && mapPos.Y <= GameLoop.MapHeight) {
+                                TileBase tile = GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos);
+                                if (tile.Name == "Dirt") {
+                                    if (GameLoop.World.Player.MapPos == new Point3D(-1, 0, 0) && GameLoop.CheckFlag("farm")) {
+                                        tile.Name = "Tilled Dirt";
+                                        tile.TileGlyph = 34;
+                                        tile.UpdateAppearance();
+
+                                        if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
+                                            string msg = "updateTile;" + mapPos.X + ";" + mapPos.Y + ";" + GameLoop.World.Player.MapPos.X + ";" +
+                                                GameLoop.World.Player.MapPos.Y + ";" + GameLoop.World.Player.MapPos.Z + ";" + JsonConvert.SerializeObject(tile, Formatting.Indented);
+                                            GameLoop.NetworkManager.BroadcastMsg(msg);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (GameLoop.World.Player.Inventory[hotbarSelect].ItemCategory == 1) { // Clicked with a watering can
+                        Point mapPos = new MouseScreenObjectState(GameLoop.UIManager.Map.MapConsole, GameHost.Instance.Mouse).CellPosition;
+
+                        int distance = GoRogue.Lines.Get(new GoRogue.Coord(mapPos.X, mapPos.Y), new GoRogue.Coord(GameLoop.World.Player.Position.X, GameLoop.World.Player.Position.Y)).Count();
+                        if (distance < 5) {
+                            if (mapPos.X >= 0 && mapPos.X <= GameLoop.MapWidth && mapPos.Y >= 0 && mapPos.Y <= GameLoop.MapHeight) {
+                                TileBase tile = GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos);
+                                if (tile.Name == "Well" || tile.Name.ToLower().Contains("water")) {
+                                    GameLoop.World.Player.Inventory[hotbarSelect].Durability = GameLoop.World.Player.Inventory[hotbarSelect].MaxDurability;
+                                } else {
+                                    if (tile.Plant != null) {
+                                        if (!tile.Plant.WateredToday && GameLoop.World.Player.Inventory[hotbarSelect].Durability > 0) {
+                                            tile.Plant.WateredToday = true;
+                                            GameLoop.World.Player.Inventory[hotbarSelect].Durability--;
+                                            GameLoop.UIManager.Map.MapConsole.SetEffect(mapPos.X, mapPos.Y, null);
+                                            tile.UpdateAppearance();
+                                            GameLoop.UIManager.Map.MapConsole.SetCellAppearance(mapPos.X, mapPos.Y, tile);
+                                        }
+
+                                        if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
+                                            string msg = "updateTile;" + mapPos.X + ";" + mapPos.Y + ";" + GameLoop.World.Player.MapPos.X + ";" +
+                                                GameLoop.World.Player.MapPos.Y + ";" + GameLoop.World.Player.MapPos.Z + ";" + JsonConvert.SerializeObject(tile, Formatting.Indented);
+                                            GameLoop.NetworkManager.BroadcastMsg(msg);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (GameLoop.World.Player.Inventory[hotbarSelect].Plant != null) { // Clicked with a seed
+                        Point mapPos = new MouseScreenObjectState(GameLoop.UIManager.Map.MapConsole, GameHost.Instance.Mouse).CellPosition;
+                          
+                        int distance = GoRogue.Lines.Get(new GoRogue.Coord(mapPos.X, mapPos.Y), new GoRogue.Coord(GameLoop.World.Player.Position.X, GameLoop.World.Player.Position.Y)).Count();
+                        if (distance < 5) {
+                            if (mapPos.X >= 0 && mapPos.X <= GameLoop.MapWidth && mapPos.Y >= 0 && mapPos.Y <= GameLoop.MapHeight) {
+                                TileBase tile = GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos);
+                                if (tile.Name == "Tilled Dirt") {
+                                    if (GameLoop.World.Player.MapPos == new Point3D(-1, 0, 0) && GameLoop.CheckFlag("farm")) {
+                                        tile.Plant = new Plant(GameLoop.World.Player.Inventory[hotbarSelect].Plant);
+                                        tile.Name = tile.Plant.ProduceName + " Plant";
+                                        tile.UpdateAppearance();
+                                        GameLoop.UIManager.Map.MapConsole.SetEffect(mapPos.X, mapPos.Y, new CustomBlink(173, Color.Blue));
+                                        GameLoop.CommandManager.RemoveOneItem(GameLoop.World.Player, hotbarSelect); 
+
+                                        if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
+                                            string msg = "updateTile;" + mapPos.X + ";" + mapPos.Y + ";" + GameLoop.World.Player.MapPos.X + ";" +
+                                                GameLoop.World.Player.MapPos.Y + ";" + GameLoop.World.Player.MapPos.Z + ";" + JsonConvert.SerializeObject(tile, Formatting.Indented);
+                                            GameLoop.NetworkManager.BroadcastMsg(msg);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -148,6 +281,14 @@ namespace LofiHollow.UI {
                 if (thisMap.name.Length > 0) { thisMap.name = thisMap.name.Substring(0, thisMap.name.Length - 1); }
             } else if (GameHost.Instance.Keyboard.IsKeyReleased(Key.Space)) {
                 thisMap.name += " ";
+            }
+
+            if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F1)) {
+                if (GameLoop.UIManager.selectedMenu == "Map Editor") {
+                    GameLoop.UIManager.selectedMenu = "None";
+                } else {
+                    GameLoop.UIManager.selectedMenu = "Map Editor";
+                }
             }
 
             if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F9)) {

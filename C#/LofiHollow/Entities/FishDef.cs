@@ -36,6 +36,13 @@ namespace LofiHollow.Entities {
         public int GrantedExp = 0;
 
         [JsonProperty]
+        public int Strength = 0;
+        [JsonProperty]
+        public int FightChance = 10;
+        [JsonProperty]
+        public int FightLength = 0;
+
+        [JsonProperty]
         public int colR = 0;
         [JsonProperty]
         public int colG = 0;

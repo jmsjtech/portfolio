@@ -171,10 +171,6 @@ namespace LofiHollow.UI {
                     GameLoop.World.SaveMapToFile(GameLoop.World.maps[GameLoop.World.Player.MapPos], GameLoop.World.Player.MapPos);
                 }
 
-                if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F4)) {
-                    Item rod = new Item(18);
-                    GameLoop.CommandManager.AddItemToInv(GameLoop.World.Player, rod);
-                }
 
                 if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F5)) {
                     Map.LimitedVision = !Map.LimitedVision;
@@ -194,7 +190,8 @@ namespace LofiHollow.UI {
                 }
 
                 if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F2)) {
-                    AddMsg(GameLoop.World.Player.MapPos.ToString() + " | " + GameLoop.World.Player.Position.ToString());
+                    //AddMsg(GameLoop.World.Player.MapPos.ToString() + " | " + GameLoop.World.Player.Position.ToString());
+                    GameLoop.World.Player.Clock.DailyUpdates();
                 }
             } else if (selectedMenu == "Sign") {
                 if (GameHost.Instance.Keyboard.HasKeysPressed) {
@@ -222,7 +219,7 @@ namespace LofiHollow.UI {
                 if (GameHost.Instance.Keyboard.IsKeyReleased(Key.W)) { targetDir = new Point(0, -1); } 
 
                 if (targetType == "Door" && targetDir != new Point(0, 0)) { 
-                    GameLoop.World.maps[GameLoop.World.Player.MapPos].ToggleDoor(GameLoop.World.Player.Position + targetDir);
+                    GameLoop.World.maps[GameLoop.World.Player.MapPos].ToggleDoor(GameLoop.World.Player.Position + targetDir, GameLoop.World.Player.MapPos);
                     Map.UpdateVision();
                     targetType = "Done";
                 } else if (targetType != "Door") {

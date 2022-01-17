@@ -17,6 +17,8 @@ namespace LofiHollow.UI {
         public bool FishFighting = false;
         public int LineStress = 0;
         public double ReeledTime = 0;
+        public double FishRunTime = 0;
+        public int FishFightLeft = 0;
 
         public UI_Minigame(int width, int height, string title) {
             MinigameWindow = new Window(width, height);
@@ -85,14 +87,57 @@ namespace LofiHollow.UI {
 
                 if (FishFighting) {
                     FishDistance -= 1;
-                    LineStress += 5;
+                    LineStress += HookedFish.Strength;
                 } else {
                     FishDistance -= 2;
+                    if (LineStress >= 2)
+                        LineStress -= 2;
+                    else
+                        LineStress = 0;
+                }
+
+                int fightChance = GameLoop.rand.Next(100) + 1;
+
+                if (fightChance < HookedFish.FightChance) {
+                    FishFighting = true;
+                    FishFightLeft = HookedFish.FightLength;
+                } else {
+                    FishFightLeft--;
+                    if (FishFightLeft <= 0) {
+                        FishFighting = false;
+                    }
                 }
 
                 if (FishDistance <= 13) {
-                    FinishFishing();
+                    FinishFishing(true);
                 } 
+
+                if (FishDistance >= 72 || LineStress >= 100) {
+                    FinishFishing(false);
+                } 
+            } else {
+                int fightChance = GameLoop.rand.Next(100) + 1;
+
+                if (FishFighting) {
+                    if (FishRunTime + 100 > SadConsole.GameHost.Instance.GameRunningTotalTime.TotalMilliseconds) {
+                        return;
+                    }
+                    FishRunTime = SadConsole.GameHost.Instance.GameRunningTotalTime.TotalMilliseconds;
+
+                    FishDistance++;
+                    FishFightLeft--;
+                } else if (fightChance < HookedFish.FightChance && !FishFighting) {
+                    FishFighting = true;
+                    FishFightLeft = HookedFish.FightLength;
+                }
+
+                if (FishDistance <= 13) {
+                    FinishFishing(true);
+                }
+
+                if (FishDistance >= 72 || LineStress >= 100) {
+                    FinishFishing(false);
+                }
             }
         }
 
@@ -115,32 +160,45 @@ namespace LofiHollow.UI {
             HookedFish = validFish[GameLoop.rand.Next(validFish.Count)];
             CurrentGame = "Fishing";
             FishDistance = 30;
+            LineStress = 0;
             ToggleMinigame();
         }
 
-        public void FinishFishing() {
-            Item caughtFish = new Item(new Color(HookedFish.colR, HookedFish.colG, HookedFish.colB), HookedFish.glyph);
-            caughtFish.IsStackable = false;
-            caughtFish.SubID = HookedFish.FishID;
-            caughtFish.Weight = (float) (HookedFish.MinWeightKG + HookedFish.MaxWeightKG) / 2;
-            caughtFish.AverageValue = (int) (caughtFish.Weight * HookedFish.CoppersPerKG);
-            caughtFish.Name = HookedFish.Name + " (" + caughtFish.Weight + " kg)";
-            caughtFish.ItemCategory = 8;
-            caughtFish.ItemID = 2;
-            caughtFish.ForegroundR = HookedFish.colR;
-            caughtFish.ForegroundG = HookedFish.colG;
-            caughtFish.ForegroundB = HookedFish.colB;
-            caughtFish.ItemGlyph = HookedFish.glyph;
-            caughtFish.ItemQuantity = 1;
+        public void FinishFishing(bool success) {
+            if (success) {
+                Item caughtFish = new Item(new Color(HookedFish.colR, HookedFish.colG, HookedFish.colB), HookedFish.glyph);
+                caughtFish.IsStackable = false;
+                caughtFish.SubID = HookedFish.FishID;
 
-            GameLoop.CommandManager.AddItemToInv(GameLoop.World.Player, caughtFish);
-            ToggleMinigame();
-            ColoredString caught = new ColoredString("You caught a ", Color.Cyan, Color.Black);
-            caught += new ColoredString(HookedFish.Name, caughtFish.Appearance.Foreground, Color.Black);
-            caught += new ColoredString(" (" + caughtFish.Weight + " kg)!", Color.Cyan, Color.Black);
+                int WeightDiff = (int)((HookedFish.MaxWeightKG * 100) - (HookedFish.MinWeightKG * 100));
+                caughtFish.Weight = (float)((GameLoop.rand.Next(WeightDiff) / 100) + HookedFish.MinWeightKG); 
+                caughtFish.AverageValue = (int)(caughtFish.Weight * HookedFish.CoppersPerKG);
+                caughtFish.Name = HookedFish.Name + " (" + caughtFish.Weight + " kg)";
+                caughtFish.ItemCategory = 8;
+                caughtFish.ItemID = 2;
+                caughtFish.ForegroundR = HookedFish.colR;
+                caughtFish.ForegroundG = HookedFish.colG;
+                caughtFish.ForegroundB = HookedFish.colB;
+                caughtFish.ItemGlyph = HookedFish.glyph;
+                caughtFish.ItemQuantity = 1;
 
-            GameLoop.UIManager.AddMsg(caught);
-            GameLoop.World.Player.Skills["Fishing"].GrantExp(HookedFish.GrantedExp);
+                GameLoop.CommandManager.AddItemToInv(GameLoop.World.Player, caughtFish);
+                ToggleMinigame();
+                ColoredString caught = new ColoredString("You caught a ", Color.Cyan, Color.Black);
+                caught += new ColoredString(HookedFish.Name, caughtFish.Appearance.Foreground, Color.Black);
+                caught += new ColoredString(" (" + caughtFish.Weight + " kg)!", Color.Cyan, Color.Black);
+
+                GameLoop.UIManager.AddMsg(caught);
+                GameLoop.World.Player.Skills["Fishing"].GrantExp(HookedFish.GrantedExp);
+            } else {
+                ToggleMinigame();
+                if (LineStress >= 100) {
+                    GameLoop.UIManager.AddMsg(new ColoredString("The line snapped!", Color.Red, Color.Black));
+                } else {
+                    GameLoop.UIManager.AddMsg(new ColoredString("Looks like it got away...", Color.Red, Color.Black));
+                }
+            }
+
             HookedFish = null;
             GameLoop.UIManager.Map.MapConsole.ClearDecorators(GameLoop.UIManager.Sidebar.LocalLure.Position.X, GameLoop.UIManager.Sidebar.LocalLure.Position.Y, 1);
             GameLoop.UIManager.Sidebar.LocalLure.Position = new Point(-1, -1);

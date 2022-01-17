@@ -40,8 +40,8 @@ namespace LofiHollow.Entities {
         // 6: Armor
         // 7: Fishing Rod
         // 8: Raw Fish
-        // 9: 
-        // 10: 
+        // 9: Seed
+        // 10: Vegetable
         // 11: Consumable
         [JsonProperty]
         public int EquipSlot = -1;
@@ -63,6 +63,8 @@ namespace LofiHollow.Entities {
         // 14: Ring 2
         // 15: Feet
 
+        [JsonProperty]
+        public Plant Plant;
 
         [JsonProperty]
         public Weapon Weapon;
@@ -113,6 +115,9 @@ namespace LofiHollow.Entities {
                 Weight = temp.Weight;
                 AverageValue = temp.AverageValue;
 
+                Durability = temp.Durability;
+                MaxDurability = temp.MaxDurability;
+
                 ForegroundR = temp.ForegroundR; 
                 ForegroundG = temp.ForegroundG; 
                 ForegroundB = temp.ForegroundB;
@@ -124,6 +129,7 @@ namespace LofiHollow.Entities {
                 Weapon = temp.Weapon;
                 Heal = temp.Heal;
                 Dec = temp.Dec;
+                Plant = temp.Plant;
 
                 if (ID == 0)
                     ItemQuantity = 0;
@@ -144,6 +150,8 @@ namespace LofiHollow.Entities {
 
             Weight = temp.Weight;
             AverageValue = temp.AverageValue;
+            Durability = temp.Durability;
+            MaxDurability = temp.MaxDurability;
 
             ForegroundR = temp.ForegroundR;
             ForegroundG = temp.ForegroundG;
@@ -157,6 +165,7 @@ namespace LofiHollow.Entities {
 
             Weapon = temp.Weapon;
             Heal = temp.Heal;
+            Plant = temp.Plant;
 
             if (ID == 0)
                 ItemQuantity = 0;

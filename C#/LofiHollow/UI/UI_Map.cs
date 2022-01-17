@@ -68,8 +68,7 @@ namespace LofiHollow.UI {
         public void LoadMap(Point3D pos) {
             if (!GameLoop.World.maps.ContainsKey(pos)) { GameLoop.World.CreateMap(pos); }
             Map map = GameLoop.World.maps[pos];
-             
-             
+              
             for (int i = 0; i < map.Tiles.Length; i++) {
                 map.Tiles[i].Unshade();
                 map.Tiles[i].IsVisible = false;
@@ -92,6 +91,14 @@ namespace LofiHollow.UI {
                     map.Tiles[i].ForegroundB = shaded.B;
                     map.Tiles[i].TileGlyph = tile.TileGlyph;
                     map.Tiles[i].UpdateAppearance();
+                }
+
+                if (map.Tiles[i].Plant != null) {
+                    if (!map.Tiles[i].Plant.WateredToday) {
+                        MapConsole.SetEffect(i, new CustomBlink(173, Color.Blue));
+                    }
+                } else {
+                    MapConsole.SetEffect(i, null);
                 }
             }
 
@@ -128,20 +135,43 @@ namespace LofiHollow.UI {
 
                 for (int i = 0; i < GameLoop.World.npcLibrary.Count; i++) {
                     NPC temp = GameLoop.World.npcLibrary[i];
+                    if (temp.ScreenAppearance == null)
+                        temp.UpdateAppearance();
+                    MapConsole.Children.Add(temp.ScreenAppearance);
+                    
                     if (temp.MapPos == GameLoop.World.Player.MapPos || (temp.MapPos.X == GameLoop.World.Player.MapPos.X && temp.MapPos.Y == GameLoop.World.Player.MapPos.Y && temp.MapPos.Z < GameLoop.World.Player.MapPos.Z)) {
-                        //   EntityRenderer.Add(temp);
-                        if (temp.ScreenAppearance == null)
-                            temp.UpdateAppearance();
-                        MapConsole.Children.Add(temp.ScreenAppearance);
+                        if (GameLoop.UIManager.Map.FOV.CurrentFOV.Contains(new GoRogue.Coord(temp.Position.X, temp.Position.Y))) {
+                            temp.ScreenAppearance.IsVisible = true;
+                        } else {
+                            temp.ScreenAppearance.IsVisible = false;
+                        }
+                    } else {
+                        temp.ScreenAppearance.IsVisible = false;
+                    }
+
+                    if (temp.ScreenAppearance.Position != temp.Position) {
+                        temp.ScreenAppearance.Position = temp.Position;
                     }
                 }
 
                 foreach (KeyValuePair<long, Player> kv in GameLoop.World.otherPlayers) {
+                    if (kv.Value.ScreenAppearance == null)
+                        kv.Value.UpdateAppearance();
+                    MapConsole.Children.Add(kv.Value.ScreenAppearance);
+
                     if (kv.Value.MapPos == GameLoop.World.Player.MapPos || (kv.Value.MapPos.X == GameLoop.World.Player.MapPos.X && kv.Value.MapPos.Y == GameLoop.World.Player.MapPos.Y && kv.Value.MapPos.Z < GameLoop.World.Player.MapPos.Z)) {
-                        // EntityRenderer.Add(kv.Value);
-                        if (kv.Value.ScreenAppearance == null)
-                            kv.Value.UpdateAppearance();
-                        MapConsole.Children.Add(kv.Value.ScreenAppearance);
+                        // EntityRenderer.Add(kv.Value); 
+                        if (GameLoop.UIManager.Map.FOV.CurrentFOV.Contains(new GoRogue.Coord(kv.Value.Position.X, kv.Value.Position.Y))) {
+                            kv.Value.ScreenAppearance.IsVisible = true;
+                        } else {
+                            kv.Value.ScreenAppearance.IsVisible = false;
+                        }
+                    } else {
+                        kv.Value.ScreenAppearance.IsVisible = false;
+                    }
+
+                    if (kv.Value.ScreenAppearance.Position != kv.Value.Position) {
+                        kv.Value.ScreenAppearance.Position = kv.Value.Position;
                     }
                 }
 
@@ -162,17 +192,23 @@ namespace LofiHollow.UI {
                 }
             }
              
-            for (int i = 0; i < EntityRenderer.Entities.Count; i++) {
-                Entity ent = (Entity)EntityRenderer.Entities[i];
+            for (int i = 0; i < GameLoop.World.npcLibrary.Count; i++) {
+                NPC ent = GameLoop.World.npcLibrary[i];
+                if (ent.ScreenAppearance == null)
+                    ent.UpdateAppearance();
 
-                if (LimitedVision) {
-                    if (FOV.CurrentFOV.Contains(new GoRogue.Coord(ent.Position.X, ent.Position.Y))) {
-                        ent.IsVisible = true;
+                if (ent.MapPos == GameLoop.World.Player.MapPos || (ent.MapPos.X == GameLoop.World.Player.MapPos.X && ent.MapPos.Y == GameLoop.World.Player.MapPos.Y && ent.MapPos.Z < GameLoop.World.Player.MapPos.Z)) {
+                    if (LimitedVision) {
+                        if (FOV.CurrentFOV.Contains(new GoRogue.Coord(ent.Position.X, ent.Position.Y))) {
+                            ent.ScreenAppearance.IsVisible = true;
+                        } else {
+                            ent.ScreenAppearance.IsVisible = false;
+                        }
                     } else {
-                        ent.IsVisible = false;
+                        ent.ScreenAppearance.IsVisible = true;
                     }
                 } else {
-                    ent.IsVisible = true;
+                    ent.ScreenAppearance.IsVisible = false;
                 }
 
                 if (ent.MapPos.Z < GameLoop.World.Player.MapPos.Z) {
@@ -192,6 +228,18 @@ namespace LofiHollow.UI {
                 if (GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Dec != null) {
                     Decorator dec = GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Dec;
                     MapConsole.AddDecorator(i, 1, new CellDecorator(new Color(dec.R, dec.G, dec.B, GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Foreground.A), dec.Glyph, Mirror.None));
+                }
+
+                if (GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Plant != null) {
+                    if (!GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Plant.WateredToday) {
+                        if (GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Plant.CurrentStage != GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Plant.Stages.Count - 1) {
+                            if (GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Plant.CurrentStage != -1) {
+                                if (MapConsole.GetEffect(i) == null) { 
+                                    MapConsole.SetEffect(i, new CustomBlink(173, Color.Blue));
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -254,6 +302,27 @@ namespace LofiHollow.UI {
                 foreach (var position in FOV.NewlySeen) {
                     GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(new Point(position.X, position.Y)).IsVisible = true;
                     GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(new Point(position.X, position.Y)).Unshade();
+                }
+            }
+
+            foreach (KeyValuePair<long, Player> kv in GameLoop.World.otherPlayers) {
+                if (kv.Value.ScreenAppearance == null)
+                    kv.Value.UpdateAppearance();
+                MapConsole.Children.Add(kv.Value.ScreenAppearance);
+
+                if (kv.Value.MapPos == GameLoop.World.Player.MapPos || (kv.Value.MapPos.X == GameLoop.World.Player.MapPos.X && kv.Value.MapPos.Y == GameLoop.World.Player.MapPos.Y && kv.Value.MapPos.Z < GameLoop.World.Player.MapPos.Z)) {
+                    // EntityRenderer.Add(kv.Value); 
+                    if (GameLoop.UIManager.Map.FOV.CurrentFOV.Contains(new GoRogue.Coord(kv.Value.Position.X, kv.Value.Position.Y))) {
+                        kv.Value.ScreenAppearance.IsVisible = true;
+                    } else {
+                        kv.Value.ScreenAppearance.IsVisible = false;
+                    }
+                } else {
+                    kv.Value.ScreenAppearance.IsVisible = false;
+                }
+
+                if (kv.Value.ScreenAppearance.Position != kv.Value.Position) {
+                    kv.Value.ScreenAppearance.Position = kv.Value.Position;
                 }
             }
         }

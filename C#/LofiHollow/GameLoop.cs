@@ -78,6 +78,7 @@ namespace LofiHollow {
 
                 UpdatedMaps.Clear(); 
             }
+
         }
 
         private static void Init() { 
@@ -93,9 +94,20 @@ namespace LofiHollow {
             World.LoadMapAt(new Point3D(1, 3, 0));
             World.InitPlayer(); 
 
-            SadConsole.Game.Instance.MonoGameInstance.Window.Title = "Lofi Hollow";
+            SadConsole.Game.Instance.MonoGameInstance.Window.Title = "Lofi Hollow"; 
+        }
+
+        public static bool CheckFlag(string flag) {
+            if (flag == "farm") {
+                if ((NetworkManager != null && NetworkManager.lobbyManager != null && NetworkManager.isHost) || (NetworkManager == null)) {
+                    return World.Player.OwnsFarm;
+                } else if (NetworkManager != null && NetworkManager.lobbyManager != null && !NetworkManager.isHost) {
+                    return NetworkManager.HostOwnsFarm;
+                }
+            }
 
 
+            return false;
         }
     }
 }

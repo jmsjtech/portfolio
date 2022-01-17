@@ -110,10 +110,10 @@
     }
   },
   "(-1,0,0)": {
-    "name": "Field",
-    "ch": ",",
+    "name": "Abandoned Farm",
+    "ch": "f",
     "fg": {
-      "_packedValue": 4278222592
+      "_packedValue": 4280369774
     },
     "bg": {
       "_packedValue": 4278190080

@@ -13,6 +13,9 @@ namespace LofiHollow.Entities {
         [JsonProperty]
         public Dictionary<string, int> MetNPCs = new Dictionary<string, int>();
 
+        [JsonProperty]
+        public bool OwnsFarm = false;
+
         public List<Point3D> VisitedMaps = new List<Point3D>();
 
         public double TimeLastTicked = 0;
@@ -47,7 +50,10 @@ namespace LofiHollow.Entities {
                 GameLoop.UIManager.AddMsg(new ColoredString(Name + " died!", Color.Red, Color.Black));
             }
 
-            Experience = ExpToLevel(Level - 1);
+            if (Level > 1)
+                Experience = ExpToLevel(Level - 1);
+            else
+                Experience = 0;
             MoveTo(new Point(35, 6), new Point3D(0, 0, 0));
             CurrentHP = MaxHP;
 

@@ -629,7 +629,7 @@ namespace LofiHollow.Entities {
                     if (map.GetTile(newPosition).Name == "Door") {
                         if (map.GetTile(newPosition).Lock.Closed) {
                             if (map.GetTile(newPosition).Lock.CanOpen()) {
-                                map.ToggleDoor(newPosition);
+                                map.ToggleDoor(newPosition, MapPos);
                                 return false;
                             } else {
                                 GameLoop.UIManager.AddMsg(new ColoredString("The door won't budge. Must be locked.", Color.Brown, Color.Black));
@@ -641,28 +641,27 @@ namespace LofiHollow.Entities {
                     if (map.IsTileWalkable(Position + positionChange)) {
                         // if there's an NPC here, initiate dialogue
                         if (ID == GameLoop.World.Player.ID) {
-                            for (int i = 0; i < GameLoop.UIManager.Map.EntityRenderer.Entities.Count; i++) {
-                                if (GameLoop.UIManager.Map.EntityRenderer.Entities[i] is NPC.NPC) {
-                                    if (GameLoop.UIManager.Map.EntityRenderer.Entities[i].Position == newPosition) {
-                                        GameLoop.UIManager.DialogueWindow.DialogueNPC = (NPC.NPC)GameLoop.UIManager.Map.EntityRenderer.Entities[i];
-                                        GameLoop.UIManager.selectedMenu = "Dialogue";
-                                        GameLoop.UIManager.DialogueWindow.DialogueWindow.IsVisible = true;
+                            for (int i = 0; i < GameLoop.World.npcLibrary.Count; i++) {
+                                NPC.NPC npc = GameLoop.World.npcLibrary[i];
+                                if (npc.Position == newPosition && npc.MapPos == MapPos) {
+                                    GameLoop.UIManager.DialogueWindow.DialogueNPC = npc;
+                                    GameLoop.UIManager.selectedMenu = "Dialogue";
+                                    GameLoop.UIManager.DialogueWindow.DialogueWindow.IsVisible = true;
 
-                                        if (GameLoop.World.Player.MetNPCs.ContainsKey(GameLoop.UIManager.DialogueWindow.DialogueNPC.Name)) {
-                                            if (GameLoop.UIManager.DialogueWindow.DialogueNPC.Greetings.ContainsKey(GameLoop.UIManager.DialogueWindow.DialogueNPC.RelationshipDescriptor())) {
-                                                GameLoop.UIManager.DialogueWindow.dialogueLatest = GameLoop.UIManager.DialogueWindow.DialogueNPC.Greetings[GameLoop.UIManager.DialogueWindow.DialogueNPC.RelationshipDescriptor()];
-                                            } else {
-                                                GameLoop.UIManager.DialogueWindow.dialogueLatest = "Error: Greeting not found for relationship " + GameLoop.UIManager.DialogueWindow.DialogueNPC.RelationshipDescriptor();
-                                            }
+                                    if (GameLoop.World.Player.MetNPCs.ContainsKey(GameLoop.UIManager.DialogueWindow.DialogueNPC.Name)) {
+                                        if (GameLoop.UIManager.DialogueWindow.DialogueNPC.Greetings.ContainsKey(GameLoop.UIManager.DialogueWindow.DialogueNPC.RelationshipDescriptor())) {
+                                            GameLoop.UIManager.DialogueWindow.dialogueLatest = GameLoop.UIManager.DialogueWindow.DialogueNPC.Greetings[GameLoop.UIManager.DialogueWindow.DialogueNPC.RelationshipDescriptor()];
                                         } else {
-                                            GameLoop.UIManager.DialogueWindow.dialogueLatest = GameLoop.UIManager.DialogueWindow.DialogueNPC.Introduction;
-                                            GameLoop.World.Player.MetNPCs.Add(GameLoop.UIManager.DialogueWindow.DialogueNPC.Name, 0);
+                                            GameLoop.UIManager.DialogueWindow.dialogueLatest = "Error: Greeting not found for relationship " + GameLoop.UIManager.DialogueWindow.DialogueNPC.RelationshipDescriptor();
                                         }
-
-                                        GameLoop.UIManager.DialogueWindow.DialogueNPC.UpdateChitChats();
-
-                                        return false;
+                                    } else {
+                                        GameLoop.UIManager.DialogueWindow.dialogueLatest = GameLoop.UIManager.DialogueWindow.DialogueNPC.Introduction;
+                                        GameLoop.World.Player.MetNPCs.Add(GameLoop.UIManager.DialogueWindow.DialogueNPC.Name, 0);
                                     }
+
+                                    GameLoop.UIManager.DialogueWindow.DialogueNPC.UpdateChitChats();
+
+                                    return false;
                                 }
                             }
 

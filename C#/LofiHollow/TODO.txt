@@ -9,7 +9,7 @@
 - Main menu
 - Finish the main town
 - Double check all accessible overworld maps to make sure they're filled out properly
-- Farming gameplay
+- (DONE) Farming gameplay (Fill out the crop selection at least)
 
 
 Dumb Ideas that could be fun/funny:
@@ -17,7 +17,7 @@ Dumb Ideas that could be fun/funny:
 - - Build up velocity by running before a jump to move tiles while you're in the air, up to 4 tiles of velocity
 - - Maybe as a reward for a dungeon? You get spring shoes and can then jump, spring shoes required to enter/complete the next dungeon
 - Small chance for an NPC named "the devil" to appear on top of a chopped hickory tree, secret mission to beat him at a rhythm game when you speak to him
-
+- Camera mechanic: When held in hand and clicked, capture area around cursor. Output to a photo item
 
 
 Menu
@@ -46,7 +46,6 @@ Skills
 - Skills
 - - Gathering Skills (Anything that can use SkillableTile)
 - - - (DONE) Woodcutting
-- - - Fishing
 - - - Mining
 - - Processing Skills (Use an existing workshop tile to turn something into something else)
 - - - Smithing (Furnace)
@@ -55,7 +54,12 @@ Skills
 - - - Carpentry (Furniture and other wooden goods)
 
 Fishing
-- Fish have to fight back to make the minigame engaging
+- (DONE) Fish have to fight back to make the minigame engaging
+- (DONE) Fish fighting back while you reel them in stresses the line. Too much stress makes the line break
+- (DONE) Make the weight random between the minimum and maximum weight
+- (DONE) Fish definition should include how strong the fish is, use this to determine line stress in minigame
+- Upgraded fishing rods should be more stress resistant or reel in fish faster
+- Make fishing rod lose durability when the line breaks, only let you fish if it has durability left
 - Possible to catch trash items, which are always available (so you can always technically fish)
 - Fill out the fishopedia with at least 1 unique fish per combination of zone, season, and time 
 - Zones: River, Beach, Lake
@@ -65,6 +69,7 @@ Fishing
 - Total number of fish needed: 3 zones x 5 seasons x 4 times x 10 levels = 600. Also add 10 extra fish that show up everywhere
 - Have a visible Fish-o-pedia in-game that fills out with information on fish you've actually caught.
 - - Include a minimum caught weight, maximum caught weight, their value when sold, location info, and level requirement
+- Let other players in multiplayer see your lure when you cast it
 
 Minigames
 - Card-based Minigames
@@ -75,9 +80,21 @@ Minigames
 - - Roulette
 - - Slot machine
 - - Pachinko?
+- Multiplayer Boardgames
+- - Chess
+- - Checkers
+- - Mancala
+- - Four In A Row
+- - Yacht Dice
+- - Gomoku
+- - Shogi
+- Job Minigames
+- - Bartending (at Tom's Bar)
+- -
 - Skilling Minigames
-- - Fishing
+- - (DONEISH) Fishing
 - Arcade games / Computer? / Console
+- - BEST CASE: Somehow make a fantasy console (like the PICO8 or TIC-80) and embed it as the backbone of the computers, arcade systems, and consoles
 - - Use a built-in scripting language to make and run them in-game
 - - Arcade machines have one built-in game they play
 - - Consoles have carts you can swap out to play different games
@@ -113,7 +130,14 @@ Saving/Loading
 
 Farming
 - Have to buy the plot of land where the farm is first
-- Hoe - Turn dirt into tilled land (only on owned land tiles)
+- (DONE) Hoe - Turn dirt into tilled land (only on owned land tiles)
+- (DONE) Plant Def: List of stages, days on current stage, plant name, season, fully grown value, repeats, repeat start stage
+- (DONE) Plant Stage: Days to next stage, stage glyph, stage rgb, decorator glyph, decorator rgb
+- (DONE) Water crops with watering can
+- (DONE) Only grow plants if they've been watered and are planted in the right season
+- (DONE) Have a way of showing what plants need to be watered
+- (DONE) Display water left in watering can, use watering can on a well or water to refill
+- (DONE) Set up the farm supply shop properly
 - Seeds: only plantable in the correct season
 - - Spring Crops: Turnip, Potato, Cucumber, Cabbage, Strawberry, Garlic, Green Bean, Parsnip, Rhubarb
 - - Summer Crops: Onion, Pumpkin, Watermelon, Melon, Tomato, Paprika, Corn, Pineapple, Blueberry, 
@@ -158,21 +182,11 @@ Items
 - (DONE) Load item definitions from file
 - (DONE) Pickup and drop items
 - Tools: 
-- - Watering Can - Water crops, allowing them to grow.
-- - - Higher tier watering cans hold more water, and water more tiles at once
-- - Pickaxe - Used for mining
-- - - Higher tier pickaxes have more durability before needing to be repaired
-- - (DONE) Axe - Used for cutting down trees.
-- - - Higher tier axes have more durability before needing to be repaired
-- - Hoe - Turns dirt into tilled ground, allowing seeds to be planted
-- - - Higher tier hoes till more tiles at once
-- - Fishing Pole - Use at fishing spots (with bait?) to catch fish
-- - - Fish differ based on season, weather, and location
-- - - Fishing Minigame: 
-- - - - Press a button to hook
-- - - - Hold to reel in when fish isn't fighting
-- - - - When fish is fighting reeling in increases line stress.
-- - - - Too much stress makes the line break, letting the fish escape
+- - (DONE) Watering Can - Water crops, allowing them to grow. 
+- - Pickaxe - Used for mining 
+- - (DONE) Axe - Used for cutting down trees. 
+- - (DONE) Hoe - Turns dirt into tilled ground, allowing seeds to be planted 
+- - (DONE) Fishing Pole 
 - - Hammer: Construct tiles/furniture/anything that exists in the world, what you can make depends on construction level
 - (DONE) Equippable item slots: Hand, Off-hand, Head, Torso, Legs, Ring1, Ring2, Amulet
 
@@ -193,7 +207,7 @@ NPCs
 - - Anemone (Inn housekeeping) (Placed, Greetings)
 - - Slate (Cemetary groundskeeper)
 - - Paprika (Sapphire's kid) (Placed)
-- - Saffron (Farm Supply) 
+- - Saffron (Farm Supply) (Placed, Shop)
 - - Indigo (Inventor)
 - Courier's Guild
 - - Algae (Guild leader)

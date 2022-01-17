@@ -1,0 +1,1559 @@
+{
+  "Clock": {
+    "Hours": 10,
+    "Minutes": 4,
+    "Month": 1,
+    "Day": 1,
+    "Year": 1,
+    "AM": true
+  },
+  "MetNPCs": {
+    "Cobalt": 0
+  },
+  "CurrentHP": 11,
+  "MaxHP": 11,
+  "STR": 18,
+  "DEX": 10,
+  "CON": 13,
+  "INT": 10,
+  "WIS": 10,
+  "CHA": 10,
+  "SizeMod": 0,
+  "NaturalArmor": 0,
+  "DeflectionMod": 0,
+  "LandSpeed": 30,
+  "BaseFort": 0,
+  "FortMod": 0,
+  "BaseReflex": 0,
+  "ReflexMod": 0,
+  "BaseWill": 0,
+  "WillMod": 0,
+  "BaseAttackBonus": 0,
+  "InitiativeMod": 0,
+  "CopperCoins": 0,
+  "SilverCoins": 0,
+  "GoldCoins": 0,
+  "JadeCoins": 0,
+  "Level": 1,
+  "Experience": 0,
+  "ExpTrack": "Medium",
+  "Race": {
+    "RaceID": 0,
+    "Name": "Human",
+    "SizeMod": 0,
+    "Description": "+2 to one attribute",
+    "StrMod": 0,
+    "DexMod": 0,
+    "ConMod": 0,
+    "IntMod": 0,
+    "WisMod": 0,
+    "ChaMod": 0,
+    "LandSpeed": 30,
+    "Languages": [],
+    "RacialFeatures": []
+  },
+  "KnownLanguages": [],
+  "Vision": 36,
+  "ExpGranted": 0,
+  "CR": 1,
+  "HitDice": "1d1",
+  "UnarmedDice": "1d3",
+  "Inventory": [
+    {
+      "ItemID": 36,
+      "SubID": 0,
+      "ItemQuantity": 1,
+      "IsStackable": false,
+      "ShortDesc": "Deals 1d4-1 damage",
+      "Description": "",
+      "AverageValue": 5,
+      "Weight": 1.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": 0,
+      "EquipSlot": 0,
+      "Weapon": {
+        "DamageDice": "1d4-1",
+        "CritMod": 2,
+        "MinCrit": 19,
+        "WeaponCategory": "Light",
+        "WeaponClass": "Simple",
+        "DamageType": "Piercing"
+      },
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 183,
+      "ForegroundG": 65,
+      "ForegroundB": 14,
+      "ItemGlyph": 20,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "Rusty Dagger",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 18,
+      "SubID": 0,
+      "ItemQuantity": 1,
+      "IsStackable": false,
+      "ShortDesc": "Catches fish",
+      "Description": "",
+      "AverageValue": 15,
+      "Weight": 1.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": 7,
+      "EquipSlot": 0,
+      "Weapon": {
+        "DamageDice": "1d6-5",
+        "CritMod": 2,
+        "MinCrit": 20,
+        "WeaponCategory": "Light",
+        "WeaponClass": "Martial",
+        "DamageType": "Bludgeoning"
+      },
+      "Armor": null,
+      "Heal": null,
+      "Dec": {
+        "Glyph": 283,
+        "R": 255,
+        "G": 255,
+        "B": 255,
+        "A": 255
+      },
+      "ForegroundR": 110,
+      "ForegroundG": 66,
+      "ForegroundB": 33,
+      "ItemGlyph": 282,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "Fishing Rod",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    }
+  ],
+  "Equipment": [
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    },
+    {
+      "ItemID": 0,
+      "SubID": 0,
+      "ItemQuantity": 0,
+      "IsStackable": false,
+      "ShortDesc": "",
+      "Description": " ",
+      "AverageValue": 0,
+      "Weight": 0.0,
+      "Durability": -1,
+      "MaxDurability": -1,
+      "ItemCategory": -1,
+      "EquipSlot": -1,
+      "Weapon": null,
+      "Armor": null,
+      "Heal": null,
+      "Dec": null,
+      "ForegroundR": 0,
+      "ForegroundG": 0,
+      "ForegroundB": 0,
+      "ItemGlyph": 32,
+      "MapPos": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Effect": null,
+      "Appearance": {
+        "Decorators": [],
+        "Foreground": {
+          "_packedValue": 4278190080
+        },
+        "Background": {
+          "_packedValue": 0
+        },
+        "Glyph": 32,
+        "Mirror": 0,
+        "IsVisible": true
+      },
+      "Children": [],
+      "ChildrenLocked": true,
+      "Components": [],
+      "Position": {
+        "X": 0,
+        "Y": 0
+      },
+      "Name": "(EMPTY)",
+      "ZIndex": 0,
+      "IsVisible": true,
+      "IsEnabled": true,
+      "FocusedMode": 0,
+      "IsExclusiveMouse": false,
+      "UseKeyboard": true,
+      "UseMouse": true
+    }
+  ],
+  "ClassLevels": [
+    {
+      "ClassID": 0,
+      "Name": "Fighter",
+      "HitDie": "1d10",
+      "BABperLevel": 1.0,
+      "SkillRanks": 2,
+      "ClassLevels": 1,
+      "FortSaveProg": "Good",
+      "RefSaveProg": "Bad",
+      "WillSaveProg": "Bad",
+      "ClassFeatures": []
+    }
+  ],
+  "ClassFeatures": [],
+  "WeaponProficiencies": [],
+  "Templates": [],
+  "DropTable": [],
+  "Skills": {
+    "Woodcutting": {
+      "SkillID": 0,
+      "Name": "Woodcutting",
+      "Level": 1,
+      "Experience": 0,
+      "Uses": []
+    },
+    "Mining": {
+      "SkillID": 1,
+      "Name": "Mining",
+      "Level": 1,
+      "Experience": 0,
+      "Uses": []
+    },
+    "Smithing": {
+      "SkillID": 2,
+      "Name": "Smithing",
+      "Level": 1,
+      "Experience": 0,
+      "Uses": []
+    },
+    "Fishing": {
+      "SkillID": 3,
+      "Name": "Fishing",
+      "Level": 1,
+      "Experience": 0,
+      "Uses": []
+    },
+    "Cooking": {
+      "SkillID": 4,
+      "Name": "Cooking",
+      "Level": 1,
+      "Experience": 0,
+      "Uses": []
+    },
+    "Carpentry": {
+      "SkillID": 5,
+      "Name": "Carpentry",
+      "Level": 1,
+      "Experience": 0,
+      "Uses": []
+    }
+  },
+  "ForegroundR": 255,
+  "ForegroundG": 255,
+  "ForegroundB": 0,
+  "ActorGlyph": 64,
+  "MapPos": {
+    "X": -1,
+    "Y": 0,
+    "Z": 0
+  },
+  "Effect": null,
+  "Appearance": {
+    "Decorators": [],
+    "Foreground": {
+      "_packedValue": 4278255615
+    },
+    "Background": {
+      "_packedValue": 0
+    },
+    "Glyph": 64,
+    "Mirror": 0,
+    "IsVisible": true
+  },
+  "Children": [],
+  "ChildrenLocked": true,
+  "Components": [],
+  "Position": {
+    "X": 26,
+    "Y": 19
+  },
+  "Name": "Nanz",
+  "ZIndex": 10,
+  "IsVisible": true,
+  "IsEnabled": true,
+  "FocusedMode": 0,
+  "IsExclusiveMouse": false,
+  "UseKeyboard": true,
+  "UseMouse": true
+}

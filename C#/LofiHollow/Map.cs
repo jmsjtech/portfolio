@@ -66,7 +66,7 @@ namespace LofiHollow {
             return !Tiles[location.Y * Width + location.X].IsBlockingLOS;
         }
 
-        public void ToggleDoor(Point location) {
+        public void ToggleDoor(Point location, Point3D mapPos) {
             if (location.X < 0 || location.Y < 0 || location.X >= Width || location.Y >= Height)
                 return;
             if (Tiles[location.Y * Width + location.X].Lock != null) {
@@ -80,6 +80,12 @@ namespace LofiHollow {
                 Tiles[location.Y * Width + location.X].Lock.Closed = !Tiles[location.Y * Width + location.X].Lock.Closed;
                 Tiles[location.Y * Width + location.X].IsBlockingMove = lockData.Closed;
                 Tiles[location.Y * Width + location.X].IsBlockingLOS = lockData.Closed;
+
+                if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
+                    string msg = "updateTile;" + location.X + ";" + location.Y + ";" + mapPos.X + ";" +
+                        mapPos.Y + ";" + mapPos.Z + ";" + JsonConvert.SerializeObject(Tiles[location.Y * Width + location.X], Formatting.Indented);
+                    GameLoop.NetworkManager.BroadcastMsg(msg);
+                }
 
                 return;
             }

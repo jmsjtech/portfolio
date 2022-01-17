@@ -85,6 +85,24 @@ namespace LofiHollow {
             foreach (KeyValuePair<int, NPC> kv in GameLoop.World.npcLibrary) {
                 kv.Value.ReceivedGiftToday = false;
             }
+
+            for (int i = 0; i < GameLoop.World.maps[new Point3D(-1, 0, 0)].Tiles.Length; i++) {
+                TileBase tile = GameLoop.World.maps[new Point3D(-1, 0, 0)].Tiles[i];
+
+                if (tile.Plant != null) {
+                    tile.Plant.DayUpdate();
+                    tile.UpdateAppearance();
+                    int x = i % GameLoop.MapWidth;
+                    int y = i / GameLoop.MapWidth;
+
+                    if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
+                        string msg = "updateTile;" + x + ";" + y + ";-1;0;0;" + JsonConvert.SerializeObject(tile, Formatting.Indented);
+                        GameLoop.NetworkManager.BroadcastMsg(msg);
+                    }
+                }
+            }
+
+            GameLoop.UIManager.Map.LoadMap(GameLoop.World.Player.MapPos);
         }
     }
 }

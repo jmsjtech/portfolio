@@ -36,6 +36,8 @@ namespace LofiHollow {
         [JsonProperty]
         public LockOwner Lock;
 
+        [JsonProperty]
+        public Plant Plant = null;
 
         [JsonProperty]
         public SkillableTile SkillableTile = null;
@@ -65,9 +67,11 @@ namespace LofiHollow {
             ForegroundB = other.ForegroundB;
             TileGlyph = other.TileGlyph;
             SkillableTile = other.SkillableTile;
+            
 
             Dec = other.Dec;
             Lock = other.Lock;
+            Plant = other.Plant;
 
             Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
             Glyph = TileGlyph;
@@ -90,6 +94,7 @@ namespace LofiHollow {
 
                 Dec = other.Dec;
                 Lock = other.Lock;
+                Plant = other.Plant;
 
                 Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
                 Glyph = TileGlyph;
@@ -102,6 +107,27 @@ namespace LofiHollow {
         }
 
         public void UpdateAppearance() {
+            if (Lock != null) {
+                if (Lock.Closed)
+                    TileGlyph = Lock.ClosedGlyph;
+                else
+                    TileGlyph = Lock.OpenedGlyph;
+
+                IsBlockingLOS = Lock.Closed;
+                IsBlockingMove = Lock.Closed;
+            }
+
+            if (Plant != null && Plant.CurrentStage >= 0) { 
+                ForegroundR = Plant.Stages[Plant.CurrentStage].ColorR;
+                ForegroundG = Plant.Stages[Plant.CurrentStage].ColorG;
+                ForegroundB = Plant.Stages[Plant.CurrentStage].ColorB;
+                TileGlyph = Plant.Stages[Plant.CurrentStage].Glyph;
+
+                if (Plant.Stages[Plant.CurrentStage].Dec != null) {
+                    Dec = Plant.Stages[Plant.CurrentStage].Dec;
+                }
+            }
+
             Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
             Glyph = TileGlyph;
         }
