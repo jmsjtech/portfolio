@@ -1,0 +1,26 @@
+{
+  "Name": "Poplar Door",
+  "Materials": "2x Poplar Planks, 8x Bronze Nails",
+  "SpecialProps": "door",
+  "Glyph": 24,
+  "ForegroundR": 101,
+  "ForegroundG": 66,
+  "ForegroundB": 33,
+  "Dec": null,
+  "RequiredLevel": 5,
+  "ExpGranted": 40,
+  "BlocksMove": true,
+  "BlocksLOS": true,
+  "MaterialsNeeded": [
+    {
+      "ItemID": 39,
+      "SubID": 0,
+      "ItemQuantity": 2
+    },
+	{
+      "ItemID": 40,
+      "SubID": 0,
+      "ItemQuantity": 8
+    }
+  ]
+}

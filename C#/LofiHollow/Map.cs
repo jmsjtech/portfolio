@@ -3,14 +3,15 @@ using System.Linq;
 using SadRogue.Primitives;
 using LofiHollow.Entities;
 using Newtonsoft.Json;
-using LofiHollow.TileData;
+using LofiHollow.EntityData;
 using System.Collections.Generic;
+using LofiHollow.Managers;
 
 namespace LofiHollow {
     [JsonObject(MemberSerialization.OptIn)]
     public class Map {
         [JsonProperty]
-        public Dictionary<int,int> MonsterWeights = new Dictionary<int, int>();
+        public Dictionary<int,int> MonsterWeights = new();
         [JsonProperty]
         public int MinimumMonsters = 0;
         [JsonProperty]
@@ -23,15 +24,14 @@ namespace LofiHollow {
         public int Height;
 
         [JsonProperty]
-        public MinimapTile MinimapTile = new MinimapTile(',', new Color(0, 127, 0), Color.Black);
+        public MinimapTile MinimapTile = new(',', new Color(0, 127, 0), Color.Black);
 
-        [JsonProperty]
-        public bool PlayerCanBuild = false;
+        public int SpawnedMonsters = -1;
        
 
         public GoRogue.MultiSpatialMap<Entity> Entities;
         public GoRogue.Pathing.FastAStar MapPath;
-        public static GoRogue.IDGenerator IDGenerator = new GoRogue.IDGenerator();
+        public static GoRogue.IDGenerator IDGenerator = new();
 
         public GoRogue.MapViews.LambdaMapView<bool> MapFOV;
 
@@ -152,6 +152,8 @@ namespace LofiHollow {
             int count2 = 0;
             int count3 = 0;
 
+            SpawnedMonsters = monsterAmount;
+
             for (int i = 0; i < monsterAmount; i++) {
                 if (MonsterWeights.Count > 0) {
                     int randomInWeight = GameLoop.rand.Next(weight);
@@ -174,7 +176,9 @@ namespace LofiHollow {
                         }
                     }
 
-                    Monster monster = new Monster(randomID);
+                    Monster monster = new(randomID);
+                    monster.CalculateCombatLevel();
+                    monster.UpdateHP();
 
                     monster.Position = new Point(GameLoop.rand.Next(Width), GameLoop.rand.Next(Height));
                     
@@ -184,10 +188,7 @@ namespace LofiHollow {
 
                     monster.MapPos = MapPos;
 
-                    monster.SetupStats();
-                    monster.SetExpGranted();
-
-                    GameLoop.CommandManager.SpawnMonster(monster);
+                    CommandManager.SpawnMonster(monster);
                    // GameLoop.CommandManager.SendMonster(monster);
                 }
             } 

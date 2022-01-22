@@ -1,0 +1,14 @@
+{
+  "MineTileID": 4,
+  "Name": "Ice",
+  "BlocksMove": true,
+  "BlocksLOS": false,
+  "TileGlyph": 320,
+  "ForeR": 0,
+  "ForeG": 101,
+  "ForeB": 0,
+  "Dec": null,
+  "OutputID": -1,
+  "RequiredTier": 100,
+  "TileHP": 3
+}

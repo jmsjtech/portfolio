@@ -1,0 +1,14 @@
+{
+  "MineTileID": 1,
+  "Name": "Dirt",
+  "BlocksMove": true,
+  "BlocksLOS": true,
+  "TileGlyph": 320,
+  "ForeR": 101,
+  "ForeG": 66,
+  "ForeB": 33,
+  "Dec": null,
+  "OutputID": 41,
+  "RequiredTier": 0,
+  "TileHP": 2
+}

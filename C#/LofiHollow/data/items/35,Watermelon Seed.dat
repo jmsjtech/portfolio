@@ -1,0 +1,97 @@
+{
+  "ItemID": 35,
+  "ItemQuantity": 1,
+  "IsStackable": true,
+  "ShortDesc": "Grows watermelons (10)",
+  "Description": "",
+  "AverageValue": 10,
+  "Weight": 0,
+  "ItemCategory": 9,
+  "EquipSlot": -1,
+  "ForegroundR": 0,
+  "ForegroundG": 80,
+  "ForegroundB": 0,
+  "ItemGlyph": 290,
+  "Effect": null,
+  "Plant":  {
+    "GrowthSeason": "Summer",
+	"ProduceName": "Watermelon",
+	"ProduceValue": 50,
+	"ProduceWeight": 1,
+	"ProducePerHarvestMin": 1,
+	"ProducePerHarvestMax": 1,
+	"ProduceIsSeed": false,
+	"HarvestRevert": -1,
+	"RequiredLevel": 10,
+	"ExpOnHarvest": 50,
+	"ExpPerExtra": 5,
+	"ProduceGlyph": 296,
+	"ProduceR": 255,
+	"ProduceG": 215,
+	"ProduceB": 0, 
+	"Stages": [
+		{
+			"DaysToNext": 0,
+			"ColorR": 110,
+			"ColorG": 66,
+			"ColorB": 33,
+			"Glyph": 291
+		},
+		{
+			"DaysToNext": 3,
+			"ColorR": 0,
+			"ColorG": 127,
+			"ColorB": 0,
+			"Glyph": 300
+		},
+		{
+			"DaysToNext": 4,
+			"ColorR": 0,
+			"ColorG": 127,
+			"ColorB": 0,
+			"Glyph": 301
+		},
+		{
+			"DaysToNext": 3,
+			"HarvestItem": 21,
+			"ColorR": 0,
+			"ColorG": 80,
+			"ColorB": 0,
+			"Glyph": 302,
+			"Dec": { 
+				"Glyph": 307,
+				"R": 0,
+				"G": 127,
+				"B": 0 
+			}
+		}
+	]
+  },
+  "Appearance": {
+    "Decorators": [],
+    "Foreground": {
+      "_packedValue": 4278190335
+    },
+    "Background": {
+      "_packedValue": 0
+    },
+    "Glyph": 20,
+    "Mirror": 0,
+    "IsVisible": true
+  },
+  "Children": [],
+  "ChildrenLocked": true,
+  "Components": [],
+  "Position": {
+    "X": 0,
+    "Y": 0
+  },
+  "Name": "Watermelon Seed",
+  "ZIndex": 0,
+  "IsVisible": true,
+  "IsEnabled": true,
+  "FocusedMode": 0,
+  "IsExclusiveMouse": false,
+  "UseKeyboard": true,
+  "UseMouse": true
+}

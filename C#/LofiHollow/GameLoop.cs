@@ -5,7 +5,7 @@ using SadRogue.Primitives;
 using Microsoft.Xna.Framework.Graphics;
 
 using LofiHollow.UI;
-using LofiHollow.Commands;
+using LofiHollow.Managers;
 using LofiHollow.Entities;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +26,7 @@ namespace LofiHollow {
 
         public static Random rand;
 
-        public static void Main(string[] args) {
+        public static void Main() {
             // Setup the engine and create the main window.
             SadConsole.Game.Create(GameWidth, GameHeight, "./fonts/Cheepicus48.font");
              
@@ -43,20 +43,22 @@ namespace LofiHollow {
         private static void Update(object sender, GameHost e) {
             if (UIManager != null) {
                 if (NetworkManager == null || NetworkManager.lobbyManager == null || NetworkManager.isHost) {
-                    World.Player.TimeLastTicked++;
-                    if (World.Player.TimeLastTicked >= 60) {
-                        World.Player.TimeLastTicked = 0;
-                        World.Player.Clock.TickTime();
+                    if (World.Player.Clock != null) {
+                        World.Player.TimeLastTicked++;
+                        if (World.Player.TimeLastTicked >= 60) {
+                            World.Player.TimeLastTicked = 0;
+                            World.Player.Clock.TickTime();
+                        }
                     }
                 }
 
-                List<Point3D> UpdatedMaps = new List<Point3D>();
+                List<Point3D> UpdatedMaps = new();
 
                 if (World.maps[World.Player.MapPos].Entities.Count > 0) {
                     var entities = World.maps[World.Player.MapPos].Entities.Items.ToList();
                     foreach (Entity ent in entities) {
-                        if (ent is Monster) {
-                            ((Monster)ent).Update();
+                        if (ent is Monster mon) {
+                            mon.Update();
                         }
                     } 
 
@@ -65,13 +67,15 @@ namespace LofiHollow {
                  
                 foreach (KeyValuePair<long, Player> kv in World.otherPlayers) {
                     if (!UpdatedMaps.Contains(kv.Value.MapPos)) {
-                        if (World.maps[kv.Value.MapPos].Entities.Count > 0) {
-                            foreach (Entity ent in World.maps[kv.Value.MapPos].Entities.Items) {
-                                if (ent is Monster) {
-                                    ((Monster)ent).Update();
+                        if (World.maps.ContainsKey(kv.Value.MapPos)) {
+                            if (World.maps[kv.Value.MapPos].Entities.Count > 0) {
+                                foreach (Entity ent in World.maps[kv.Value.MapPos].Entities.Items) {
+                                    if (ent is Monster mon) {
+                                        mon.Update();
+                                    }
                                 }
+                                UpdatedMaps.Add(kv.Value.MapPos);
                             }
-                            UpdatedMaps.Add(kv.Value.MapPos);
                         }
                     }
                 } 

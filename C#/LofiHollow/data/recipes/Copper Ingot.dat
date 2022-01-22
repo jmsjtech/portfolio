@@ -1,0 +1,31 @@
+{
+  "Name": "Copper Ingot",
+  "FinishedID": 48,
+  "FinishedQty": 1,
+  "Skill": "Smithing",
+  "RequiredLevel": 1,
+  "ExpGranted": 10,
+  "SpecificMaterials": [
+    {
+      "ItemID": 43,
+      "SubID": 0,
+      "ItemQuantity": 1,
+      "Stacks": false
+    }
+  ],
+  "GenericMaterials": [
+    {
+      "Property": "Fuel",
+      "Tier": 1,
+      "Quantity": 1,
+      "Stacks": true,
+	  "CountsAsMultiple": true
+    }
+  ],
+  "RequiredTools": [
+    {
+      "Property": "Hammer",
+      "Tier": 1
+    }
+  ]
+}

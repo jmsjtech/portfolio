@@ -1,0 +1,97 @@
+{
+  "ItemID": 33,
+  "ItemQuantity": 1,
+  "IsStackable": true,
+  "ShortDesc": "Grows grapes (15)",
+  "Description": "",
+  "AverageValue": 20,
+  "Weight": 0,
+  "ItemCategory": 9,
+  "EquipSlot": -1,
+  "ForegroundR": 106,
+  "ForegroundG": 13,
+  "ForegroundB": 173,
+  "ItemGlyph": 290,
+  "Effect": null,
+  "Plant":  {
+    "GrowthSeason": "Fall",
+	"ProduceName": "Grapes",
+	"ProduceValue": 20,
+	"ProduceWeight": 0.1,
+	"ProducePerHarvestMin": 2,
+	"ProducePerHarvestMax": 5,
+	"ProduceIsSeed": false,
+	"HarvestRevert": 2,
+	"RequiredLevel": 15,
+	"ExpOnHarvest": 20,
+	"ExpPerExtra": 5,
+	"ProduceGlyph": 296,
+	"ProduceR": 106,
+	"ProduceG": 13,
+	"ProduceB": 173, 
+	"Stages": [
+		{
+			"DaysToNext": 0,
+			"ColorR": 110,
+			"ColorG": 66,
+			"ColorB": 33,
+			"Glyph": 291
+		},
+		{
+			"DaysToNext": 4,
+			"ColorR": 0,
+			"ColorG": 127,
+			"ColorB": 0,
+			"Glyph": 300
+		},
+		{
+			"DaysToNext": 1,
+			"ColorR": 0,
+			"ColorG": 127,
+			"ColorB": 0,
+			"Glyph": 301
+		},
+		{
+			"DaysToNext": 3,
+			"HarvestItem": 21,
+			"ColorR": 106,
+			"ColorG": 13,
+			"ColorB": 173,
+			"Glyph": 306,
+			"Dec": { 
+				"Glyph": 305,
+				"R": 0,
+				"G": 127,
+				"B": 0 
+			}
+		}
+	]
+  },
+  "Appearance": {
+    "Decorators": [],
+    "Foreground": {
+      "_packedValue": 4278190335
+    },
+    "Background": {
+      "_packedValue": 0
+    },
+    "Glyph": 20,
+    "Mirror": 0,
+    "IsVisible": true
+  },
+  "Children": [],
+  "ChildrenLocked": true,
+  "Components": [],
+  "Position": {
+    "X": 0,
+    "Y": 0
+  },
+  "Name": "Grape Seed",
+  "ZIndex": 0,
+  "IsVisible": true,
+  "IsEnabled": true,
+  "FocusedMode": 0,
+  "IsExclusiveMouse": false,
+  "UseKeyboard": true,
+  "UseMouse": true
+}

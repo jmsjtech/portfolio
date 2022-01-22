@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using LofiHollow.Managers;
 using Newtonsoft.Json;
 using SadRogue.Primitives;
 
@@ -12,6 +13,31 @@ namespace LofiHollow.Entities {
 
         [JsonProperty]
         public string UniqueID;
+
+        [JsonProperty]
+        public int MonConstitution = 1;
+        [JsonProperty]
+        public int MonAttack = 1;
+        [JsonProperty]
+        public int MonStrength = 1;
+        [JsonProperty]
+        public int MonDefense = 1;
+        [JsonProperty]
+        public int MonMagic = 1;
+        [JsonProperty]
+        public int MonRanged = 1;
+
+        [JsonProperty]
+        public string CombatType = "";
+        [JsonProperty]
+        public string SpecificWeakness = "";
+
+        [JsonProperty]
+        public int Confidence = 0;
+
+        [JsonProperty]
+        public bool AlwaysAggro = false;
+
 
         [JsonConstructor]
         public Monster() : base(Color.White, 'e') { 
@@ -46,44 +72,46 @@ namespace LofiHollow.Entities {
 
                 MonsterID = temp.MonsterID;
 
+                MonConstitution = temp.MonConstitution;
+                MonAttack = temp.MonAttack;
+                MonStrength = temp.MonStrength;
+                MonDefense = temp.MonDefense;
+                MonMagic = temp.MonMagic;
+                MonRanged = temp.MonRanged;
+
                 UniqueID = Guid.NewGuid().ToString("N");
-
-                SetAttribs(temp.STR, temp.DEX, temp.CON, temp.INT, temp.WIS, temp.CHA);
-
-                LandSpeed = temp.LandSpeed;
-                BaseAttackBonus = temp.BaseAttackBonus;
-                SizeMod = temp.SizeMod;
-                HitDice = temp.HitDice;
-                CR = temp.CR;
-                InitiativeMod = temp.InitiativeMod;
-                Templates = temp.Templates;
             }
         }
 
 
 
         public void Update() {
-            Point oldPos = new Point(Position.X, Position.Y);
+            Point oldPos = new(Position.X, Position.Y);
 
             int distanceToNearest = 99;
-            Point targetPoint = new Point(-1, -1);
+            Point targetPoint = new(-1, -1);
             Actor defender = null;
 
             if (GameLoop.World.Player.MapPos == MapPos) {
-                defender = GameLoop.World.Player;
-                targetPoint = new Point(GameLoop.World.Player.Position.X, GameLoop.World.Player.Position.Y);
-                distanceToNearest = GameLoop.World.maps[MapPos].MapPath.ShortestPath(new GoRogue.Coord(Position.X, Position.Y), new GoRogue.Coord(targetPoint.X, targetPoint.Y)).Length;
+                if (GameLoop.World.Player.CombatLevel < CombatLevel + Confidence || AlwaysAggro) {
+                    defender = GameLoop.World.Player;
+                    targetPoint = new Point(GameLoop.World.Player.Position.X, GameLoop.World.Player.Position.Y);
+                    distanceToNearest = GameLoop.World.maps[MapPos].MapPath.ShortestPath(new GoRogue.Coord(Position.X, Position.Y), new GoRogue.Coord(targetPoint.X, targetPoint.Y)).Length;
+                }
             }
 
             foreach (KeyValuePair<long, Player> kv in GameLoop.World.otherPlayers) {
                 if (kv.Value.MapPos == MapPos) {
-                    GoRogue.Coord otherPos = new GoRogue.Coord(kv.Value.Position.X, kv.Value.Position.Y);
-                    int newDist = GameLoop.World.maps[MapPos].MapPath.ShortestPath(new GoRogue.Coord(Position.X, Position.Y), otherPos).Length;
-                    if (newDist < distanceToNearest) {
-                        defender = kv.Value;
-                        targetPoint = new Point(kv.Value.Position.X, kv.Value.Position.Y);
-                        distanceToNearest = newDist;
-                    } 
+                    kv.Value.CalculateCombatLevel();
+                    if (kv.Value.CombatLevel < CombatLevel + Confidence || AlwaysAggro) {
+                        GoRogue.Coord otherPos = new(kv.Value.Position.X, kv.Value.Position.Y);
+                        int newDist = GameLoop.World.maps[MapPos].MapPath.ShortestPath(new GoRogue.Coord(Position.X, Position.Y), otherPos).Length;
+                        if (newDist < distanceToNearest) {
+                            defender = kv.Value;
+                            targetPoint = new Point(kv.Value.Position.X, kv.Value.Position.Y);
+                            distanceToNearest = newDist;
+                        }
+                    }
                 }
             }
 
@@ -107,7 +135,7 @@ namespace LofiHollow.Entities {
                             pathPos++;
                     }
 
-                    Point currEnd = new Point(CurrentPath.End.X, CurrentPath.End.Y);
+                    Point currEnd = new(CurrentPath.End.X, CurrentPath.End.Y);
 
                     if (targetPoint != currEnd) {
                         CurrentPath = GameLoop.World.maps[MapPos].MapPath.ShortestPath(new GoRogue.Coord(Position.X, Position.Y), new GoRogue.Coord(targetPoint.X, targetPoint.Y));
@@ -128,7 +156,7 @@ namespace LofiHollow.Entities {
                     }
                     TimeLastActed = SadConsole.GameHost.Instance.GameRunningTotalTime.TotalMilliseconds;
 
-                    GameLoop.CommandManager.Attack(this, defender, true);
+                    CommandManager.Attack(this, defender, true);
                 }
             }
 

@@ -1,0 +1,25 @@
+{ 
+  "Name": "Poplar Floor",
+  "Materials": "2x Poplar Planks, 8x Bronze Nails",
+  "Glyph": 46,
+  "ForegroundR": 101,
+  "ForegroundG": 66,
+  "ForegroundB": 33,
+  "Dec": null,
+  "RequiredLevel": 1,
+  "ExpGranted": 10,
+  "BlocksMove": false,
+  "BlocksLOS": false,
+  "MaterialsNeeded": [
+    {
+      "ItemID": 39,
+      "SubID": 0,
+      "ItemQuantity": 2
+    },
+	{
+      "ItemID": 40,
+      "SubID": 0,
+      "ItemQuantity": 8
+    }
+  ]
+}

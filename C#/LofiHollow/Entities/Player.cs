@@ -3,57 +3,55 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using SadConsole;
 using SadRogue.Primitives;
+using LofiHollow.Managers;
 
 namespace LofiHollow.Entities {
     [JsonObject(MemberSerialization.OptIn)]
     public class Player : Actor {
         [JsonProperty]
-        public TimeKeeper Clock = new TimeKeeper();
+        public TimeManager Clock = new();
 
         [JsonProperty]
-        public Dictionary<string, int> MetNPCs = new Dictionary<string, int>();
+        public Dictionary<string, int> MetNPCs = new();
 
         [JsonProperty]
         public bool OwnsFarm = false;
 
-        public List<Point3D> VisitedMaps = new List<Point3D>();
+        public List<Point3D> VisitedMaps = new();
 
         public double TimeLastTicked = 0;
+        public int MapsClearedToday = 0;
+        public Stack<ColoredString> killList = new(52);
+
+        public string MineLocation = "None";
+        public int MineDepth = 0;
+        public bool MineVisible = false;
+        public Point MineEnteredAt = new Point(0, 0);
 
         public Player(Color foreground) : base(foreground, '@', true) {
             ActorGlyph = '@';
         }
-
-
-        public void ApplyLevel(int slot) {
-            if (ClassLevels.Count > slot && slot >= 0) {
-                ClassLevels[slot].ClassLevels++;
-
-                for (int i = 0; i < ClassLevels[slot].ClassFeatures[ClassLevels[slot].ClassLevels].Count; i++) {
-                    ClassFeature temp = ClassLevels[slot].ClassFeatures[ClassLevels[slot].ClassLevels][i];
-                    ClassFeatures.Add(temp);
-                }
-
-                int rolledHP = GoRogue.DiceNotation.Dice.Roll(ClassLevels[slot].HitDie);
-
-                rolledHP += GetMod("CON");
-
-                CurrentHP += rolledHP;
-                MaxHP += rolledHP;
-
-                UpdateSaves();
-            }
-        }
+         
 
         public void PlayerDied() {
             if (MapPos == GameLoop.World.Player.MapPos && this != GameLoop.World.Player) {
                 GameLoop.UIManager.AddMsg(new ColoredString(Name + " died!", Color.Red, Color.Black));
             }
 
-            if (Level > 1)
-                Experience = ExpToLevel(Level - 1);
-            else
-                Experience = 0;
+            for (int i = 0; i < Inventory.Length; i++) {
+                if (Inventory[i].ItemID != 0) {
+                    CommandManager.DropItem(this, i);
+                }
+            }
+
+            for (int i = 0; i < Equipment.Length; i++) {
+                if (Equipment[i].ItemID != 0) {
+                    CommandManager.UnequipItem(this, i); 
+                    CommandManager.DropItem(this, 0);
+                }
+            }
+
+
             MoveTo(new Point(35, 6), new Point3D(0, 0, 0));
             CurrentHP = MaxHP;
 
@@ -68,6 +66,14 @@ namespace LofiHollow.Entities {
             }
         }
 
+
+        public int GetToolTier(int Category) {
+            if (Inventory[GameLoop.UIManager.Sidebar.hotbarSelect].ItemCategory == Category) {
+                return Inventory[GameLoop.UIManager.Sidebar.hotbarSelect].ItemTier;
+            }
+
+            return 0;
+        }
         
     }
 }

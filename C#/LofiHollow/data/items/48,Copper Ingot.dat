@@ -1,0 +1,43 @@
+{
+  "ItemID": 48,
+  "ItemQuantity": 1,
+  "IsStackable": true,
+  "ShortDesc": "A copper ingot",
+  "Description": "",
+  "AverageValue": 10,
+  "Weight": 0.5,
+  "ItemCategory": -1,
+  "EquipSlot": -1,
+  "ForegroundR": 183,
+  "ForegroundG": 65,
+  "ForegroundB": 14,
+  "ItemGlyph":326,
+  "Effect": null,
+  "Appearance": {
+    "Decorators": [],
+    "Foreground": {
+      "_packedValue": 4280369765
+    },
+    "Background": {
+      "_packedValue": 0
+    },
+    "Glyph": 45,
+    "Mirror": 0,
+    "IsVisible": true
+  },
+  "Children": [],
+  "ChildrenLocked": true,
+  "Components": [],
+  "Position": {
+    "X": 0,
+    "Y": 0
+  },
+  "Name": "Copper Ingot",
+  "ZIndex": 0,
+  "IsVisible": true,
+  "IsEnabled": true,
+  "FocusedMode": 0,
+  "IsExclusiveMouse": false,
+  "UseKeyboard": true,
+  "UseMouse": true
+}

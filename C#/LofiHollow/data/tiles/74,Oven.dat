@@ -4,6 +4,7 @@
   "IsBlockingLOS": false,
   "SpawnsMonsters": false,
   "Name": "Oven",
+  "MiscString": "Skill,Cooking",
   "ForegroundR": 127,
   "ForegroundG": 127,
   "ForegroundB": 127,

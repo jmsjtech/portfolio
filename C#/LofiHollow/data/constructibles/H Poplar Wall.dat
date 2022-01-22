@@ -1,0 +1,25 @@
+{ 
+  "Name": "Poplar Wall",
+  "Materials": "10x Poplar Planks, 40x Bronze Nails",
+  "Glyph": 205,
+  "ForegroundR": 101,
+  "ForegroundG": 66,
+  "ForegroundB": 33,
+  "Dec": null,
+  "RequiredLevel": 1,
+  "ExpGranted": 20,
+  "BlocksMove": true,
+  "BlocksLOS": true,
+  "MaterialsNeeded": [
+    {
+      "ItemID": 39,
+      "SubID": 0,
+      "ItemQuantity": 10
+    },
+	{
+      "ItemID": 40,
+      "SubID": 0,
+      "ItemQuantity": 40
+    }
+  ]
+}

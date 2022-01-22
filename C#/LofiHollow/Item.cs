@@ -3,7 +3,8 @@ using SadRogue.Primitives;
 using SadConsole;
 using Newtonsoft.Json;
 using System.Runtime.Serialization;
-using LofiHollow.TileData;
+using LofiHollow.EntityData;
+using System.Collections.Generic;
 
 namespace LofiHollow.Entities {
     [JsonObject(MemberSerialization.OptIn)]
@@ -30,6 +31,8 @@ namespace LofiHollow.Entities {
         public int MaxDurability = -1;
         [JsonProperty]
         public int ItemCategory = -1;
+        [JsonProperty]
+        public int ItemTier = -1;
         // -1: Debug / Empty
         // 0: Weapon
         // 1: Watering Can
@@ -43,40 +46,38 @@ namespace LofiHollow.Entities {
         // 9: Seed
         // 10: Vegetable
         // 11: Consumable
+        // 12: Deed
         [JsonProperty]
         public int EquipSlot = -1;
         // -1: Not equippable
         // 0: Main hand
         // 1: Off hand
-        // 2: Head / Helmet
-        // 3: Headband
-        // 4: Eyes
-        // 5: Shoulders
-        // 6: Neck
-        // 7: Chest
-        // 8: Body
-        // 9: Armor
-        // 10: Belt
-        // 11: Wrists
-        // 12: Hands
-        // 13: Ring 1
-        // 14: Ring 2
-        // 15: Feet
+        // 2: Helmet
+        // 3: Torso
+        // 4: Legs
+        // 5: Hands
+        // 6: Feet
+        // 7: Amulet
+        // 8: Ring
+        // 9: Cape
+
 
         [JsonProperty]
         public Plant Plant;
 
         [JsonProperty]
-        public Weapon Weapon;
-
-        [JsonProperty]
-        public Armor Armor;
+        public Equipment Stats;
 
         [JsonProperty]
         public Heal Heal;
 
         [JsonProperty]
         public Decorator Dec;
+
+        [JsonProperty]
+        public List<ToolData> Tool = null;
+        [JsonProperty]
+        public List<CraftComponent> Craft = null;
 
         [JsonProperty]
         public int ForegroundR = 0;
@@ -94,6 +95,11 @@ namespace LofiHollow.Entities {
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context) {
+            Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
+            Appearance.Glyph = ItemGlyph;
+        }
+
+        public void UpdateAppearance() {
             Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
             Appearance.Glyph = ItemGlyph;
         }
@@ -122,14 +128,17 @@ namespace LofiHollow.Entities {
                 ForegroundG = temp.ForegroundG; 
                 ForegroundB = temp.ForegroundB;
                 ItemGlyph = temp.ItemGlyph;
+                ItemTier = temp.ItemTier;
 
                 Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
                 Appearance.Glyph = ItemGlyph;
 
-                Weapon = temp.Weapon;
+                Stats = temp.Stats;
                 Heal = temp.Heal;
                 Dec = temp.Dec;
                 Plant = temp.Plant;
+                Tool = temp.Tool;
+                Craft = temp.Craft;
 
                 if (ID == 0)
                     ItemQuantity = 0;
@@ -157,13 +166,16 @@ namespace LofiHollow.Entities {
             ForegroundG = temp.ForegroundG;
             ForegroundB = temp.ForegroundB;
             ItemGlyph = temp.ItemGlyph;
+            ItemTier = temp.ItemTier;
 
             Dec = temp.Dec;
+            Tool = temp.Tool;
+            Craft = temp.Craft;
 
             Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
             Appearance.Glyph = ItemGlyph;
 
-            Weapon = temp.Weapon;
+            Stats = temp.Stats;
             Heal = temp.Heal;
             Plant = temp.Plant;
 
@@ -175,7 +187,7 @@ namespace LofiHollow.Entities {
 
 
         public ColoredString AsColoredGlyph() {
-            ColoredString output = new ColoredString(Appearance.GlyphCharacter.ToString(), Appearance.Foreground, Color.Black);
+            ColoredString output = new(Appearance.GlyphCharacter.ToString(), Appearance.Foreground, Color.Transparent);
             return output;
         }
     }

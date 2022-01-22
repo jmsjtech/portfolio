@@ -1,7 +1,8 @@
 ﻿using GoRogue;
 using LofiHollow.Entities;
 using LofiHollow.Entities.NPC;
-using LofiHollow.TileData;
+using LofiHollow.EntityData;
+using LofiHollow.Managers;
 using SadConsole;
 using SadConsole.Input;
 using SadConsole.UI;
@@ -23,14 +24,13 @@ namespace LofiHollow.UI {
         public bool LimitedVision = true;
 
         public UI_Map(int width, int height) {
-            EntityRenderer = new SadConsole.Entities.Renderer();
-            MapConsole = new SadConsole.Console(GameLoop.MapWidth, GameLoop.MapHeight);
-
-            MapWindow = new Window(width, height);
-            MapWindow.CanDrag = false;
-
             int mapConsoleWidth = width - 2;
             int mapConsoleHeight = height - 2;
+            EntityRenderer = new SadConsole.Entities.Renderer();
+            MapConsole = new SadConsole.Console(mapConsoleWidth, mapConsoleHeight);
+
+            MapWindow = new(width, height);
+            MapWindow.CanDrag = false;
 
             MapConsole.Position = new Point(1, 1);
             MapWindow.Title = "".Align(HorizontalAlignment.Center, mapConsoleWidth, (char)196);
@@ -47,21 +47,8 @@ namespace LofiHollow.UI {
             MessageLog = new MessageLogWindow(72, 18, "Message Log");
             GameLoop.UIManager.Children.Add(MessageLog);
             MessageLog.Show();
-            MessageLog.Position = new Point(0, 42);
-
+            MessageLog.Position = new Point(0, 42); 
             MessageLog.IsVisible = false;
-        }
-
-        public void SpawnItem(Item item, Point3D mapPos, Point pos) {
-            Item spawn = new Item(item);
-            spawn.MapPos = mapPos;
-            spawn.Position = pos;
-
-            GameLoop.CommandManager.SpawnItem(spawn);
-
-            if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
-                GameLoop.CommandManager.SendItem(spawn);
-            }
 
         }
 
@@ -74,7 +61,7 @@ namespace LofiHollow.UI {
                 map.Tiles[i].IsVisible = false;
 
                 int depth = 0;
-                TileBase tile = new TileBase(GameLoop.World.maps[GameLoop.World.Player.MapPos + new Point3D(0, 0, depth)].Tiles[i].TileID);
+                TileBase tile = new(GameLoop.World.maps[GameLoop.World.Player.MapPos + new Point3D(0, 0, depth)].Tiles[i].TileID);
 
                 if (map.Tiles[i].Name == "Space") {
                     while (tile.Name == "Space" && GameLoop.World.maps.ContainsKey(GameLoop.World.Player.MapPos + new Point3D(0, 0, depth - 1))) {
@@ -95,7 +82,7 @@ namespace LofiHollow.UI {
 
                 if (map.Tiles[i].Plant != null) {
                     if (!map.Tiles[i].Plant.WateredToday) {
-                        MapConsole.SetEffect(i, new CustomBlink(173, Color.Blue));
+                        MapConsole.SetEffect(i, new CustomBlink(168, Color.Blue));
                     }
                 } else {
                     MapConsole.SetEffect(i, null);
@@ -111,12 +98,10 @@ namespace LofiHollow.UI {
         }
 
         public void SyncMapEntities(Map map) {
-            if (GameLoop.World != null) {
-                MapConsole.Children.Clear();
-
-                var entities = EntityRenderer.Entities.ToList(); // Duplicate the list
-                foreach (var ent in entities)
-                    EntityRenderer.Remove(ent);
+            if (GameLoop.World != null) { 
+                MapConsole.ForceRendererRefresh = true;
+                MapConsole.Children.Clear(); 
+                EntityRenderer.RemoveAll();
 
                 if (GameLoop.World.Player.ScreenAppearance == null)
                     GameLoop.World.Player.UpdateAppearance();
@@ -124,13 +109,12 @@ namespace LofiHollow.UI {
 
                 foreach (Entity entity in map.Entities.Items) {
                     if (entity is Item) {
-                        EntityRenderer.Add(entity);
+                        EntityRenderer.Add(entity); 
                     } else {
-                        if (entity is Actor) {
-                            MapConsole.Children.Add(((Actor)entity).ScreenAppearance);
+                        if (entity is Actor act) {
+                            MapConsole.Children.Add(act.ScreenAppearance);
                         }
                     }
-                        
                 }
 
                 for (int i = 0; i < GameLoop.World.npcLibrary.Count; i++) {
@@ -214,7 +198,7 @@ namespace LofiHollow.UI {
                 if (ent.MapPos.Z < GameLoop.World.Player.MapPos.Z) {
                     int depth = GameLoop.World.Player.MapPos.Z - ent.MapPos.Z;
 
-                    Color shaded = new Color(ent.Appearance.Foreground.R, ent.Appearance.Foreground.G, ent.Appearance.Foreground.B, 255 - (depth * 51));
+                    Color shaded = new(ent.Appearance.Foreground.R, ent.Appearance.Foreground.G, ent.Appearance.Foreground.B, 255 - (depth * 51));
 
                     ent.Appearance.Foreground = shaded;
                 }
@@ -235,7 +219,7 @@ namespace LofiHollow.UI {
                         if (GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Plant.CurrentStage != GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Plant.Stages.Count - 1) {
                             if (GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[i].Plant.CurrentStage != -1) {
                                 if (MapConsole.GetEffect(i) == null) { 
-                                    MapConsole.SetEffect(i, new CustomBlink(173, Color.Blue));
+                                    MapConsole.SetEffect(i, new CustomBlink(168, Color.Blue));
                                 }
                             }
                         }
@@ -245,7 +229,7 @@ namespace LofiHollow.UI {
 
             if (GameLoop.UIManager.Sidebar.ChargeBar != 0) {
                 Point itemMouse = new MouseScreenObjectState(GameLoop.UIManager.Map.MapConsole, GameHost.Instance.Mouse).CellPosition;
-                Point PlayerPosPixels = new Point(GameLoop.World.Player.Position.X, GameLoop.World.Player.Position.Y);
+                Point PlayerPosPixels = new(GameLoop.World.Player.Position.X, GameLoop.World.Player.Position.Y);
 
                 Point offset = itemMouse - PlayerPosPixels;
                 offset *= new Point(-1, -1);
@@ -255,7 +239,7 @@ namespace LofiHollow.UI {
                 double x = 10 * Math.Round(Math.Cos(rad), 2);
                 double y = 10 * Math.Round(Math.Sin(rad), 2);
 
-                Point circle = new Point((int)x, (int)y);
+                Point circle = new((int)x, (int)y);
 
                 Point temp = GameLoop.World.Player.Position + circle;
                 int cellX = temp.X;
@@ -270,7 +254,7 @@ namespace LofiHollow.UI {
                 if (cellY > GameLoop.MapHeight)
                     cellY = GameLoop.MapHeight;
 
-                Point otherSide = new Point(cellX, cellY);
+                Point otherSide = new(cellX, cellY);
                 GameLoop.UIManager.Sidebar.LureSpot = circle * new Point(-1, -1);
 
                 MapConsole.SetDecorator(otherSide.X, otherSide.Y, 1, new CellDecorator(Color.White, '*', Mirror.None));
@@ -293,15 +277,17 @@ namespace LofiHollow.UI {
         }
 
         public void UpdateVision() {
-            if (LimitedVision) {
-                FOV.Calculate(GameLoop.World.Player.Position.X, GameLoop.World.Player.Position.Y, GameLoop.World.Player.Vision);
-                foreach (var position in FOV.NewlyUnseen) {
-                    GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(new Point(position.X, position.Y)).Shade();
-                }
+            if (GameLoop.World.Player.Position.X <= GameLoop.MapWidth && GameLoop.World.Player.Position.Y <= GameLoop.MapHeight) {
+                if (LimitedVision) {
+                    FOV.Calculate(GameLoop.World.Player.Position.X, GameLoop.World.Player.Position.Y, GameLoop.World.Player.Vision);
+                    foreach (var position in FOV.NewlyUnseen) {
+                        GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(new Point(position.X, position.Y)).Shade();
+                    }
 
-                foreach (var position in FOV.NewlySeen) {
-                    GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(new Point(position.X, position.Y)).IsVisible = true;
-                    GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(new Point(position.X, position.Y)).Unshade();
+                    foreach (var position in FOV.NewlySeen) {
+                        GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(new Point(position.X, position.Y)).IsVisible = true;
+                        GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(new Point(position.X, position.Y)).Unshade();
+                    }
                 }
             }
 

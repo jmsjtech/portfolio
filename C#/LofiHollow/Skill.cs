@@ -17,21 +17,36 @@ namespace LofiHollow {
         [JsonProperty]
         public int Level = 1;
         [JsonProperty]
-        public int Experience = 0; 
+        public int Experience = 0;
+        [JsonProperty]
+        public int TotalExp = 0;
 
         [JsonProperty]
-        public List<string> Uses = new List<string>();
+        public List<string> Uses = new();
 
         public int ExpToLevel() {
-            return (int) (75 * Math.Pow(2, Level / 7));
+            double exp = 0.25 * Math.Floor(Level - 1.0 + 300.0 * (Math.Pow(2.0, (Level - 1.0) / 7.0)));
+            return (int) Math.Floor(exp);
         }
 
         public void GrantExp(int gained) {
             Experience += gained;
             if (Experience >= ExpToLevel()) {
+                TotalExp += ExpToLevel();
                 Experience -= ExpToLevel();
                 Level++;
                 GameLoop.UIManager.AddMsg(new ColoredString("You leveled " + Name + " to " + Level + "!", Color.Cyan, Color.Black));
+
+                if (Name == "Constitution") {
+                    GameLoop.World.Player.MaxHP = Level;
+                    GameLoop.World.Player.CurrentHP += 1;
+                }
+
+                if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
+                    string msg = "updateSkill;" + GameLoop.NetworkManager.ownID + ";" + Name + ";" + Level; 
+                    
+                    GameLoop.NetworkManager.BroadcastMsg(msg);
+                }
             }
         }
 

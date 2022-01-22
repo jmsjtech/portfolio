@@ -12,6 +12,22 @@
   "ForegroundG": 96,
   "ForegroundB": 63,
   "ItemGlyph":45,
+  "Craft": [
+	{
+      "Property": "Fuel",
+      "Tier": 1,
+      "Quantity": 1,
+      "Stacks": false,
+	  "CountsAsMultiple": true
+    },
+	{
+      "Property": "Wood",
+      "Tier": 70,
+      "Quantity": 1,
+      "Stacks": false,
+	  "CountsAsMultiple": false
+    }
+  ],
   "Effect": null,
   "Appearance": {
     "Decorators": [],

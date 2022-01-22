@@ -5,6 +5,7 @@ using SadConsole.Input;
 using System.IO;
 using System;
 using System.Collections.Generic;
+using LofiHollow.Managers;
 using Key = SadConsole.Input.Keys;
 
 namespace LofiHollow.UI {
@@ -16,14 +17,7 @@ namespace LofiHollow.UI {
         public SadRex.Image MenuImage;
         
         public SadConsole.Console MenuConsole;
-
-
-        public int charCreationStage = 0;
-        public int ccPointBuyLeft = 20;
-        public int ccClassTop = 0;
-        public int ccClassSelect = -1;
-        public int ccRaceSelect = 0;
-        public int ccRaceTop = 0;
+         
         public string LobbyCode = "";
         public string[] Names;
         public string joinError = "";
@@ -31,9 +25,9 @@ namespace LofiHollow.UI {
         
 
         public UI_MainMenu() {
-            MainMenuWindow = new Window(GameLoop.GameWidth, GameLoop.GameHeight);
+            MainMenuWindow = new(GameLoop.GameWidth, GameLoop.GameHeight);
             MainMenuWindow.CanDrag = false;
-            MainMenuWindow.Position = new Point(0, 0);
+            MainMenuWindow.Position = new(0, 0);
 
             int menuConWidth = GameLoop.GameWidth;
 
@@ -45,8 +39,8 @@ namespace LofiHollow.UI {
 
             for (int i = 0; i < MenuImage.Layers[0].Cells.Count; i++) {
                 var cell = MenuImage.Layers[0].Cells[i];
-                Color convertedFG = new Color(cell.Foreground.R, cell.Foreground.G, cell.Foreground.B);
-                Color convertedBG = new Color(cell.Background.R, cell.Background.G, cell.Background.B);
+                Color convertedFG = new(cell.Foreground.R, cell.Foreground.G, cell.Foreground.B);
+                Color convertedBG = new(cell.Background.R, cell.Background.G, cell.Background.B);
 
                 cells[i] = new ColoredGlyph(Color.Transparent, convertedFG, MenuImage.Layers[0].Cells[i].Character);
             }
@@ -62,8 +56,8 @@ namespace LofiHollow.UI {
             MainMenuWindow.Show();
             MainMenuWindow.IsVisible = true;
 
-            MenuConsole = new SadConsole.Console(20, 20);
-            MenuConsole.Position = new Point(40, 20);
+            MenuConsole = new(20, 20);
+            MenuConsole.Position = new(40, 20);
             MainMenuWindow.Children.Add(MenuConsole);
 
             NameConsole = new ControlsConsole(13, 1);
@@ -84,8 +78,7 @@ namespace LofiHollow.UI {
         public void RemakeMenu() {
             for (int i = 0; i < MenuImage.Layers[0].Cells.Count; i++) {
                 var cell = MenuImage.Layers[0].Cells[i];
-                Color convertedFG = new Color(cell.Foreground.R, cell.Foreground.G, cell.Foreground.B);
-                Color convertedBG = new Color(cell.Background.R, cell.Background.G, cell.Background.B);
+                Color convertedFG = new(cell.Foreground.R, cell.Foreground.G, cell.Foreground.B);
 
                 MainMenuConsole.SetCellAppearance(i % GameLoop.GameWidth, i / GameLoop.GameWidth, new ColoredGlyph(Color.Transparent, convertedFG, MenuImage.Layers[0].Cells[i].Character));
             }
@@ -177,150 +170,54 @@ namespace LofiHollow.UI {
                 MenuConsole.DrawLine(new Point(CreateX + 13, CreateY), new Point(CreateX + 13, CreateY + 47), (char)179, Color.White, Color.Black);
                 // Attribute window
 
-                string STR = GameLoop.World.Player.STR.ToString();
-                if (GameLoop.World.Player.STR < 10)
-                    STR = "0" + STR;
+                string forR = GameLoop.World.Player.ForegroundR.ToString();
+                string forG = GameLoop.World.Player.ForegroundG.ToString();
+                string forB = GameLoop.World.Player.ForegroundB.ToString();
 
-                string DEX = GameLoop.World.Player.DEX.ToString();
-                if (GameLoop.World.Player.DEX < 10)
-                    DEX = "0" + DEX;
+                MenuConsole.Print(CreateX + 1, CreateY + 1, new ColoredString("R: ", Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 6, CreateY + 1, new ColoredString("-", mousePos == new Point(CreateX + 6, CreateY + 1) ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 8, CreateY + 1, new ColoredString(forR, Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 12, CreateY + 1, new ColoredString("+", mousePos == new Point(CreateX + 11, CreateY + 1) ? Color.Yellow : Color.White, Color.Black));
 
-                string CON = GameLoop.World.Player.CON.ToString();
-                if (GameLoop.World.Player.CON < 10)
-                    CON = "0" + CON;
+                MenuConsole.Print(CreateX + 1, CreateY + 2, new ColoredString("G: ", Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 6, CreateY + 2, new ColoredString("-", mousePos == new Point(CreateX + 6, CreateY + 2) ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 8, CreateY + 2, new ColoredString(forG, Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 12, CreateY + 2, new ColoredString("+", mousePos == new Point(CreateX + 11, CreateY + 2) ? Color.Yellow : Color.White, Color.Black));
 
-                string INT = GameLoop.World.Player.INT.ToString();
-                if (GameLoop.World.Player.INT < 10)
-                    INT = "0" + INT;
+                MenuConsole.Print(CreateX + 1, CreateY + 3, new ColoredString("B: ", Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 6, CreateY + 3, new ColoredString("-", mousePos == new Point(CreateX + 6, CreateY + 3) ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 8, CreateY + 3, new ColoredString(forB, Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 12, CreateY + 3, new ColoredString("+", mousePos == new Point(CreateX + 11, CreateY + 3) ? Color.Yellow : Color.White, Color.Black));
 
-                string WIS = GameLoop.World.Player.WIS.ToString();
-                if (GameLoop.World.Player.WIS < 10)
-                    WIS = "0" + WIS;
+                GameLoop.World.Player.UpdateAppearance();
+                MenuConsole.Print(CreateX + 1, CreateY + 5, new ColoredString("Current: ", Color.White, Color.Black) + GameLoop.World.Player.GetAppearance());
+                
 
-                string CHA = GameLoop.World.Player.CHA.ToString();
-                if (GameLoop.World.Player.CHA < 10)
-                    CHA = "0" + CHA;
-
-                MenuConsole.Print(CreateX + 1, CreateY + 1, new ColoredString("STR: ", Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 6, CreateY + 1, new ColoredString("- ", mousePos == new Point(CreateX + 6, CreateY + 1) ? Color.Yellow : Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 8, CreateY + 1, new ColoredString(STR, Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 10, CreateY + 1, new ColoredString(" +", mousePos == new Point(CreateX + 11, CreateY + 1) ? Color.Yellow : Color.White, Color.Black));
-
-                MenuConsole.Print(CreateX + 1, CreateY + 2, new ColoredString("DEX: ", Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 6, CreateY + 2, new ColoredString("- ", mousePos == new Point(CreateX + 6, CreateY + 2) ? Color.Yellow : Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 8, CreateY + 2, new ColoredString(DEX, Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 10, CreateY + 2, new ColoredString(" +", mousePos == new Point(CreateX + 11, CreateY + 2) ? Color.Yellow : Color.White, Color.Black));
-
-                MenuConsole.Print(CreateX + 1, CreateY + 3, new ColoredString("CON: ", Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 6, CreateY + 3, new ColoredString("- ", mousePos == new Point(CreateX + 6, CreateY + 3) ? Color.Yellow : Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 8, CreateY + 3, new ColoredString(CON, Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 10, CreateY + 3, new ColoredString(" +", mousePos == new Point(CreateX + 11, CreateY + 3) ? Color.Yellow : Color.White, Color.Black));
-
-                MenuConsole.Print(CreateX + 1, CreateY + 4, new ColoredString("INT: ", Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 6, CreateY + 4, new ColoredString("- ", mousePos == new Point(CreateX + 6, CreateY + 4) ? Color.Yellow : Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 8, CreateY + 4, new ColoredString(INT, Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 10, CreateY + 4, new ColoredString(" +", mousePos == new Point(CreateX + 11, CreateY + 4) ? Color.Yellow : Color.White, Color.Black));
-
-                MenuConsole.Print(CreateX + 1, CreateY + 5, new ColoredString("WIS: ", Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 6, CreateY + 5, new ColoredString("- ", mousePos == new Point(CreateX + 6, CreateY + 5) ? Color.Yellow : Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 8, CreateY + 5, new ColoredString(WIS, Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 10, CreateY + 5, new ColoredString(" +", mousePos == new Point(CreateX + 11, CreateY + 5) ? Color.Yellow : Color.White, Color.Black));
-
-                MenuConsole.Print(CreateX + 1, CreateY + 6, new ColoredString("CHA: ", Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 6, CreateY + 6, new ColoredString("- ", mousePos == new Point(CreateX + 6, CreateY + 6) ? Color.Yellow : Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 8, CreateY + 6, new ColoredString(CHA, Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 10, CreateY + 6, new ColoredString(" +", mousePos == new Point(CreateX + 11, CreateY + 6) ? Color.Yellow : Color.White, Color.Black));
-
-
-                ccPointBuyLeft = 20 - (PointBuyCost(GameLoop.World.Player.STR) + PointBuyCost(GameLoop.World.Player.DEX) + PointBuyCost(GameLoop.World.Player.CON) +
-                    PointBuyCost(GameLoop.World.Player.INT) + PointBuyCost(GameLoop.World.Player.WIS) + PointBuyCost(GameLoop.World.Player.CHA));
-
-                MenuConsole.Print(CreateX + 1, CreateY + 8, new ColoredString("Points: " + ccPointBuyLeft + " ", ccPointBuyLeft > 0 ? Color.Lime : ccPointBuyLeft == 0 ? Color.White : Color.Red, Color.Black));
-
-                MenuConsole.DrawLine(new Point(CreateX, CreateY + 10), new Point(CreateX + 12, CreateY + 10), (char)196, Color.White, Color.Black);
-
-
-                // Class Picker
-                MenuConsole.DrawBox(new Rectangle(CreateX + 13, CreateY - 1, 36, 15), ShapeParameters.CreateStyledBoxFilled(ICellSurface.ConnectedLineThin, new ColoredGlyph(Color.White, Color.Black), new ColoredGlyph(Color.Black, Color.Black)));
-
-                MenuConsole.DrawLine(new Point(CreateX + 25, CreateY), new Point(CreateX + 25, CreateY + 12), (char)124, Color.White, Color.Black);
-                MenuConsole.DrawLine(new Point(CreateX + 31, CreateY), new Point(CreateX + 31, CreateY + 12), (char)124, Color.White, Color.Black);
-                MenuConsole.DrawLine(new Point(CreateX + 36, CreateY), new Point(CreateX + 36, CreateY + 12), (char)124, Color.White, Color.Black);
-                MenuConsole.DrawLine(new Point(CreateX + 38, CreateY), new Point(CreateX + 38, CreateY + 12), (char)124, Color.White, Color.Black);
-                MenuConsole.DrawLine(new Point(CreateX + 40, CreateY), new Point(CreateX + 40, CreateY + 12), (char)124, Color.White, Color.Black);
-                MenuConsole.DrawLine(new Point(CreateX + 42, CreateY), new Point(CreateX + 42, CreateY + 12), (char)124, Color.White, Color.Black);
-                MenuConsole.DrawLine(new Point(CreateX + 14, CreateY + 1), new Point(CreateX + 47, CreateY + 1), (char)196, Color.White, Color.Black);
-
-                MenuConsole.Print(CreateX + 14, CreateY, new ColoredString("Class Name".Align(HorizontalAlignment.Center, 11), Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 26, CreateY, new ColoredString("BAB".Align(HorizontalAlignment.Center, 5), Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 32, CreateY, new ColoredString("HD".Align(HorizontalAlignment.Center, 4), Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 37, CreateY, new ColoredString("F", Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 39, CreateY, new ColoredString("R", Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 41, CreateY, new ColoredString("W", Color.White, Color.Black));
-
-                string classString = "No Class";
-
-                if (ccClassSelect != -1) {
-                    if (GameLoop.World.classLibrary.ContainsKey(ccClassSelect)) {
-                        ClassDef temp = GameLoop.World.classLibrary[ccClassSelect];
-                        classString = temp.Name;
-                    }
-                }
-
-
-                for (int i = 0; i < 10; i++) {
-                    if (GameLoop.World.classLibrary.ContainsKey(i + ccClassTop)) {
-                        ClassDef temp = GameLoop.World.classLibrary[i + ccClassTop];
-                        MenuConsole.Print(CreateX + 14, CreateY + i + 2, new ColoredString(temp.Name.Align(HorizontalAlignment.Center, 11), temp.Name == classString ? Color.Lime : (mousePos.Y == CreateY + i + 2 && mousePos.X > CreateX + 13) ? Color.Yellow : Color.White, Color.Black));
-                        MenuConsole.Print(CreateX + 26, CreateY + i + 2, new ColoredString(temp.BABperLevel.ToString().Align(HorizontalAlignment.Center, 5), temp.Name == classString ? Color.Lime : (mousePos.Y == CreateY + i + 2 && mousePos.X > CreateX + 13) ? Color.Yellow : Color.White, Color.Black));
-                        MenuConsole.Print(CreateX + 32, CreateY + i + 2, new ColoredString(temp.HitDie.Align(HorizontalAlignment.Center, 4), temp.Name == classString ? Color.Lime : (mousePos.Y == CreateY + i + 2 && mousePos.X > CreateX + 13) ? Color.Yellow : Color.White, Color.Black));
-                        MenuConsole.Print(CreateX + 37, CreateY + i + 2, new ColoredString(temp.FortSaveProg.Substring(0, 1), temp.Name == classString ? Color.Lime : (mousePos.Y == CreateY + i + 2 && mousePos.X > CreateX + 13) ? Color.Yellow : Color.White, Color.Black));
-                        MenuConsole.Print(CreateX + 39, CreateY + i + 2, new ColoredString(temp.RefSaveProg.Substring(0, 1), temp.Name == classString ? Color.Lime : (mousePos.Y == CreateY + i + 2 && mousePos.X > CreateX + 13) ? Color.Yellow : Color.White, Color.Black));
-                        MenuConsole.Print(CreateX + 41, CreateY + i + 2, new ColoredString(temp.WillSaveProg.Substring(0, 1), temp.Name == classString ? Color.Lime : (mousePos.Y == CreateY + i + 2 && mousePos.X > CreateX + 13) ? Color.Yellow : Color.White, Color.Black));
-                    }
-                }
-
+                
 
                 MenuConsole.Print(CreateX + 1, CreateY + 11, new ColoredString("Name:", Color.White, Color.Black));
 
-                MenuConsole.Print(CreateX + 1, CreateY + 14, new ColoredString(classString, Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 1, CreateY + 14, new ColoredString(classString, Color.White, Color.Black));
 
 
-                MenuConsole.Print(CreateX + 14, CreateY + 28, new ColoredString("EXP Track:", Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 25, CreateY + 28, new ColoredString("Slow", GameLoop.World.Player.ExpTrack == "Slow" ? Color.Lime : (mousePos.X <= CreateX + 28 && mousePos.X >= CreateX + 25 && mousePos.Y == CreateY + 28) ? Color.Yellow : Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 30, CreateY + 28, new ColoredString("Medium", GameLoop.World.Player.ExpTrack == "Medium" ? Color.Lime : (mousePos.X <= CreateX + 35 && mousePos.X >= CreateX + 30 && mousePos.Y == CreateY + 28) ? Color.Yellow : Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 37, CreateY + 28, new ColoredString("Fast", GameLoop.World.Player.ExpTrack == "Fast" ? Color.Lime : (mousePos.X <= CreateX + 40 && mousePos.X >= CreateX + 37 && mousePos.Y == CreateY + 28) ? Color.Yellow : Color.White, Color.Black));
-
-                // Race Box
-                MenuConsole.DrawBox(new Rectangle(CreateX + 13, CreateY + 13, 36, 15), ShapeParameters.CreateStyledBoxFilled(ICellSurface.ConnectedLineThin, new ColoredGlyph(Color.White, Color.Black), new ColoredGlyph(Color.Black, Color.Black)));
-                MenuConsole.Print(CreateX + 14, CreateY + 14, new ColoredString("Name".Align(HorizontalAlignment.Center, 10), Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 24, CreateY + 14, new ColoredString("Description".Align(HorizontalAlignment.Center, 24), Color.White, Color.Black));
-                MenuConsole.DrawLine(new Point(CreateX + 14, CreateY + 15), new Point(CreateX + 47, CreateY + 15), (char)196, Color.White, Color.Black);
-
-                for (int i = 0; i < 10; i++) {
-                    if (GameLoop.World.raceLibrary.ContainsKey(i + ccRaceTop)) {
-                        Race temp = GameLoop.World.raceLibrary[i + ccRaceTop];
-                        MenuConsole.Print(CreateX + 14, CreateY + i + 16, new ColoredString(temp.Name.Align(HorizontalAlignment.Center, 9), GameLoop.World.Player.Race.Name == temp.Name ? Color.Lime : (mousePos.Y == CreateY + i + 16 && mousePos.X > CreateX + 13) ? Color.Yellow : Color.White, Color.Black));
-                        MenuConsole.Print(CreateX + 24, CreateY + i + 16, new ColoredString(temp.Description.Align(HorizontalAlignment.Center, 24), GameLoop.World.Player.Race.Name == temp.Name ? Color.Lime : (mousePos.Y == CreateY + i + 16 && mousePos.X > CreateX + 13) ? Color.Yellow : Color.White, Color.Black));
-                    }
-                }
 
                 MenuConsole.DrawLine(new Point(CreateX + 23, CreateY + 14), new Point(CreateX + 23, CreateY + 26), (char)124, Color.White, Color.Black);
 
 
                 MenuConsole.Print(2, MenuConsole.Height - 2, new ColoredString("DONE", (mousePos.Y == MenuConsole.Height - 2 && mousePos.X <= 6 && mousePos.X >= 2) ? Color.Yellow : Color.White, Color.Black));
             } else if (GameLoop.UIManager.selectedMenu == "LoadFile") {
-                int fileSize = Names.Length + 2;
-                if (fileSize < 20)
-                    fileSize = 20;
+                int fileSize = 5;
+                if (Names != null && Names.Length > 0) {
+                    fileSize = Names.Length + 2;
+                    if (fileSize < 20)
+                        fileSize = 20;
 
-                MenuConsole.DrawBox(new Rectangle(0, 0, 20, fileSize), ShapeParameters.CreateStyledBoxFilled(ICellSurface.ConnectedLineThin, new ColoredGlyph(Color.White, Color.Black), new ColoredGlyph(Color.Black, Color.Black)));
-                MenuConsole.Print(1, 1, new ColoredString("Select a Save File", Color.White, Color.Black));
-                MenuConsole.DrawLine(new Point(1, 2), new Point(18, 2), (char)196, Color.White, Color.Black);
+                    MenuConsole.DrawBox(new Rectangle(0, 0, 20, fileSize), ShapeParameters.CreateStyledBoxFilled(ICellSurface.ConnectedLineThin, new ColoredGlyph(Color.White, Color.Black), new ColoredGlyph(Color.Black, Color.Black)));
+                    MenuConsole.Print(1, 1, new ColoredString("Select a Save File", Color.White, Color.Black));
+                    MenuConsole.DrawLine(new Point(1, 2), new Point(18, 2), (char)196, Color.White, Color.Black);
 
-                for (int i = 0; i < Names.Length; i++) {
-                    MenuConsole.Print(1, 3 + i, new ColoredString(Names[i].Align(HorizontalAlignment.Center, 18), mousePos.Y == 3 + i ? Color.Yellow : Color.White, Color.Black));
+                    for (int i = 0; i < Names.Length; i++) {
+                        MenuConsole.Print(1, 3 + i, new ColoredString(Names[i].Align(HorizontalAlignment.Center, 18), mousePos.Y == 3 + i ? Color.Yellow : Color.White, Color.Black));
+                    }
                 }
 
                 MenuConsole.Print(1, 1 + fileSize - 3, new ColoredString("[BACK]".Align(HorizontalAlignment.Center, 18), mousePos.Y == (1 + fileSize - 3) ? Color.Yellow : Color.White, Color.Black));
@@ -360,12 +257,40 @@ namespace LofiHollow.UI {
 
                 if (LobbyCode.Length > 0) {
                     if (GameHost.Instance.Keyboard.IsKeyReleased(Key.Back)) {
-                        LobbyCode = LobbyCode.Substring(0, LobbyCode.Length - 1);
+                        LobbyCode = LobbyCode[0..^1];
                     }
                 }
             }
 
+            if (GameHost.Instance.Mouse.LeftButtonDown) {
+                if (GameLoop.UIManager.selectedMenu == "CharCreation") {
+                    int CreateX = 1;
+                    int CreateY = 1;
+                    if (mousePos == new Point(CreateX + 6, CreateY + 1))
+                        if (GameLoop.World.Player.ForegroundR > 0)
+                            GameLoop.World.Player.ForegroundR--;
 
+                    if (mousePos == new Point(CreateX + 12, CreateY + 1))
+                        if (GameLoop.World.Player.ForegroundR < 255)
+                            GameLoop.World.Player.ForegroundR++;
+
+                    if (mousePos == new Point(CreateX + 6, CreateY + 2))
+                        if (GameLoop.World.Player.ForegroundG > 0)
+                            GameLoop.World.Player.ForegroundG--;
+
+                    if (mousePos == new Point(CreateX + 12, CreateY + 2))
+                        if (GameLoop.World.Player.ForegroundG < 255)
+                            GameLoop.World.Player.ForegroundG++;
+
+                    if (mousePos == new Point(CreateX + 6, CreateY + 3))
+                        if (GameLoop.World.Player.ForegroundB > 0)
+                            GameLoop.World.Player.ForegroundB--;
+
+                    if (mousePos == new Point(CreateX + 12, CreateY + 3))
+                        if (GameLoop.World.Player.ForegroundB < 255)
+                            GameLoop.World.Player.ForegroundB++;
+                }
+            }
 
             if (GameHost.Instance.Mouse.LeftClicked) {
                 if (GameLoop.UIManager.selectedMenu == "MainMenu") {
@@ -383,64 +308,13 @@ namespace LofiHollow.UI {
 
                             for (int i = 0; i < Names.Length; i++) {
                                 string[] split = Names[i].Split("/");
-                                Names[i] = split[split.Length - 1];
+                                Names[i] = split[^1];
                             }
                         }
                     }
                 }
                 else if (GameLoop.UIManager.selectedMenu == "CharCreation") {
-                    int CreateX = 1;
-                    int CreateY = 1;
-                    if (mousePos == new Point(CreateX + 6, CreateY + 1))
-                        if (GameLoop.World.Player.STR > 7)
-                            GameLoop.World.Player.STR--;
-
-                    if (mousePos == new Point(CreateX + 11, CreateY + 1))
-                        if (GameLoop.World.Player.STR < 18)
-                            GameLoop.World.Player.STR++;
-
-                    if (mousePos == new Point(CreateX + 6, CreateY + 2))
-                        if (GameLoop.World.Player.DEX > 7)
-                            GameLoop.World.Player.DEX--;
-
-                    if (mousePos == new Point(CreateX + 11, CreateY + 2))
-                        if (GameLoop.World.Player.DEX < 18)
-                            GameLoop.World.Player.DEX++;
-
-                    if (mousePos == new Point(CreateX + 6, CreateY + 3))
-                        if (GameLoop.World.Player.CON > 7)
-                            GameLoop.World.Player.CON--;
-
-                    if (mousePos == new Point(CreateX + 11, CreateY + 3))
-                        if (GameLoop.World.Player.CON < 18)
-                            GameLoop.World.Player.CON++;
-
-                    if (mousePos == new Point(CreateX + 6, CreateY + 4))
-                        if (GameLoop.World.Player.INT > 7)
-                            GameLoop.World.Player.INT--;
-
-                    if (mousePos == new Point(CreateX + 11, CreateY + 4))
-                        if (GameLoop.World.Player.INT < 18)
-                            GameLoop.World.Player.INT++;
-
-                    if (mousePos == new Point(CreateX + 6, CreateY + 5))
-                        if (GameLoop.World.Player.WIS > 7)
-                            GameLoop.World.Player.WIS--;
-
-                    if (mousePos == new Point(CreateX + 11, CreateY + 5))
-                        if (GameLoop.World.Player.WIS < 18)
-                            GameLoop.World.Player.WIS++;
-
-                    if (mousePos == new Point(CreateX + 6, CreateY + 6))
-                        if (GameLoop.World.Player.CHA > 7)
-                            GameLoop.World.Player.CHA--;
-
-                    if (mousePos == new Point(CreateX + 11, CreateY + 6))
-                        if (GameLoop.World.Player.CHA < 18)
-                            GameLoop.World.Player.CHA++;
-
-
-                    if (mousePos.Y == MenuConsole.Height - 2 && mousePos.X <= 6 && mousePos.X >= 2 && ccPointBuyLeft >= 0 && ccClassSelect != -1) {
+                    if (mousePos.Y == MenuConsole.Height - 2 && mousePos.X <= 6 && mousePos.X >= 2 && NameBox.EditingText != "") {
                         GameLoop.UIManager.selectedMenu = "ConnectOrHost";
 
                         MenuConsole = new SadConsole.Console(20, 20);
@@ -448,77 +322,31 @@ namespace LofiHollow.UI {
                         MenuConsole.Position = new Point(40, 20);
                         NameConsole.IsVisible = false; 
                         RemakeMenu();
-
-                        ClassDef selectedClass = new ClassDef();
-                        selectedClass.Copy(GameLoop.World.classLibrary[ccClassSelect]);
-                        selectedClass.ClassLevels = 1;
-
-                        GameLoop.World.Player.ClassLevels.Add(selectedClass);
                         
+
                         if (GameLoop.World.Player.Name != NameBox.EditingText)
                             GameLoop.World.Player.Name = NameBox.EditingText;
 
-                        GameLoop.World.Player.STR += GameLoop.World.Player.Race.StrMod;
-                        GameLoop.World.Player.DEX += GameLoop.World.Player.Race.DexMod;
-                        GameLoop.World.Player.CON += GameLoop.World.Player.Race.ConMod;
-                        GameLoop.World.Player.INT += GameLoop.World.Player.Race.IntMod;
-                        GameLoop.World.Player.WIS += GameLoop.World.Player.Race.WisMod;
-                        GameLoop.World.Player.CHA += GameLoop.World.Player.Race.ChaMod;
-
-                        GameLoop.World.Player.SizeMod = GameLoop.World.Player.Race.SizeMod;
-                        GameLoop.World.Player.LandSpeed = GameLoop.World.Player.Race.LandSpeed;
-
-
-                        for (int i = 0; i < GameLoop.World.Player.Race.Languages.Count; i++) {
-                            GameLoop.World.Player.KnownLanguages.Add(GameLoop.World.Player.Race.Languages[i]);
-                        }
-
+                        GameLoop.World.Player.SizeMod = 0;
+                         
                         GameLoop.World.FreshStart();
                         GameLoop.UIManager.Map.UpdateVision();
-                    }
-
-                    if (mousePos.X >= 14 + CreateX && mousePos.X <= 47 + CreateX) {
-                        if (mousePos.Y < 13 + CreateY && mousePos.Y > CreateY) {
-                            ccClassSelect = (mousePos.Y - CreateY) - 2;
-
-                            if (ccClassSelect < 0)
-                                ccClassSelect = -1;
-                            if (ccClassSelect > GameLoop.World.classLibrary.Count - 1)
-                                ccClassSelect = GameLoop.World.classLibrary.Count - 1;
-                        }
-                    }
-
-                    if (mousePos.X >= CreateX + 25 && mousePos.X <= CreateX + 28 && mousePos.Y == CreateY + 28) { GameLoop.World.Player.ExpTrack = "Slow"; }
-                    if (mousePos.X >= CreateX + 30 && mousePos.X <= CreateX + 35 && mousePos.Y == CreateY + 28) { GameLoop.World.Player.ExpTrack = "Medium"; }
-                    if (mousePos.X >= CreateX + 37 && mousePos.X <= CreateX + 40 && mousePos.Y == CreateY + 28) { GameLoop.World.Player.ExpTrack = "Fast"; }
-
-                    if (mousePos.X >= 14 + CreateX && mousePos.X <= 47 + CreateX) {
-                        if (mousePos.Y >= 16 + CreateY && mousePos.Y < CreateY + 28) {
-                            ccRaceSelect = (mousePos.Y - CreateY) - 16;
-
-                            if (ccRaceSelect < 0)
-                                ccRaceSelect = 0;
-                            if (ccRaceSelect > GameLoop.World.raceLibrary.Count - 1) {
-                                ccRaceSelect = GameLoop.World.raceLibrary.Count - 1;
-                            }
-
-                            Race temp = GameLoop.World.raceLibrary[ccRaceSelect];
-                            GameLoop.World.Player.Race.Copy(temp);
-
-                        }
-                    }
+                    } 
                 } 
                 else if (GameLoop.UIManager.selectedMenu == "LoadFile") {
-                    int fileSize = Names.Length + 2;
-                    if (fileSize < 20)
-                        fileSize = 20;
+                    int fileSize = 5;
+                    if (Names != null && Names.Length > 0) {
+                        fileSize = Names.Length + 2;
+                        if (fileSize < 20)
+                            fileSize = 20;
+                    }
 
                     if (mousePos.Y == 1 + fileSize - 3) {
                         RemakeMenu();
                         GameLoop.UIManager.selectedMenu = "MainMenu";
                     } else {
                         int fileSlot = mousePos.Y - 3;
-                        if (Names.Length > fileSlot && fileSlot >= 0) {
+                        if (Names != null && Names.Length > fileSlot && fileSlot >= 0) {
                             GameLoop.World.LoadPlayer(Names[fileSlot]);
                             GameLoop.UIManager.selectedMenu = "ConnectOrHost";
                             GameLoop.UIManager.Map.UpdateVision(); 
@@ -530,6 +358,7 @@ namespace LofiHollow.UI {
                         MainMenuWindow.IsVisible = false;
                         GameLoop.UIManager.Map.MapWindow.IsVisible = true;
                         GameLoop.UIManager.Map.MessageLog.IsVisible = true;
+                        GameLoop.UIManager.Sidebar.BattleLog.IsVisible = true;
                         GameLoop.UIManager.Sidebar.SidebarWindow.IsVisible = true;
                         GameLoop.UIManager.selectedMenu = "None";
 
@@ -538,6 +367,7 @@ namespace LofiHollow.UI {
                         MainMenuWindow.IsVisible = false;
                         GameLoop.UIManager.Map.MapWindow.IsVisible = true;
                         GameLoop.UIManager.Map.MessageLog.IsVisible = true;
+                        GameLoop.UIManager.Sidebar.BattleLog.IsVisible = true;
                         GameLoop.UIManager.Sidebar.SidebarWindow.IsVisible = true;
                         GameLoop.UIManager.selectedMenu = "None";
                         GameLoop.NetworkManager = new NetworkManager(true);
@@ -555,24 +385,6 @@ namespace LofiHollow.UI {
                     }
                 }
             }
-        }
-
-
-        public int PointBuyCost(int target) {
-            if (target == 7) return -4;
-            if (target == 8) return -2;
-            if (target == 9) return -1;
-            if (target == 10) return 0;
-            if (target == 11) return 1;
-            if (target == 12) return 2;
-            if (target == 13) return 3;
-            if (target == 14) return 5;
-            if (target == 15) return 7;
-            if (target == 16) return 10;
-            if (target == 17) return 13;
-            if (target == 18) return 17;
-
-            return 99;
-        }
+        } 
     }
 }

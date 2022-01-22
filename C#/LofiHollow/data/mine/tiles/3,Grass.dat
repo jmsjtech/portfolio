@@ -1,0 +1,14 @@
+{
+  "MineTileID": 3,
+  "Name": "Grass",
+  "BlocksMove": true,
+  "BlocksLOS": true,
+  "TileGlyph": 320,
+  "ForeR": 0,
+  "ForeG": 127,
+  "ForeB": 0,
+  "Dec": null,
+  "OutputID": 41,
+  "RequiredTier": 1,
+  "TileHP": 3
+}

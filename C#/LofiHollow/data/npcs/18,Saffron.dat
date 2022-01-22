@@ -32,8 +32,8 @@
       "CurrentNode": 0
     }
   },
-  "BirthMonth": 7,
-  "BirthDay": 2,
+  "BirthMonth": 3,
+  "BirthDay": 14,
   "Introduction": "",
   "Greetings": {
 	"Nemesis": "",
@@ -132,8 +132,8 @@
 		"Y": 1,
 		"Z": 0
 	},
-	"SoldItems": [22, 19, 20],
-	"BuyCategory": -2
+	"SoldItems": [22, 19, 20, 23, 24, 25],
+	"BuyCategory": 9
   }, 
   "MapPos": {
     "X": 1,

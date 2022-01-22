@@ -225,8 +225,8 @@
       "CurrentNode": 0
     }
   },
-  "BirthMonth": 1,
-  "BirthDay": 2,
+  "BirthMonth": 4,
+  "BirthDay": 24,
   "Introduction": "Ah, hello!||I'm a scholar who's studying the biology of the local plants|   and animals.||Nice to meet you.",
   "Greetings": {
 	"Nemesis": "...What do you want?",

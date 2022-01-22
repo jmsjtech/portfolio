@@ -1,0 +1,14 @@
+{
+  "MineTileID": 0,
+  "Name": "Air",
+  "BlocksMove": false,
+  "BlocksLOS": false,
+  "TileGlyph": 32,
+  "ForeR": 0,
+  "ForeG": 180,
+  "ForeB": 180, 
+  "Dec": null,
+  "OutputID": -1,
+  "RequiredTier": 0,
+  "TileHP": 2
+}

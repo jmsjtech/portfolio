@@ -2,7 +2,7 @@
   "ItemID": 36,
   "ItemQuantity": 1,
   "IsStackable": false,
-  "ShortDesc": "Deals 1d4-1 damage",
+  "ShortDesc": "Not much use",
   "Description": "",
   "AverageValue": 5,
   "Weight": 1,
@@ -15,13 +15,21 @@
   "ForegroundB": 14,
   "ItemGlyph": 20,
   "Effect": null,
-  "Weapon": {
-    "DamageDice": "1d4-1",
-	"CritMod": 2,
-	"MinCrit": 19,
-	"WeaponCategory": "Light",
-	"WeaponClass": "Simple",
-	"DamageType": "Piercing"
+  "Stats": {
+    "DamageType": "Stab,Stab,Slash,Stab",
+	"CombatType": "Melee",
+	"WeaponTier": 0,
+	"ArmorVsSlash": 0,
+	"ArmorVsStab": 0,
+	"ArmorVsCrush": 0,
+	"ArmorVsRange": 0,
+	"ArmorVsMagic": 1,
+	"StabBonus": 4,
+	"SlashBonus": 2,
+	"CrushBonus": -4,
+	"RangeBonus": 0,
+	"MagicBonus": 1,
+	"StrengthBonus": 3
   },
   "Appearance": {
     "Decorators": [],

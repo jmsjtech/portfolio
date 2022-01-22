@@ -4209,7 +4209,9 @@ namespace Discord
             Methods.SetUserAchievement(MethodsPtr, achievementId, percentComplete, GCHandle.ToIntPtr(wrapped), SetUserAchievementCallbackDelegate);
         }
 
+#pragma warning disable IDE0090 // Use 'new(...)'
         private readonly static FFIMethods.SetUserAchievementCallback SetUserAchievementCallbackDelegate = new FFIMethods.SetUserAchievementCallback(SetUserAchievementCallbackImpl);
+#pragma warning restore IDE0090 // Use 'new(...)'
 
         [MonoPInvokeCallback]
         private static void FetchUserAchievementsCallbackImpl(IntPtr ptr, Result result)

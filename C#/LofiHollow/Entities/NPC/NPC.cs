@@ -25,30 +25,30 @@ namespace LofiHollow.Entities.NPC {
         public string Introduction = "";
 
         [JsonProperty]
-        public Dictionary<string, string> Greetings = new Dictionary<string, string>();
+        public Dictionary<string, string> Greetings = new();
 
         [JsonProperty]
-        public Dictionary<string, string> Farewells = new Dictionary<string, string>();
+        public Dictionary<string, string> Farewells = new();
 
         [JsonProperty]
-        public Dictionary<string, string> ChitChats = new Dictionary<string, string>();
+        public Dictionary<string, string> ChitChats = new();
 
         [JsonProperty]
-        public Dictionary<string, string> GiftResponses = new Dictionary<string, string>();
+        public Dictionary<string, string> GiftResponses = new();
 
         [JsonProperty]
-        public List<int> HatedGiftIDs = new List<int>();
+        public List<int> HatedGiftIDs = new();
         [JsonProperty]
-        public List<int> DislikedGiftIDs = new List<int>(); 
+        public List<int> DislikedGiftIDs = new(); 
         [JsonProperty]
-        public List<int> LikedGiftIDs = new List<int>();
+        public List<int> LikedGiftIDs = new();
         [JsonProperty]
-        public List<int> LovedGiftIDs = new List<int>();
+        public List<int> LovedGiftIDs = new();
 
         public bool ReceivedGiftToday = false; 
 
         [JsonProperty]
-        public ShopData Shop = new ShopData();
+        public ShopData Shop = new();
 
         [JsonConstructor]
         public NPC() : base(Color.White, '@') {
@@ -79,7 +79,7 @@ namespace LofiHollow.Entities.NPC {
                 AI.SetSchedule(season, "Sunny");
             }
 
-            Point oldPos = new Point(Position.X, Position.Y);
+            Point oldPos = new(Position.X, Position.Y);
             AI.MoveTowardsNode(GameLoop.World.Player.Clock.GetCurrentTime(), this);
 
             if (oldPos != Position) {

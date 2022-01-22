@@ -4,8 +4,10 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using SadConsole;
 using SadRogue.Primitives;
-using LofiHollow.Entities.NPC;
+using LofiHollow.EntityData;
 using System.Text;
+using LofiHollow.UI;
+using LofiHollow.Managers;
 
 namespace LofiHollow.Entities {
     [JsonObject(MemberSerialization.OptIn)]
@@ -17,44 +19,23 @@ namespace LofiHollow.Entities {
          
         public SadConsole.Console ScreenAppearance;
 
-        [JsonProperty]
-        public int STR = 10;
-        [JsonProperty]
-        public int DEX = 10;
-        [JsonProperty]
-        public int CON = 10;
-        [JsonProperty]
-        public int INT = 10;
-        [JsonProperty]
-        public int WIS = 10;
-        [JsonProperty]
-        public int CHA = 10;
 
         [JsonProperty]
         public int SizeMod = 0;
         [JsonProperty]
-        public int NaturalArmor = 0;
-        [JsonProperty]
-        public int DeflectionMod = 0;
-        [JsonProperty]
-        public int LandSpeed = 0;
-        [JsonProperty]
-        public int BaseFort = 0;
-        [JsonProperty]
-        public int FortMod = 0;
-        [JsonProperty]
-        public int BaseReflex = 0;
-        [JsonProperty]
-        public int ReflexMod = 0;
-        [JsonProperty]
-        public int BaseWill = 0;
-        [JsonProperty]
-        public int WillMod = 0;
+        public int Vision = 36;
+
 
         [JsonProperty]
-        public int BaseAttackBonus = 0;
+        public string CombatMode = "Attack";
+
+
         [JsonProperty]
-        public int InitiativeMod = 0;
+        public int CombatLevel = 1;
+        
+
+        public double TimeLastActed = 0;
+
 
         [JsonProperty]
         public int CopperCoins = 0;
@@ -66,54 +47,18 @@ namespace LofiHollow.Entities {
         public int JadeCoins = 0;
 
         [JsonProperty]
-        public int Level = 1;
-        [JsonProperty]
-        public int Experience = 0;
-        [JsonProperty]
-        public string ExpTrack = "Medium";
-        [JsonProperty]
-        public Race Race = new Race();
-        [JsonProperty]
-        public List<string> KnownLanguages = new List<string>();
-        [JsonProperty]
-        public int Vision = 36;
-
-
-        // Stuff for monsters
-        [JsonProperty]
-        public int ExpGranted = 0;
-        [JsonProperty]
-        public int CR = 1; // Negative number means fractional CR
-        [JsonProperty]
-        public string HitDice = "1d1";
-        [JsonProperty]
-        public string UnarmedDice = "1d3";
-
-        public double TimeLastActed = 0;
-
-        [JsonProperty]
         public Item[] Inventory;
         [JsonProperty]
         public Item[] Equipment;
 
-        [JsonProperty]
-        public List<ClassDef> ClassLevels = new List<ClassDef>();
-        [JsonProperty]
-        public List<ClassFeature> ClassFeatures = new List<ClassFeature>();
-        [JsonProperty]
-        public List<string> WeaponProficiencies = new List<string>();
-
 
         [JsonProperty]
-        public List<string> Templates = new List<string>();
-
-        [JsonProperty]
-        public List<ItemDrop> DropTable = new List<ItemDrop>();
+        public List<ItemDrop> DropTable = new();
 
         
 
         [JsonProperty]
-        public Dictionary<string, Skill> Skills = new Dictionary<string, Skill>();
+        public Dictionary<string, Skill> Skills = new();
 
 
         [JsonProperty]
@@ -128,15 +73,17 @@ namespace LofiHollow.Entities {
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context) {
             Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
-            Appearance.Glyph = ActorGlyph;
+            Appearance.Background = new Color(0, 0, 0, 50);
+            Appearance.Glyph = ActorGlyph; 
         }
 
         public void UpdateAppearance() {
             Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
+            Appearance.Background = new Color(0, 0, 0, 50);
             Appearance.Glyph = ActorGlyph;
 
             if (SizeMod <= 0) {
-                ScreenAppearance = new SadConsole.Console(1, 1);
+                ScreenAppearance = new(1, 1);
 
                 if (SizeMod <= -1)
                     ScreenAppearance.FontSize = new Point(6, 6);
@@ -147,7 +94,7 @@ namespace LofiHollow.Entities {
 
             if (SizeMod >= 1) {
                 int newSize = SizeMod + 1;
-                ScreenAppearance = new SadConsole.Console(1, 1);
+                ScreenAppearance = new(1, 1);
                 ScreenAppearance.FontSize = new Point(12 * newSize, 12 * newSize); 
                 
                 ScreenAppearance.Print(0, 0, new ColoredString(Appearance));
@@ -157,6 +104,35 @@ namespace LofiHollow.Entities {
                 ScreenAppearance.UsePixelPositioning = true;
 
             UpdatePosition();
+        }
+
+        public void SwitchMeleeMode() {
+            if (CombatMode == "Attack") {
+                CombatMode = "Strength";
+            } else if (CombatMode == "Strength") {
+                CombatMode = "Defense";
+            } else if (CombatMode == "Defense") {
+                CombatMode = "Balanced";
+            } else if (CombatMode == "Balanced") {
+                CombatMode = "Attack";
+            }
+        }
+
+        public void CombatExp(int damage) {
+            if (CombatMode == "Attack") {
+                Skills["Attack"].GrantExp(damage * 4);
+            } else if (CombatMode == "Strength") {
+                Skills["Strength"].GrantExp(damage * 4);
+            } else if (CombatMode == "Defense") {
+                Skills["Defense"].GrantExp(damage * 4);
+            } else if (CombatMode == "Balanced") {
+                Skills["Attack"].GrantExp(damage);
+                Skills["Strength"].GrantExp(damage);
+                Skills["Defense"].GrantExp(damage);
+                Skills["Constitution"].GrantExp(damage);
+            }
+
+            Skills["Constitution"].GrantExp(damage * 2);
         }
         
         public void UpdatePosition() {
@@ -169,13 +145,14 @@ namespace LofiHollow.Entities {
         protected Actor(Color foreground, int glyph, bool initInventory = false) : base(foreground, Color.Transparent, glyph) {
             Appearance.Foreground = foreground; 
             Appearance.Glyph = glyph;
+            Appearance.Background = new Color(0, 0, 0, 50);
 
             ForegroundR = foreground.R;
             ForegroundG = foreground.G;
             ForegroundB = foreground.B;
              
 
-            Equipment = new Item[16];
+            Equipment = new Item[10];
             for (int i = 0; i < Equipment.Length; i++) {
                 Equipment[i] = new Item(0);
             }
@@ -190,244 +167,189 @@ namespace LofiHollow.Entities {
         }
 
         public ColoredString GetAppearance() {
-            return new ColoredString(Appearance.GlyphCharacter.ToString(), Appearance.Foreground, Color.Black);
+            return new ColoredString(Appearance.GlyphCharacter.ToString(), Appearance.Foreground, Color.Transparent);
         }
 
+        public void CalculateCombatLevel() {
+            if (this is Monster mon) { 
+                int combatStat = Math.Max(mon.MonAttack + mon.MonStrength, Math.Max(2 * mon.MonMagic, 2 * mon.MonRanged));
 
-        public int GetMod(string attribute) {
-            if (attribute == "STR") { return (int) Math.Floor((double) STR / 2) - 5; }
-            if (attribute == "DEX") { return (int) Math.Floor((double) DEX / 2) - 5; }
-            if (attribute == "CON") { return (int) Math.Floor((double) CON / 2) - 5; }
-            if (attribute == "INT") { return (int) Math.Floor((double) INT / 2) - 5; }
-            if (attribute == "WIS") { return (int) Math.Floor((double) WIS / 2) - 5; }
-            if (attribute == "CHA") { return (int) Math.Floor((double) CHA / 2) - 5; }
+                CombatLevel = (int) Math.Floor((double) (((13 / 10) * combatStat) + mon.MonDefense + mon.MonConstitution) / 4);
+            } else {
+                int Attack = Skills["Attack"].Level;
+                int Strength = Skills["Strength"].Level;
+                int Magic = Skills["Magic"].Level;
+                int Ranged = Skills["Ranged"].Level;
+                int Defense = Skills["Defense"].Level;
+                int Constitution = Skills["Constitution"].Level;
 
-            return 0;
-        }
+                int CombatStat = Math.Max(Attack + Strength, Math.Max(Magic, Ranged));
 
-        public void SetAttribs(int str, int dex, int con, int intelligence, int wis, int cha) {
-            STR = str;
-            DEX = dex;
-            CON = con;
-            INT = intelligence;
-            WIS = wis;
-            CHA = cha;
-        }
-
-        public void SetSaves(int fort, int reflex, int will) {
-            BaseFort = fort;
-            BaseReflex = reflex;
-            BaseWill = will;
+                CombatLevel = (int)Math.Floor((double)(((13 / 10) * CombatStat) + Defense + Constitution) / 4);
+            }
         }
 
         public void UpdateHP() {
-            int miscMod = CheckForBonus("HP", "");
-
-
-            MaxHP = GoRogue.DiceNotation.Dice.Roll(HitDice) + miscMod;
-
-            if (MaxHP < 1)
-                MaxHP = 1;
-
-            CurrentHP = MaxHP;
+            if (this is Player) {
+                MaxHP = Skills["Constitution"].Level;
+                CurrentHP = MaxHP;
+            } else {
+                var mon = (Monster)this;
+                MaxHP = mon.MonConstitution;
+                CurrentHP = MaxHP;
+            }
         }
 
-        public int GetAC() {
-            int miscMod = 0;
-            int dexMod = GetMod("DEX");
-            int naturalArmor = NaturalArmor;
+        public int EffectiveAttackLevel(string damageType) {
+            int effectiveAttackLevel = 0;
+            if (damageType == "Crush" || damageType == "Slash" || damageType == "Stab") { 
+                if (this is Player)
+                    effectiveAttackLevel = Skills["Attack"].Level;
+                else {
+                    var mon = (Monster)this;
+                    effectiveAttackLevel = mon.MonAttack;
+                }
 
-            if (Equipment[9].ItemID != 0 && Equipment[9].Durability > 0 && Equipment[9].Armor != null) {
-                miscMod += Equipment[9].Armor.ArmorBonus;
-                if (dexMod > Equipment[9].Armor.MaxDexBonus)
-                    dexMod = Equipment[9].Armor.MaxDexBonus;
+                if (CombatMode == "Attack")
+                    effectiveAttackLevel += 3;
+                if (CombatMode == "Balanced")
+                    effectiveAttackLevel += 1;
+
+                effectiveAttackLevel += 8;
             }
 
-            foreach (ClassFeature feature in ClassFeatures) {
-                string[] split = feature.BonusTo.Split(",");
-                if (split[0] == "AC") {
-                    if (split[1] == "Natural Armor") {
-                        naturalArmor += feature.NumericalBonus;
-                    }
+            return effectiveAttackLevel;
+        }
+         
+        public int AttackRoll(string type) {
+            int StyleBonus = 0;
+
+            for (int i = 0; i < Equipment.Length; i++) {
+                if (Equipment[i].Stats != null) {
+                    if (type == "Slash")
+                        StyleBonus += Equipment[i].Stats.SlashBonus;
+                    if (type == "Stab")
+                        StyleBonus += Equipment[i].Stats.StabBonus;
+                    if (type == "Crush")
+                        StyleBonus += Equipment[i].Stats.CrushBonus;
+                    if (type == "Range")
+                        StyleBonus += Equipment[i].Stats.RangeBonus;
+                    if (type == "Magic")
+                        StyleBonus += Equipment[i].Stats.MagicBonus;
                 }
             }
 
-            return 10 + dexMod + (-1 * SizeMod) + naturalArmor + DeflectionMod + miscMod;
+            return EffectiveAttackLevel(type) * (StyleBonus + 64);
         }
 
-        public int FortSave(int miscMod) { return BaseFort + GetMod("CON") + FortMod + miscMod; }
-        public int ReflexSave(int miscMod) { return BaseReflex + GetMod("DEX") + ReflexMod + miscMod; }
-        public int WillSave(int miscMod) { return BaseWill + GetMod("WIS") + WillMod + miscMod; }
 
-        public void UpdateSaves() {
-            BaseFort = 0;
-            BaseReflex = 0;
-            BaseWill = 0;
+        public int DefenceRoll(string damageType) {
+            int effectiveDefenseLevel = 0;
+            if (damageType == "Crush" || damageType == "Slash" || damageType == "Stab") { 
+                if (this is Player)
+                    effectiveDefenseLevel = Skills["Defense"].Level;
+                else {
+                    var mon = (Monster)this;
+                    effectiveDefenseLevel = mon.MonDefense;
+                }
 
-            foreach (ClassDef classLevels in ClassLevels) {
-                BaseFort += classLevels.GetSave(classLevels.FortSaveProg);
-                BaseReflex += classLevels.GetSave(classLevels.RefSaveProg);
-                BaseWill += classLevels.GetSave(classLevels.WillSaveProg);
+                if (CombatMode == "Defense")
+                    effectiveDefenseLevel += 3;
+                if (CombatMode == "Balanced")
+                    effectiveDefenseLevel += 1;
+
+                effectiveDefenseLevel += 8;
             }
-        }
 
 
-        public int GetCMB(int miscMod) { return BaseAttackBonus + GetMod("STR") + SizeMod + miscMod; } // For Melee Attacks
-        public int GetCMD(int miscMod) { return BaseAttackBonus + GetMod("STR") + GetMod("DEX") + SizeMod + 10 + miscMod; } // For Ranged Attacks
+            int TotalDefenseBonus = 0;
 
-        public int RollInitiative() {
-            int miscMod = CheckForBonus("Initiative", "");
-
-
-
-            return GoRogue.DiceNotation.Dice.Roll("1d20") + InitiativeMod + miscMod + GetMod("DEX"); 
-        }
-
-        public int RollAttack(bool justBonus = false) {
-            int miscMod = 0;
-
-            if (Equipment != null && Equipment[0].Weapon != null) {
-                if (!WeaponProficiencies.Contains(Equipment[0].Weapon.WeaponClass) && Equipment[0].Weapon.WeaponClass != "Simple") {
-                    miscMod -= 4;
+            for (int i = 0; i < Equipment.Length; i++) {
+                if (Equipment[i].Stats != null) {
+                    if (damageType == "Slash")
+                        TotalDefenseBonus += Equipment[i].Stats.ArmorVsSlash;
+                    if (damageType == "Stab")
+                        TotalDefenseBonus += Equipment[i].Stats.ArmorVsStab;
+                    if (damageType == "Crush")
+                        TotalDefenseBonus += Equipment[i].Stats.ArmorVsCrush;
+                    if (damageType == "Range")
+                        TotalDefenseBonus += Equipment[i].Stats.ArmorVsRange;
+                    if (damageType == "Magic")
+                        TotalDefenseBonus += Equipment[i].Stats.ArmorVsMagic;
                 }
             }
 
-            miscMod += CheckForBonus("Attacks", "");
-
-            if (justBonus)
-                return GetMod("STR") + BaseAttackBonus + miscMod;
-
-            return GoRogue.DiceNotation.Dice.Roll("1d20") + GetMod("STR") + BaseAttackBonus + miscMod;
+            if (this is Player) {
+                return effectiveDefenseLevel * (TotalDefenseBonus + 64);
+            } else {
+                var mon = (Monster)this;
+                return (mon.MonDefense + 9) * (TotalDefenseBonus + 64);
+            }
         }
 
-        public int GetDamageBonus(bool melee) {
-            int miscMod = CheckForBonus("Damage", "");
+        public int DamageRoll(string damageType) {
+            int effectiveStrength = 0;
+            if (damageType == "Crush" || damageType == "Slash" || damageType == "Stab") {
+                
 
-            return GetMod("STR") + miscMod;
-        }
+                if (this is Player)
+                    effectiveStrength = Skills["Strength"].Level;
+                else {
+                    var mon = (Monster)this;
+                    effectiveStrength = mon.MonStrength;
+                }
 
+                if (CombatMode == "Strength")
+                    effectiveStrength += 3;
+                if (CombatMode == "Balanced")
+                    effectiveStrength += 1;
 
+                effectiveStrength += 8;
+            }
 
-        public int ExpToLevel(int level = -1) {
-            if (level == -1)
-                level = Level;
+            int TotalStrengthBonus = 0;
 
-            if (ExpTrack == "Slow") {
-                switch(level) {
-                    case 1: return 3000;
-                    case 2: return 7500;
-                    case 3: return 14000;
-                    case 4: return 23000;
-                    case 5: return 35000;
-                    case 6: return 53000;
-                    case 7: return 77000;
-                    case 8: return 115000;
-                    case 9: return 160000;
-                    case 10: return 235000;
-                    case 11: return 330000;
-                    case 12: return 475000;
-                    case 13: return 665000;
-                    case 14: return 955000;
-                    case 15: return 1350000;
-                    case 16: return 1900000;
-                    case 17: return 2700000;
-                    case 18: return 3850000;
-                    case 19: return 5350000;
+            for (int i = 0; i < Equipment.Length; i++) {
+                if (Equipment[i].Stats != null) {
+                    if (damageType == "Slash")
+                        TotalStrengthBonus += Equipment[i].Stats.StrengthBonus;
+                    if (damageType == "Stab")
+                        TotalStrengthBonus += Equipment[i].Stats.StrengthBonus;
+                    if (damageType == "Crush")
+                        TotalStrengthBonus += Equipment[i].Stats.StrengthBonus;
+                    if (damageType == "Range")
+                        TotalStrengthBonus += Equipment[i].Stats.RangeBonus;
+                    if (damageType == "Magic")
+                        TotalStrengthBonus += Equipment[i].Stats.MagicBonus;
                 }
             }
 
-            if (ExpTrack == "Medium") {
-                switch (level) {
-                    case 1: return 2000;
-                    case 2: return 5000;
-                    case 3: return 9000;
-                    case 4: return 15000;
-                    case 5: return 23000;
-                    case 6: return 35000;
-                    case 7: return 51000;
-                    case 8: return 75000;
-                    case 9: return 105000;
-                    case 10: return 155000;
-                    case 11: return 220000;
-                    case 12: return 315000;
-                    case 13: return 445000;
-                    case 14: return 635000;
-                    case 15: return 890000;
-                    case 16: return 1300000;
-                    case 17: return 1800000;
-                    case 18: return 2550000;
-                    case 19: return 3600000;
-                }
-            }
+            int maxDamage = (int) Math.Floor((double)(((effectiveStrength * (TotalStrengthBonus + 64)) + 320) / 640));
 
-            if (ExpTrack == "Fast") {
-                switch (level) {
-                    case 1: return 1300;
-                    case 2: return 3300;
-                    case 3: return 6000;
-                    case 4: return 10000;
-                    case 5: return 15000;
-                    case 6: return 23000;
-                    case 7: return 34000;
-                    case 8: return 50000;
-                    case 9: return 71000;
-                    case 10: return 105000;
-                    case 11: return 145000;
-                    case 12: return 210000;
-                    case 13: return 295000;
-                    case 14: return 425000;
-                    case 15: return 600000;
-                    case 16: return 850000;
-                    case 17: return 1200000;
-                    case 18: return 1700000;
-                    case 19: return 2400000;
-                }
-            }
+            if (maxDamage > 1) {
+                return (GameLoop.rand.Next(maxDamage) + 1);
+            } 
 
-
-            return Int32.MaxValue;
+            return 1;
         }
 
+        public string GetDamageType() {
+            if (Equipment[0].Stats != null) {
+                string[] types = Equipment[0].Stats.DamageType.Split(",");
 
-        public void SetExpGranted() {
-            switch (CR) {
-                case -8: ExpGranted = 50; break;
-                case -6: ExpGranted = 65; break;
-                case -4: ExpGranted = 100; break;
-                case -3: ExpGranted = 135; break;
-                case -2: ExpGranted = 200; break;
-                case 1: ExpGranted = 400; break;
-                case 2: ExpGranted = 600; break;
-                case 3: ExpGranted = 800; break;
-                case 4: ExpGranted = 1200; break;
-                case 5: ExpGranted = 1600; break;
-                case 6: ExpGranted = 2400; break;
-                case 7: ExpGranted = 3200; break;
-                case 8: ExpGranted = 4800; break;
-                case 9: ExpGranted = 6400; break;
-                case 10: ExpGranted = 9600; break;
-                case 11: ExpGranted = 12800; break;
-                case 12: ExpGranted = 19200; break;
-                case 13: ExpGranted = 25600; break;
-                case 14: ExpGranted = 38400; break;
-                case 15: ExpGranted = 51200; break;
-                case 16: ExpGranted = 76800; break;
-                case 17: ExpGranted = 102400; break;
-                case 18: ExpGranted = 153600; break;
-                case 19: ExpGranted = 204800; break;
-                case 20: ExpGranted = 307200; break;
-                case 21: ExpGranted = 409600; break;
-                case 22: ExpGranted = 614400; break;
-                case 23: ExpGranted = 819200; break;
-                case 24: ExpGranted = 1228800; break;
-                case 25: ExpGranted = 1638400; break;
-                case 26: ExpGranted = 2457600; break;
-                case 27: ExpGranted = 3276800; break;
-                case 28: ExpGranted = 4915200; break;
-                case 29: ExpGranted = 6553600; break;
-                case 30: ExpGranted = 9830400; break;
+                if (CombatMode == "Attack")
+                    return types[0];
+                if (CombatMode == "Strength")
+                    return types[1];
+                if (CombatMode == "Defense")
+                    return types[2];
+                if (CombatMode == "Balanced")
+                    return types[3];
             }
+
+            return "Crushing";
         }
+
 
 
         public bool HasInventorySlotOpen(int stackID = -1) {
@@ -440,7 +362,8 @@ namespace LofiHollow.Entities {
         }
 
         public bool MoveBy(Point positionChange) {
-            if (TimeLastActed + (120 - (LandSpeed)) > SadConsole.GameHost.Instance.GameRunningTotalTime.TotalMilliseconds) {
+            int AgilityLevel = 0;
+            if (TimeLastActed + (120 - (AgilityLevel)) > SadConsole.GameHost.Instance.GameRunningTotalTime.TotalMilliseconds) {
                 return false;
             }
 
@@ -457,7 +380,7 @@ namespace LofiHollow.Entities {
                 if (GameLoop.World.maps[MapPos].GetEntityAt<Monster>(newPosition) != null) {
                     Monster monster = GameLoop.World.maps[MapPos].GetEntityAt<Monster>(newPosition);
 
-                    GameLoop.CommandManager.Attack(this, monster, true);
+                    CommandManager.Attack(this, monster, true);
                     return false;
                 }
 
@@ -465,6 +388,13 @@ namespace LofiHollow.Entities {
                 // Interact with skilling tiles
                 if (ID == GameLoop.World.Player.ID) {
                     if (newPosition.X < GameLoop.MapWidth && newPosition.X >= 0 && newPosition.Y < GameLoop.MapHeight && newPosition.Y >= 0) {
+                        if (map.GetTile(newPosition).MiscString != "" && map.GetTile(newPosition).MiscString.Split(",").Length > 1) {
+                            string[] split = map.GetTile(newPosition).MiscString.Split(",");
+                            if (split[0] == "Skill") {
+                                GameLoop.UIManager.Crafting.SetupCrafting(split[1]);
+                            } 
+                        }
+
                         if (map.GetTile(newPosition).SkillableTile != null) {
                             SkillableTile tile = map.GetTile(newPosition).SkillableTile;
                             if (map.GetTile(newPosition).Name == tile.HarvestableName) {
@@ -472,13 +402,13 @@ namespace LofiHollow.Entities {
                                     if (Skills[tile.RequiredSkill].Level >= tile.RequiredLevel) {
                                         if (Equipment[0].ItemCategory == tile.HarvestTool || Inventory[GameLoop.UIManager.Sidebar.hotbarSelect].ItemCategory == tile.HarvestTool) {
                                             if (HasInventorySlotOpen()) {
-                                                GameLoop.CommandManager.AddItemToInv(this, new Item(tile.ItemGiven));
+                                                CommandManager.AddItemToInv(this, new Item(tile.ItemGiven));
                                                 GameLoop.UIManager.AddMsg(tile.HarvestMessage);
 
                                                 int choppedChance = GameLoop.rand.Next(100) + 1;
 
                                                 if (choppedChance < 33) {
-                                                    GameLoop.CommandManager.AddItemToInv(this, new Item(tile.DepletedItem));
+                                                    CommandManager.AddItemToInv(this, new Item(tile.DepletedItem));
                                                     map.GetTile(newPosition).Name = tile.DepletedName;
                                                     GameLoop.UIManager.AddMsg(tile.DepleteMessage);
                                                     Skills[tile.RequiredSkill].Experience += tile.ExpOnDeplete;
@@ -626,7 +556,7 @@ namespace LofiHollow.Entities {
                 } 
 
                 if (newPosition.X >= 0 && newPosition.X <= GameLoop.MapWidth && newPosition.Y >= 0 && newPosition.Y <= GameLoop.MapHeight) {
-                    if (map.GetTile(newPosition).Name == "Door") {
+                    if (map.GetTile(newPosition).Name.ToLower().Contains("door")) {
                         if (map.GetTile(newPosition).Lock.Closed) {
                             if (map.GetTile(newPosition).Lock.CanOpen()) {
                                 map.ToggleDoor(newPosition, MapPos);
@@ -703,63 +633,7 @@ namespace LofiHollow.Entities {
 
             return true;
         } 
-
-
-        public int DamageCheck(int damage, string damageType) {
-            int moddedDamage = damage;
-
-            foreach (ClassFeature feature in ClassFeatures) {
-                string[] split = feature.BonusTo.Split(",");
-                if (split.Length > 1) {
-                    if (split[0] == damageType || split[0] == "DR") {
-                        if (split[1] == "Immune") {
-                            moddedDamage = 0;
-                        } else {
-                            int dam = Int32.Parse(split[1]);
-                            moddedDamage -= dam;
-                        }
-                    }
-                }
-            }
-
-            return moddedDamage;
-        }
-
-        public bool CheckImmunity(string check) {
-            foreach (ClassFeature feature in ClassFeatures) {
-                string[] split = feature.BonusTo.Split(",");
-                if (split.Length > 1) {
-                    if (split[0] == check) {
-                        if (split[1] == "Immune") {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        public int CheckForBonus(string check, string secondary) {
-            int total = 0;
-
-            foreach (ClassFeature feature in ClassFeatures) {
-                string[] split = feature.BonusTo.Split(",");
-                if (split.Length > 1) {
-                    if (split[0] == check) {
-                        if (split[1] == secondary) {
-                            total += feature.NumericalBonus;
-                        }
-                    }
-                } else {
-                    if (feature.BonusTo == check) {
-                        total += feature.NumericalBonus;
-                    }
-                }
-            }
-
-            return total;
-        }
+        
 
         public void SpawnDrops() {
             for (int i = 0; i < DropTable.Count; i++) {
@@ -768,89 +642,26 @@ namespace LofiHollow.Entities {
                 int roll = GameLoop.rand.Next(drop.DropChance);
 
                 if (roll == 0) {
-                    Item item = new Item(drop.ItemID);
+                    Item item = new(drop.ItemID);
 
                     if (item.IsStackable) {
                         item.ItemQuantity = GameLoop.rand.Next(drop.DropQuantity) + 1;
-                        GameLoop.UIManager.Map.SpawnItem(item, MapPos, Position);
+                        item.Position = Position;
+                        item.MapPos = MapPos;
+                        CommandManager.SpawnItem(item);
                     } else {
                         int qty = GameLoop.rand.Next(drop.DropQuantity) + 1;
 
                         for (int j = 0; j < qty; j++) {
-                            Item itemNonStack = new Item(drop.ItemID);
-                            GameLoop.UIManager.Map.SpawnItem(itemNonStack, MapPos, Position);
+                            Item itemNonStack = new(drop.ItemID);
+                            itemNonStack.Position = Position;
+                            itemNonStack.MapPos = MapPos;
+                            CommandManager.SpawnItem(itemNonStack);
                         }
                     }
                 }
-            }
-
-
-            int coreChance = GameLoop.rand.Next(100) + 1;
-
-            if (coreChance < 75) {
-                Item core = new Item(5);
-                core.SubID = CR;
-                core.Name = "Monster Core [";
-
-                string thisCR = CR.ToString();
-
-                if (CR < 0) {
-                    if (CR == -2) { thisCR = ((char)25).ToString(); }
-                    if (CR == -3) { thisCR = ((char)26).ToString(); }
-                    if (CR == -4) { thisCR = ((char)27).ToString(); }
-                    if (CR == -6) { thisCR = ((char)28).ToString(); }
-                    if (CR == -8) { thisCR = ((char)29).ToString(); }
-                }
-
-                core.Name += thisCR + "]";
-
-                core.AverageValue = ExpGranted / 4;
-
-                core.Description = "CR " + thisCR + " monster core.";
-
-                GameLoop.UIManager.Map.SpawnItem(core, MapPos, Position);
-            }
-        }
-
-
-        public void SetupStats() { 
-            if (Templates != null) {
-                for (int i = 0; i < Templates.Count; i++) {
-                    string templateName = Templates[i];
-
-                    if (GameLoop.World.templateLibrary.ContainsKey(templateName)) {
-                        Template template = GameLoop.World.templateLibrary[templateName];
-
-                        STR += template.STRbonus;
-                        DEX += template.DEXbonus;
-                        CON += template.CONbonus;
-
-                        if (INT > 2)
-                            INT += template.INTbonus;
-
-                        WIS += template.WISbonus;
-                        CHA += template.CHAbonus;
-
-                        if (template.Features != null) {
-                            for (int j = 0; j < template.Features.Count; j++) {
-                                ClassFeatures.Add(template.Features[j]);
-                            }
-                        }
-
-                        if (CR < 0 && template.CRmod > 0)
-                            CR = 0;
-
-                        CR += template.CRmod;
-
-                        if (template.Prefix)
-                            Name = template.Name + " " + Name;
-                    }
-                }
-            }
-
-            SetExpGranted();
-            UpdateHP(); 
-        }
+            } 
+        } 
 
         public void Death(bool drops = true) {
             GameLoop.World.maps[MapPos].Remove(this);
@@ -862,7 +673,12 @@ namespace LofiHollow.Entities {
 
             if (drops)
                 SpawnDrops();
-            
+
+            GameLoop.World.maps[MapPos].SpawnedMonsters--;
+
+            if (GameLoop.World.maps[MapPos].SpawnedMonsters == 0) {
+                GameLoop.World.Player.MapsClearedToday++; 
+            }
         }
     }
 }

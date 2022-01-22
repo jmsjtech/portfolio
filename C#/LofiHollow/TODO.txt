@@ -1,66 +1,46 @@
 ﻿MINIMUM SHIPPABLE REQUIREMENTS
 - (DONE) Combat and levelling system implemented
 - (DONE) Inventory implemented
-- NPCs schedules
+- (SKIP FOR NOW) NPCs schedules
 - (DONE) NPC dialogue system (gifts, chitchat, missions)
-- (DONE) NPC shops
-- Finish the levelling system
-- Save/Load game
-- Main menu
+- (DONE) NPC shops 
+- (DONE) Save/Load game
+- (DONE) Main menu
 - Finish the main town
 - Double check all accessible overworld maps to make sure they're filled out properly
-- (DONE) Farming gameplay (Fill out the crop selection at least)
+- (DONE) Farming gameplay
+- Add all the crops
+- Add some fish
+- Finish NPC dialogues
+- (DONE) Construction
 
 
-Dumb Ideas that could be fun/funny:
-- Jump button that moves you up a level and hovers you there for a second)
-- - Build up velocity by running before a jump to move tiles while you're in the air, up to 4 tiles of velocity
-- - Maybe as a reward for a dungeon? You get spring shoes and can then jump, spring shoes required to enter/complete the next dungeon
-- Small chance for an NPC named "the devil" to appear on top of a chopped hickory tree, secret mission to beat him at a rhythm game when you speak to him
-- Camera mechanic: When held in hand and clicked, capture area around cursor. Output to a photo item
+(DONE) Monsters / Combat [First Sweep]
+(DONE) Multiplayer
+(DONE) Overworld combat
+(DONE) NPC Dialogue, Gifting, and Shops
+(DONE) Menu
+(DONE) UI
+(DONE) Saving/Loading
+(DONE) Construction
+(DONE) Mining
+(DONE) Crafting System
 
 
-Menu
-- (DONE) Background image
-- (DONE) Game Name
-- Start new game
-- - (DONE) Prompt for name, set it as player name
-- - Character creation
-- - - (DONE) Point buy for stats
-- - - (DONE) Select level 1 class
-- - - (DONE) Select experience track
-- - - (DONE) Select race
-- - - Pick spells if a caster class
-- (DONE) Load existing game
-- - (DONE) List all existing saves in save directory by player name and in-game date
+
+Content Needs
+- Fishing: All Spring, All Summer, All Fall, All Winter, All Holiday, 9 All season, 10 trash items
+- Farming: Remaining crops at 25 and below, come up with crops above 25.
+- Mining: At least a few more ore tiers
+- Construction: Walls/Floor/Door in each tier of wood, Stone wall/floor, 
+- NPC Dialogue
+- Cooking: Recipes to cook food
+- Smithing: Recipes for armor, weapons, and tools at each tier.
 
 
-Skills
-- (DONE) Skill structure: ID, Name, Level, Experience total
-- (DONE) SkillableTile structure: Name, Harvest Tool category, Required level, Item given, Depleted tile name, time to restore, Exp given each harvest, Exp given on depletion
-- Depleted tiles turn back into the normal tile once enough time has passed
-- (DONE) Set up the proper experience scale
-- (DONE) Make skill actions grant experience to the correct skill
-- (DONE) Make a UI to display all skill progress in a window (hotkey 'K')
-- (DONE) Block skill actions if you don't have the requisite level
-- Skills
-- - Gathering Skills (Anything that can use SkillableTile)
-- - - (DONE) Woodcutting
-- - - Mining
-- - Processing Skills (Use an existing workshop tile to turn something into something else)
-- - - Smithing (Furnace)
-- - - Cooking (Oven/Campfire/Stove). When you can cook food, implement a hunger mechanic with it
-- - Crafting Skills (Access via menu interface that lists all recipes, and their requirements by skill)
-- - - Carpentry (Furniture and other wooden goods)
-
-Fishing
-- (DONE) Fish have to fight back to make the minigame engaging
-- (DONE) Fish fighting back while you reel them in stresses the line. Too much stress makes the line break
-- (DONE) Make the weight random between the minimum and maximum weight
-- (DONE) Fish definition should include how strong the fish is, use this to determine line stress in minigame
+Fishing 
 - Upgraded fishing rods should be more stress resistant or reel in fish faster
-- Make fishing rod lose durability when the line breaks, only let you fish if it has durability left
-- Possible to catch trash items, which are always available (so you can always technically fish)
+- Make fishing rod lose durability when the line breaks, only let you fish if it has durability left 
 - Fill out the fishopedia with at least 1 unique fish per combination of zone, season, and time 
 - Zones: River, Beach, Lake
 - Seasons: Spring, Summer, Fall, Winter, Holiday
@@ -71,34 +51,6 @@ Fishing
 - - Include a minimum caught weight, maximum caught weight, their value when sold, location info, and level requirement
 - Let other players in multiplayer see your lure when you cast it
 
-Minigames
-- Card-based Minigames
-- - Solitaire
-- - Blackjack
-- - Poker
-- Casino Games
-- - Roulette
-- - Slot machine
-- - Pachinko?
-- Multiplayer Boardgames
-- - Chess
-- - Checkers
-- - Mancala
-- - Four In A Row
-- - Yacht Dice
-- - Gomoku
-- - Shogi
-- Job Minigames
-- - Bartending (at Tom's Bar)
-- -
-- Skilling Minigames
-- - (DONEISH) Fishing
-- Arcade games / Computer? / Console
-- - BEST CASE: Somehow make a fantasy console (like the PICO8 or TIC-80) and embed it as the backbone of the computers, arcade systems, and consoles
-- - Use a built-in scripting language to make and run them in-game
-- - Arcade machines have one built-in game they play
-- - Consoles have carts you can swap out to play different games
-- - Computers have disks you can switch and also an OS wrapped with other functions
 
 Quests / Story Missions?
 - Keep a log of all missions the player has started and completed
@@ -107,96 +59,49 @@ Quests / Story Missions?
 - "Cutscene" dialogue paths
 
 
-
 Daily Routine
 - at 2am, you pass out and wake up at 9am.
-- if you sleep of your own volition, you wake up at 6am instead
-- Block chit-chat, gifts, and mission dialogue if any needs is too low
-- - Implement needs: Sleep, Hunger
+- if you sleep of your own volition, you wake up at 6am instead 
+- Stamina bar, refill it by sleeping, or standing in a hot springs
+- Hunger bar slowly depletes, refill by eating food items.
+
+The Sound Effect-ening
+- Door open/close
+- Combat swipes
+- Fishing
+- - Cast
+- - Reel in
+- Watering Can
+- Harvesting crops
+- Till ground
+- Mining
+- - Break block
 
 
-
-
-Saving/Loading
-- Save all data
-- - (DONE) Entire player structure (including inventory, equipment, and all stats)
-- - Save player editable maps into their save folder
-- Load data back up
-- - (DONE) Reload all player stats, inventory, and equipment
-- - (DONE) Don't do the shipwreck or beach start stuff unless it's a new character
-- - Load all save-specific maps after the main map loading, overwriting the base maps.
+Mod Support
+- Implement the steam workshop
+- In-game mod making tools
+- WIP Sandbox to make changes or upload to workshop
+- Browse workshop mods in-game
 
 
 
 Farming
-- Have to buy the plot of land where the farm is first
-- (DONE) Hoe - Turn dirt into tilled land (only on owned land tiles)
-- (DONE) Plant Def: List of stages, days on current stage, plant name, season, fully grown value, repeats, repeat start stage
-- (DONE) Plant Stage: Days to next stage, stage glyph, stage rgb, decorator glyph, decorator rgb
-- (DONE) Water crops with watering can
-- (DONE) Only grow plants if they've been watered and are planted in the right season
-- (DONE) Have a way of showing what plants need to be watered
-- (DONE) Display water left in watering can, use watering can on a well or water to refill
-- (DONE) Set up the farm supply shop properly
-- Seeds: only plantable in the correct season
-- - Spring Crops: Turnip, Potato, Cucumber, Cabbage, Strawberry, Garlic, Green Bean, Parsnip, Rhubarb
-- - Summer Crops: Onion, Pumpkin, Watermelon, Melon, Tomato, Paprika, Corn, Pineapple, Blueberry, 
-- - Fall Crops: Carrot, Sweet Potato, Spinach, Eggplant, Bell Pepper, Artichoke, Beet, Bok Choy, Cranberry, Eggplant, Grapes
-- - Winter Crops: Radish, Broccoli, Kale
-- - Year Round: Wheat, Soybean, Rice, Sugar cane, Chili pepper, Bamboo, Flax, Cotton, Tea leaves
-
-
-Shop Mode
-- A shop that you can buy in town
-- Pedestals on which you can place and price items
-- Extra item stats required: Value, Condition
-- Friendly NPCs will be willing to pay more, unfriendly NPCs pay less
-- Each NPC has a chance to buy items they would like as gifts
-- Giving a good deal on an item increases NPC relations, bad deal decreases relations
-
-
-
-More Combat Improvements
-- Limit item stacks to a definable quantity
-- (DONE) Limited number of uses for weapons and armor before it breaks (requiring repairing in town)
-- (DONE) Monsters weak or strong to individual damage types
-- (DONE) Define some monster templates that carry stats, immunities, and weaknesses to serve as monster building blocks
-- - Templates can also be randomly assigned to a small portion of enemies to make for actual elites
-- (DONE) Switch all stats and attributes to (unnamed D20 system) clone?
-- - (DONE) Attributes + Attribute Modifiers
-- - (DONE) Armor Class to determine hits
-- - (DONE) Critical Strikes 
-- Full-round attack: Hit multiple times if you have a high enough Base Attack Bonus (extra attack at +6/+11/+15)
-- Standard action attacks: Only hit once, but recover twice as fast.
-
-
-
-(DONE) Monsters / Combat [First Sweep]
-(DONE) Multiplayer
-(DONE) Overworld combat
-(DONE) NPC Dialogue, Gifting, and Shops
-
-Items
-- (DONE) Stack stackable items if you already have them in your inventory
-- (DONE) Item properties: ItemID, Name, Char, Foreground, ItemCategory, EquipSlot, 
-- (DONE) Load item definitions from file
-- (DONE) Pickup and drop items
-- Tools: 
-- - (DONE) Watering Can - Water crops, allowing them to grow. 
-- - Pickaxe - Used for mining 
-- - (DONE) Axe - Used for cutting down trees. 
-- - (DONE) Hoe - Turns dirt into tilled ground, allowing seeds to be planted 
-- - (DONE) Fishing Pole 
-- - Hammer: Construct tiles/furniture/anything that exists in the world, what you can make depends on construction level
-- (DONE) Equippable item slots: Hand, Off-hand, Head, Torso, Legs, Ring1, Ring2, Amulet
-
+- Seeds: only plantable in the correct season and only if you have a high enough farming level
+- - Spring Crops: (DONE)
+- - Summer Crops: Onion (1), Corn (R) (15),
+- - Fall Crops: Carrot (1), Sweet Potato (5), Bell Pepper (10)
+- - Winter Crops: Broccoli (1), Lettuce (5), Kale (10), Snow peas (15), Broad Beans (r) (20),
+- - Year Round: Flavoroot (1), Cotton (20), Sugar cane (40), 
+		Healroot (50), Bamboo (60), Soybean (70), Tea leaves (90)
 
 NPCs
 - Noonbreeze NPCs
+- - Cinnamon (Town Hall Cashier)
 - - Tom (Owns the bar) (Placed)
 - - Jasper (General Store Owner) (Placed)
-- - Jet (Blacksmith) (Placed)
-- - Emerald (Apothecary) Placed
+- - Jet (Blacksmith) (Placed, Greetings, ChitChat)
+- - Emerald (Apothecary) (Placed)
 - - Rose (Apothecary)
 - - Cobalt (Scholar, frequents the library)
 - - Zephyr (Tailor) (Placed)
@@ -209,6 +114,7 @@ NPCs
 - - Paprika (Sapphire's kid) (Placed)
 - - Saffron (Farm Supply) (Placed, Shop)
 - - Indigo (Inventor)
+- - Cedar (Mayor)
 - Courier's Guild
 - - Algae (Guild leader)
 - - Poppy (Guild worker)
@@ -229,13 +135,6 @@ NPCs
 - - - Coral (Worker) 
 - Phoebe (Pet / summon shop owner)
 
-Desert Traders (Arrive during Holiday week, set up in the town square and offer tradegoods)
-- Cinnamon
-- Caraway
-- Parsley
-- Sorrel
-- Mint
-
 
 NPC names are themed based on where they're from
 - Noonbreeze: Flowers (Jasmine, Indigo, Poppy, Rose)
@@ -246,32 +145,7 @@ NPC names are themed based on where they're from
 
 
 
-
-UI
-- Time, Day, Season, Year. 
-- - (DONE) Time should pass at 1 in-game minute per real life second.
-- - 28 days per month (four 7 day weeks), 10 normal months, then a week-long festival-month at the end of the area outside of the normal time.
-- - 2 Spring months, 3 summer months, 3 fall months, 2 winter months (Maybe let player decide the season lengths by selecting a "climate" they're in?)
-- (DONE) Stats - Energy, Health, Mana?
-- (DONE) Inventory
-- - (DONE) Openable menu - upgradable backpack mechanic
-- - (DONE) Hotbar (visible in sidebar) - Top 9 slots of inventory
-- - (DONE) While inventory is open, let the user move where in their inventory their items are
-- - (DONE) Initialize inventory slots to Empty
-- (DONE) Equipment Menu
-
-
-
-Effects System
-- Affliction length is measured in world seconds
-
-
-
-Map
-- (DONE) Make a minimap that displays the surrounding map tiles
-- (DONE) Map is now "3D", with the ability to make stairs up and down
-- (DONE) Simple fading effects of lower Z-levels to give an impression of height
-- (DONE) Simple slopes that allow fluid movement up and down Z-levels
+Map 
 - Primary small town
 - - Blacksmith (Sells tools, armor, weapons)
 - - Town Hall (A few clerical things - let player buy a farm or other things)
@@ -284,17 +158,109 @@ Map
 - - Clinic (Pay for healing) 
 - - Cafe / Bakery
 - - Butcher (Buys meat from the player, sells common meats)
-- - Clothier
-- (DONE) Lake + Lake Cabin
-- (DONE) Road from Noonbreeze to mountain
-- (DONE) Mountain tunnel at end of road, blocked off for now. Sign explaining why
-- (DONE) Easily extensible for much larger overworld expansions later
-- (DONE) Signs - Probably gonna have to be hardcoded for now
-- - Sign Secondary goal: load sign text from files
-- (DONE) Ocean coast to the east, starter town is right on the coast
-- (DONE) Desert blocking off the north
-- (DONE) Dense forest blocking the south
-- (DONE) Mountain blocking the west
+- - Clothier  
+
+
+====================
+FUTURE UPDATE TARGETS
+
+
+Dumb Ideas that could be fun/funny:
+- Jump button that moves you up a level and hovers you there for a second)
+- - Build up velocity by running before a jump to move tiles while you're in the air, up to 4 tiles of velocity
+- - Maybe as a reward for a dungeon? You get spring shoes and can then jump, spring shoes required to enter/complete the next dungeon
+- Small chance for an NPC named "the devil" to appear on top of a chopped hickory tree, secret mission to beat him at a rhythm game when you speak to him
+- Camera mechanic: When held in hand and clicked, capture area around cursor. Output to a photo item
+- A space area with simulated atmos
+
+Arcade games / Computer? / Console
+- Games run using lua scripts via interpreter
+- Arcade machines have one built-in game they play
+- Consoles (and handhelds?) have carts you can swap out to play different games
+- Computers have disks you can switch and also an OS wrapped with other functions
+- Default font file for games is the normal LH tilesheet, but individual games can opt into using a custom tilesheet
+- Computer Apps
+- - Games with online matchmaking? Chess, shogi, etc. Maybe ranked and unranked
+- - GameDev Studio: All the tools for making games (script editor, tile editor, map editor) in one spot. Save to computers disk drive or upload to steam workshop
+- - IRC: Connect to a public IRC channel or similar to chat with other people playing the game
+- - VR/Cyberspace thing: Connect to an actual server hosted by me, able to walk around in a virtual space talking to other people also connected
+- - "Web Browser": Navigate between fake webpages and domains.
+- - - MyHollow: Let people make their own profile page and export to the workshop
+- - - MyHollow: Browse all pages that are currently on the workshop
+- - - Mail Order shops: Pay for items using banked currency, receive them in the mail
+
+
+Mining Expansion
+- Tools that are useable in the Mines
+- - Grapple Hook (shoot at ceiling, swing across gaps)
+- - Bow (Fire arrows at enemies, or attach a rope to a spot)
+- - Ladder (Left click to place, right click to pick up, stops falling)
+- Create the possibility of premade structures in the mines?
+- Hazards in the mine?
+- - Monsters
+- - Lava
+- - Water
+- - Falling Boulders - Fall if nothing is below them
+- Fluid Physics
+- - Liquid moves to the lowest point 
+- - Fractional liquid portions in a tile, set the air tile glyph to the liquid portion
+
+
+
+Shop Mode
+- A shop that you can buy in town
+- Pedestals on which you can place and price items
+- Extra item stats required: Value, Condition
+- Friendly NPCs will be willing to pay more, unfriendly NPCs pay less
+- Each NPC has a chance to buy items they would like as gifts
+- Giving a good deal on an item increases NPC relations, bad deal decreases relations
+
+
+Minigames
+- Card-based Minigames
+- - Solitaire
+- - Blackjack
+- - Poker
+- Casino Games
+- - Roulette
+- - Slot machine
+- - Pachinko?
+- Multiplayer Boardgames
+- - Chess
+- - Checkers
+- - Mancala
+- - Four In A Row
+- - Yacht Dice
+- - Gomoku
+- - Shogi
+- Job Minigames
+- - Bartending (at Tom's Bar)
+
+
+
+Achievements
+- Each time you fill the requirements for an achievement, put the milliseconds since day start in the log
+- Kill Feed Achievements
+- - Meticulous: Get z-a in order backwards, spelling the alphabet in the feed
+- - METICULOUS: Get Z-A (capitals) in order backwards, spelling the alphabet in the feed
+- - Obsessive and Compulsive: Get Z-A and then z-a, spelling the alphabet in lower case on the top line of the feed and in caps on the bottom
+- - Maturity: Spell boobs in the kill feed
+- - Funny Business: Spell "lol" in the kill feed
+- - Funnier Business: Spell "lmao" in the kill feed
+- - Funniest Business: Spell "lmfao" in the kill feed
+- Map Clear Achievements (10, 20, 50, 100 maps in a single day)
+- 99 in each skill
+- 99 in all skills
+- Max out relationship with 1, 5, 10, 20 NPCs
+- Get to -100 relationship with 1, 5, 10, 20 NPCs
+- Max relationship with a shop vendor
+- -100 relationship with a shop vendor
+
+Conducts? - Keep a record of how many years/months/days you've gone without breaking the conduct
+- Vegan
+- Vegetarian
+- Pacifist (Never level up a combat stat)
+
 
 
 Bespoke Dungeons?
@@ -313,3 +279,13 @@ City
 - Lots of flavor buildings - Restaurants, shops, etc
 - Rentable apartment - have to pay a certain amount each month
 - Minigame jobs to earn money
+
+
+Magic
+- Spell Programming?
+
+Cultivation
+- Also ability programming, but you can tie it to melee/ranged attacks
+- Trained via a meditation minigame with huge rewards every 10 levels.
+- Meditation minigame gives a base of 1 exp per cycle, increased in areas dense with spiritual energy
+- Skill is named "Meditation" until level 10, then changes to be named Cultivation after that

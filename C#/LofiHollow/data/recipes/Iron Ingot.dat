@@ -1,0 +1,31 @@
+{
+  "Name": "Iron Ingot",
+  "FinishedID": 50,
+  "FinishedQty": 1,
+  "Skill": "Smithing",
+  "RequiredLevel": 10,
+  "ExpGranted": 20,
+  "SpecificMaterials": [
+    {
+      "ItemID": 49,
+      "SubID": 0,
+      "ItemQuantity": 1,
+      "Stacks": false
+    }
+  ],
+  "GenericMaterials": [
+    {
+      "Property": "Fuel",
+      "Tier": 1,
+      "Quantity": 1,
+      "Stacks": true,
+	  "CountsAsMultiple": true
+    }
+  ],
+  "RequiredTools": [
+    {
+      "Property": "Hammer",
+      "Tier": 1
+    }
+  ]
+}

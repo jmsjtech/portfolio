@@ -1,0 +1,97 @@
+{
+  "ItemID": 29,
+  "ItemQuantity": 1,
+  "IsStackable": true,
+  "ShortDesc": "Grows cranberries (25)",
+  "Description": "",
+  "AverageValue": 40,
+  "Weight": 0,
+  "ItemCategory": 9,
+  "EquipSlot": -1,
+  "ForegroundR": 166,
+  "ForegroundG": 10,
+  "ForegroundB": 61,
+  "ItemGlyph": 290,
+  "Effect": null,
+  "Plant":  {
+    "GrowthSeason": "Fall",
+	"ProduceName": "Cranberry",
+	"ProduceValue": 60,
+	"ProduceWeight": 0.1,
+	"ProducePerHarvestMin": 2,
+	"ProducePerHarvestMax": 5,
+	"ProduceIsSeed": false,
+	"HarvestRevert": 2,
+	"RequiredLevel": 25,
+	"ExpOnHarvest": 30,
+	"ExpPerExtra": 5,
+	"ProduceGlyph": 296,
+	"ProduceR": 166,
+	"ProduceG": 10,
+	"ProduceB": 61, 
+	"Stages": [
+		{
+			"DaysToNext": 0,
+			"ColorR": 110,
+			"ColorG": 66,
+			"ColorB": 33,
+			"Glyph": 291
+		},
+		{
+			"DaysToNext": 2,
+			"ColorR": 0,
+			"ColorG": 127,
+			"ColorB": 0,
+			"Glyph": 300
+		},
+		{
+			"DaysToNext": 2,
+			"ColorR": 0,
+			"ColorG": 127,
+			"ColorB": 0,
+			"Glyph": 301
+		},
+		{
+			"DaysToNext": 3,
+			"HarvestItem": 21,
+			"ColorR": 166,
+			"ColorG": 10,
+			"ColorB": 61,
+			"Glyph": 306,
+			"Dec": { 
+				"Glyph": 305,
+				"R": 0,
+				"G": 127,
+				"B": 0 
+			}
+		}
+	]
+  },
+  "Appearance": {
+    "Decorators": [],
+    "Foreground": {
+      "_packedValue": 4278190335
+    },
+    "Background": {
+      "_packedValue": 0
+    },
+    "Glyph": 20,
+    "Mirror": 0,
+    "IsVisible": true
+  },
+  "Children": [],
+  "ChildrenLocked": true,
+  "Components": [],
+  "Position": {
+    "X": 0,
+    "Y": 0
+  },
+  "Name": "Cranberry Seed",
+  "ZIndex": 0,
+  "IsVisible": true,
+  "IsEnabled": true,
+  "FocusedMode": 0,
+  "IsExclusiveMouse": false,
+  "UseKeyboard": true,
+  "UseMouse": true
+}

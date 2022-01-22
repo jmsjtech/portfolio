@@ -1,0 +1,14 @@
+{
+  "MineTileID": 2,
+  "Name": "Stone",
+  "BlocksMove": true,
+  "BlocksLOS": true,
+  "TileGlyph": 320,
+  "ForeR": 101,
+  "ForeG": 101,
+  "ForeB": 101,
+  "Dec": null,
+  "OutputID": 42,
+  "RequiredTier": 1,
+  "TileHP": 3
+}

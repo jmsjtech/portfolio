@@ -1,4 +1,5 @@
-﻿using SadConsole;
+﻿using LofiHollow.Managers;
+using SadConsole;
 using SadConsole.Input;
 using SadConsole.UI;
 using SadRogue.Primitives;
@@ -13,16 +14,16 @@ namespace LofiHollow.UI {
         public string SkillView = "Overview";
 
         public UI_Skills(int width, int height, string title) { 
-            SkillWindow = new Window(width, height);
+            SkillWindow = new(width, height);
             SkillWindow.CanDrag = false;
-            SkillWindow.Position = new Point(11, 6);
+            SkillWindow.Position = new(11, 6);
 
             int skillConsoleWidth = width - 2;
             int skillConsoleHeight = height - 2;
 
-            SkillConsole = new Console(skillConsoleWidth, skillConsoleHeight);
+            SkillConsole = new(skillConsoleWidth, skillConsoleHeight);
 
-            SkillConsole.Position = new Point(1, 1);
+            SkillConsole.Position = new(1, 1);
             SkillWindow.Title = title.Align(HorizontalAlignment.Center, skillConsoleWidth, (char)196);
 
 
@@ -48,8 +49,8 @@ namespace LofiHollow.UI {
                 foreach (KeyValuePair<string, Skill> kv in GameLoop.World.Player.Skills) {
                     string name = kv.Key;
                     int level = kv.Value.Level;
-                    int exp = kv.Value.Experience;
-                    int next = kv.Value.ExpToLevel();
+                    int exp = kv.Value.TotalExp;
+                    int next = (kv.Value.ExpToLevel() - kv.Value.Experience);
 
                     SkillConsole.Print(16, 2 + (index * 2), new ColoredString(name.Align(HorizontalAlignment.Center, 20) + "|" + level.ToString().Align(HorizontalAlignment.Center, 7) + "|" + exp.ToString().Align(HorizontalAlignment.Center, 12) + "|" + next.ToString().Align(HorizontalAlignment.Center, 12), mousePos.Y == 2 + (index * 2) ? Color.Yellow : Color.White, Color.Black));
                     SkillConsole.Print(16, 3 + (index * 2), new ColoredString(" ".Align(HorizontalAlignment.Center, 20) + "|" + " ".Align(HorizontalAlignment.Center, 7) + "|" + " ".Align(HorizontalAlignment.Center, 12) + "|" + " ".Align(HorizontalAlignment.Center, 12), Color.White, Color.Black));
@@ -67,7 +68,7 @@ namespace LofiHollow.UI {
                 if (GameHost.Instance.Mouse.LeftClicked) {
                     int slot = mousePos.Y;
                     if (slot >= 0 && slot <= 15)
-                        GameLoop.CommandManager.UnequipItem(GameLoop.World.Player, slot);
+                        CommandManager.UnequipItem(GameLoop.World.Player, slot);
                 }
             }
 
