@@ -14,7 +14,9 @@ namespace LofiHollow.Minigames.Mining {
         [JsonProperty]
         public int MineTileID = 0;
         [JsonProperty]
-        public string Name = ""; 
+        public string Name = "";
+        [JsonProperty]
+        public bool Spawns = false;
         [JsonProperty]
         public int TileGlyph = 32;
         [JsonProperty]
@@ -27,7 +29,7 @@ namespace LofiHollow.Minigames.Mining {
         public Decorator Dec;
 
         [JsonProperty]
-        public int OutputID = 0;
+        public string OutputID = "";
 
         [JsonProperty]
         public int RequiredTier = 0;

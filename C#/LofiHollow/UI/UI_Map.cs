@@ -21,6 +21,7 @@ namespace LofiHollow.UI {
         public SadConsole.Entities.Renderer EntityRenderer;
 
         public GoRogue.FOV FOV;
+        public GoRogue.SenseMapping.SenseMap LightMap;
         public bool LimitedVision = true;
 
         public UI_Map(int width, int height) {
@@ -108,7 +109,7 @@ namespace LofiHollow.UI {
                 MapConsole.Children.Add(GameLoop.World.Player.ScreenAppearance);
 
                 foreach (Entity entity in map.Entities.Items) {
-                    if (entity is Item) {
+                    if (entity is ItemWrapper) {
                         EntityRenderer.Add(entity); 
                     } else {
                         if (entity is Actor act) {
@@ -170,7 +171,7 @@ namespace LofiHollow.UI {
 
 
         public void UpdateNPCs() {
-            if (GameLoop.NetworkManager == null || GameLoop.NetworkManager.lobbyManager == null || GameLoop.NetworkManager.isHost) {
+            if (GameLoop.SingleOrHosting()) {
                 for (int i = 0; i < GameLoop.World.npcLibrary.Count; i++) {
                     GameLoop.World.npcLibrary[i].Update(false);
                 }
@@ -225,6 +226,31 @@ namespace LofiHollow.UI {
                         }
                     }
                 }
+            }
+
+            if (GameLoop.World.Player.MapPos == new Point3D(1, 0, -1)) {
+                if (GameLoop.UIManager.Minigames.MonsterPenManager != null) {
+                    if (GameLoop.UIManager.Minigames.MonsterPenManager.FirstPen != null) {
+                        if (GameLoop.UIManager.Minigames.MonsterPenManager.FirstPen.Monster.Name != "(EMPTY)") {
+                            if (FOV.CurrentFOV.Contains(new Coord(21, 30)))
+                                MapConsole.Print(21, 30, GameLoop.UIManager.Minigames.MonsterPenManager.FirstPen.Monster.Appearance());
+                        }
+                    }
+
+                    if (GameLoop.UIManager.Minigames.MonsterPenManager.SecondPen != null) {
+                        if (GameLoop.UIManager.Minigames.MonsterPenManager.SecondPen.Monster.Name != "(EMPTY)") {
+                            if (FOV.CurrentFOV.Contains(new Coord(21, 32)))
+                                MapConsole.Print(21, 32, GameLoop.UIManager.Minigames.MonsterPenManager.SecondPen.Monster.Appearance());
+                        }
+                    }
+
+                    if (GameLoop.UIManager.Minigames.MonsterPenManager.ThirdPen != null) {
+                        if (GameLoop.UIManager.Minigames.MonsterPenManager.ThirdPen.Monster.Name != "(EMPTY)") {
+                            if (FOV.CurrentFOV.Contains(new Coord(21, 34)))
+                                MapConsole.Print(21, 34, GameLoop.UIManager.Minigames.MonsterPenManager.ThirdPen.Monster.Appearance());
+                        }
+                    }
+                } 
             }
 
             if (GameLoop.UIManager.Sidebar.ChargeBar != 0) {

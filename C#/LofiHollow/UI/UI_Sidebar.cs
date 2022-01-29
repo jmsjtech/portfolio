@@ -5,7 +5,8 @@ using Newtonsoft.Json;
 using SadConsole;
 using SadConsole.Input;
 using SadConsole.UI;
-using SadRogue.Primitives; 
+using SadRogue.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Key = SadConsole.Input.Keys;
@@ -59,7 +60,7 @@ namespace LofiHollow.UI {
         }
 
         public void SidebarInput() { 
-            if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F1)) {
+            if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F11)) {
                 if (GameLoop.UIManager.selectedMenu == "Map Editor") {
                     GameLoop.UIManager.selectedMenu = "None";
                 } else {
@@ -75,12 +76,56 @@ namespace LofiHollow.UI {
                     hotbarSelect--;
             }
 
-            Point mousePos = new MouseScreenObjectState(SidebarConsole, GameHost.Instance.Mouse).CellPosition - new Point(0, 33);
-            if (mousePos.X > 0) { // Clicked in Sidebar
+            bool madeCoinThisFrame = false;
+            Point sidebarMouse = new MouseScreenObjectState(SidebarConsole, GameHost.Instance.Mouse).CellPosition;
+            if (sidebarMouse.X > 0) { // Clicked in Sidebar
                 if (GameHost.Instance.Mouse.LeftClicked) {
-                    int slot = mousePos.Y;
-                    if (slot >= 0 && slot <= 15)
-                        CommandManager.UnequipItem(GameLoop.World.Player, slot);
+                    if (sidebarMouse.Y >= 48) {
+                        int slot = sidebarMouse.Y - 48;
+                        if (slot >= 0 && slot <= 9)
+                            CommandManager.UnequipItem(GameLoop.World.Player, slot);
+                    }
+
+                    
+
+                    if (sidebarMouse.X < 12) {
+                        if (sidebarMouse.Y == 13) {
+                            if (GameLoop.World.Player.CopperCoins > 0) { 
+                                GameLoop.World.Player.CopperCoins -= 1;
+                                Item copper = new("lh:Copper Coin");
+                                CommandManager.AddItemToInv(GameLoop.World.Player, copper);
+                                madeCoinThisFrame = true;
+                            }
+                        }
+
+                        if (sidebarMouse.Y == 14) {
+                            if (GameLoop.World.Player.SilverCoins > 0) {
+                                GameLoop.World.Player.SilverCoins--;
+                                Item silver = new("lh:Silver Coin");
+                                CommandManager.AddItemToInv(GameLoop.World.Player, silver);
+                                madeCoinThisFrame = true;
+                            }
+                        }
+                    } else { 
+                        if (sidebarMouse.Y == 13) {
+                            if (GameLoop.World.Player.GoldCoins > 0) {
+                                GameLoop.World.Player.GoldCoins--;
+                                Item gold = new("lh:Gold Coin");
+                                CommandManager.AddItemToInv(GameLoop.World.Player, gold);
+                                madeCoinThisFrame = true;
+                            }
+                        }
+
+                        if (sidebarMouse.Y == 14) {
+                            if (GameLoop.World.Player.JadeCoins > 0) {
+                                GameLoop.World.Player.JadeCoins--;
+                                Item jade = new("lh:Jade Coin");
+                                CommandManager.AddItemToInv(GameLoop.World.Player, jade);
+                                madeCoinThisFrame = true;
+                            }
+                        } 
+                    }
+
                 }
             }
 
@@ -99,14 +144,14 @@ namespace LofiHollow.UI {
 
             Point mapPos = new MouseScreenObjectState(GameLoop.UIManager.Map.MapConsole, GameHost.Instance.Mouse).CellPosition;
             if (GameHost.Instance.Mouse.LeftButtonDown) {
-                if (GameLoop.World.Player.Inventory[hotbarSelect].ItemID == 0 || GameLoop.World.Player.Inventory[hotbarSelect].ItemID == 21) { 
+                if (GameLoop.World.Player.Inventory[hotbarSelect].Name == "(EMPTY)") { 
 
                     int distance = GoRogue.Lines.Get(new GoRogue.Coord(mapPos.X, mapPos.Y), new GoRogue.Coord(GameLoop.World.Player.Position.X, GameLoop.World.Player.Position.Y)).Count();
                     if (distance < 5) {
                         if (mapPos.X >= 0 && mapPos.X <= GameLoop.MapWidth && mapPos.Y >= 0 && mapPos.Y <= GameLoop.MapHeight) { 
                             TileBase tile = GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos); 
                             if (tile.Plant != null) {
-                                if (tile.Plant.ProduceName == GameLoop.World.Player.Inventory[hotbarSelect].Name || GameLoop.World.Player.Inventory[hotbarSelect].ItemID == 0) {
+                                if (tile.Plant.ProduceName == GameLoop.World.Player.Inventory[hotbarSelect].Name || GameLoop.World.Player.Inventory[hotbarSelect].Name == "(EMPTY)") {
                                     if (tile.Plant.CurrentStage != 0 && tile.Plant.CurrentStage != -1)
                                         Harvesting = true;
                                 } 
@@ -116,26 +161,22 @@ namespace LofiHollow.UI {
                                     TileBase tilled = new(8);
                                     tilled.Name = "Tilled Dirt";
                                     tilled.TileGlyph = 34;
-                                    tilled.UpdateAppearance();
+                                    tilled.UpdateAppearance(); 
 
 
                                     GameLoop.World.maps[GameLoop.World.Player.MapPos].SetTile(mapPos, tilled);
                                     GameLoop.UIManager.Map.MapConsole.SetEffect(mapPos.X, mapPos.X, null);
                                     tile.UpdateAppearance();
 
-                                    if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
-                                        string msg = "updateTile;" + mapPos.X + ";" + mapPos.Y + ";" + GameLoop.World.Player.MapPos.X + ";" +
-                                            GameLoop.World.Player.MapPos.Y + ";" + GameLoop.World.Player.MapPos.Z + ";" + JsonConvert.SerializeObject(tilled, Formatting.Indented);
-                                        GameLoop.NetworkManager.BroadcastMsg(msg);
-                                    }
+                                    string json = JsonConvert.SerializeObject(tilled, Formatting.Indented);
+                                    GameLoop.SendMessageIfNeeded(new string[] { "updateTile", mapPos.X.ToString(), mapPos.Y.ToString(), GameLoop.World.Player.MapPos.ToString(), json }, false, false);
+                                     
                                 } else {
                                     tile.UpdateAppearance();
 
-                                    if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
-                                        string msg = "updateTile;" + mapPos.X + ";" + mapPos.Y + ";" + GameLoop.World.Player.MapPos.X + ";" +
-                                            GameLoop.World.Player.MapPos.Y + ";" + GameLoop.World.Player.MapPos.Z + ";" + JsonConvert.SerializeObject(tile, Formatting.Indented);
-                                        GameLoop.NetworkManager.BroadcastMsg(msg);
-                                    }
+                                    string json = JsonConvert.SerializeObject(tile, Formatting.Indented);
+                                    GameLoop.SendMessageIfNeeded(new string[] { "updateTile", mapPos.X.ToString(), mapPos.Y.ToString(), GameLoop.World.Player.MapPos.ToString(), json }, false, false);
+
                                 }
                             }
                         }
@@ -153,13 +194,42 @@ namespace LofiHollow.UI {
                 int distToClick = GoRogue.Lines.Get(new GoRogue.Coord(mapPos.X, mapPos.Y), new GoRogue.Coord(GameLoop.World.Player.Position.X, GameLoop.World.Player.Position.Y)).Count();
                  if (distToClick < 5) {
                     TileBase clickedTile = GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos);
-                    if (clickedTile.MiscString != null && clickedTile.MiscString == "Smithing") {
-                        GameLoop.UIManager.Crafting.SetupCrafting("Smithing");
-                        return;
+                    if (clickedTile.MiscString != "") {
+                        string[] split = clickedTile.MiscString.Split(",");
+                        if (split[0] == "Skill") {
+                            if (split.Length > 2)
+                                GameLoop.UIManager.Crafting.SetupCrafting(split[1], split[2], Int32.Parse(split[3]));
+                            else if (split.Length > 1)
+                                GameLoop.UIManager.Crafting.SetupCrafting(split[1], split[2], 1);
+                            else
+                                GameLoop.UIManager.Crafting.SetupCrafting(split[1], "None", 1);
+                        }
                     }
-                    if (clickedTile.MiscString != null && clickedTile.MiscString == "Cooking") {
-                        GameLoop.UIManager.Crafting.SetupCrafting("Cooking");
-                        return;
+
+                    if (clickedTile.Lock != null) {
+                        GameLoop.World.maps[GameLoop.World.Player.MapPos].ToggleLock(mapPos, GameLoop.World.Player.MapPos);
+                    }
+                }
+
+                if (tempCat == 13 && !madeCoinThisFrame) { // Clicked with a coin
+                    if (GameLoop.World.Player.Inventory[hotbarSelect].Name == "Copper Coin") {
+                        GameLoop.World.Player.CopperCoins++;
+                        CommandManager.RemoveOneItem(GameLoop.World.Player, hotbarSelect);
+                    }
+
+                    if (GameLoop.World.Player.Inventory[hotbarSelect].Name == "Silver Coin") {
+                        GameLoop.World.Player.SilverCoins++;
+                        CommandManager.RemoveOneItem(GameLoop.World.Player, hotbarSelect);
+                    }
+
+                    if (GameLoop.World.Player.Inventory[hotbarSelect].Name == "Gold Coin") {
+                        GameLoop.World.Player.GoldCoins++;
+                        CommandManager.RemoveOneItem(GameLoop.World.Player, hotbarSelect);
+                    }
+
+                    if (GameLoop.World.Player.Inventory[hotbarSelect].Name == "Jade Coin") {
+                        GameLoop.World.Player.JadeCoins++;
+                        CommandManager.RemoveOneItem(GameLoop.World.Player, hotbarSelect);
                     }
                 }
 
@@ -176,7 +246,7 @@ namespace LofiHollow.UI {
                     if (distance < 5) {
                         if (mapPos.X >= 0 && mapPos.X <= GameLoop.MapWidth && mapPos.Y >= 0 && mapPos.Y <= GameLoop.MapHeight) {
                             if (GameLoop.World.Player.MapPos == new Point3D(-1, 0, 0)) {
-                                if (GameLoop.World.Player.OwnsFarm || (GameLoop.NetworkManager != null && GameLoop.NetworkManager.HostOwnsFarm)) {
+                                if (GameLoop.CheckFlag("farm")) {
                                     TileBase tile = GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos);
 
                                     if (GameLoop.UIManager.Construction.SelectedConstructible != -1) {
@@ -190,33 +260,33 @@ namespace LofiHollow.UI {
 
                                                             for (int j = 0; j < GameLoop.World.Player.Inventory.Length; j++) {
                                                                 if (needed > 0) {
-                                                                    if (con.MaterialsNeeded[i].ItemID == 40) {
-                                                                        if (GameLoop.World.Player.Inventory[j].ItemID == con.MaterialsNeeded[i].ItemID) {
+                                                                    if (con.MaterialsNeeded[i].Name.Contains("Nails")) {
+                                                                        if (GameLoop.World.Player.Inventory[j].Name == con.MaterialsNeeded[i].Name) {
                                                                             if (GameLoop.World.Player.Inventory[j].SubID >= con.MaterialsNeeded[i].SubID) {
                                                                                 if (GameLoop.World.Player.Inventory[j].ItemQuantity > con.MaterialsNeeded[i].ItemQuantity) {
                                                                                     GameLoop.World.Player.Inventory[j].ItemQuantity -= con.MaterialsNeeded[i].ItemQuantity;
                                                                                     needed -= con.MaterialsNeeded[i].ItemQuantity;
                                                                                 } else if (GameLoop.World.Player.Inventory[j].ItemQuantity == con.MaterialsNeeded[i].ItemQuantity) {
-                                                                                    GameLoop.World.Player.Inventory[j] = new(0);
+                                                                                    GameLoop.World.Player.Inventory[j] = new("lh:(EMPTY)");
                                                                                     needed = 0;
                                                                                 } else {
                                                                                     needed -= GameLoop.World.Player.Inventory[j].ItemQuantity;
-                                                                                    GameLoop.World.Player.Inventory[j] = new(0);
+                                                                                    GameLoop.World.Player.Inventory[j] = new("lh:(EMPTY)");
                                                                                 }
                                                                             }
                                                                         }
                                                                     } else {
-                                                                        if (GameLoop.World.Player.Inventory[j].ItemID == con.MaterialsNeeded[i].ItemID) {
+                                                                        if (GameLoop.World.Player.Inventory[j].Name == con.MaterialsNeeded[i].Name) {
                                                                             if (GameLoop.World.Player.Inventory[j].SubID == con.MaterialsNeeded[i].SubID) {
                                                                                 if (GameLoop.World.Player.Inventory[j].ItemQuantity > con.MaterialsNeeded[i].ItemQuantity) {
                                                                                     GameLoop.World.Player.Inventory[j].ItemQuantity -= con.MaterialsNeeded[i].ItemQuantity;
                                                                                     needed -= con.MaterialsNeeded[i].ItemQuantity;
                                                                                 } else if (GameLoop.World.Player.Inventory[j].ItemQuantity == con.MaterialsNeeded[i].ItemQuantity) {
-                                                                                    GameLoop.World.Player.Inventory[j] = new(0);
+                                                                                    GameLoop.World.Player.Inventory[j] = new("lh:(EMPTY)");
                                                                                     needed = 0;
                                                                                 } else {
                                                                                     needed -= GameLoop.World.Player.Inventory[j].ItemQuantity;
-                                                                                    GameLoop.World.Player.Inventory[j] = new(0);
+                                                                                    GameLoop.World.Player.Inventory[j] = new("lh:(EMPTY)");
                                                                                 }
                                                                             }
                                                                         }
@@ -225,9 +295,6 @@ namespace LofiHollow.UI {
                                                             }
                                                         }
 
-                                                        if (con.SpecialProps == "door") {
-                                                            GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[mapPos.X + (mapPos.Y * GameLoop.MapWidth)] = new(7);
-                                                        }
 
                                                         GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos).Name = con.Name;
                                                         GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos).TileGlyph = con.Glyph;
@@ -237,19 +304,21 @@ namespace LofiHollow.UI {
                                                         GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos).Dec = con.Dec;
                                                         GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos).IsBlockingLOS = con.BlocksLOS;
                                                         GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos).IsBlockingMove = con.BlocksMove;
+                                                        GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos).Container = con.Container;
+                                                        GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos).Lock = con.Lock;
                                                         GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos).UpdateAppearance();
 
-                                                        
+                                                        MissionManager.Increment("Construction", con.Name, 1);
+
+                                                        GameLoop.World.Player.ExpendStamina(1);
 
                                                         GameLoop.UIManager.Map.UpdateVision();
 
                                                         GameLoop.World.Player.Skills["Construction"].GrantExp(con.ExpGranted);
 
-                                                        if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
-                                                            string msg = "updateTile;" + mapPos.X + ";" + mapPos.Y + ";" + GameLoop.World.Player.MapPos.X + ";" +
-                                                                GameLoop.World.Player.MapPos.Y + ";" + GameLoop.World.Player.MapPos.Z + ";" + JsonConvert.SerializeObject(GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos), Formatting.Indented);
-                                                            GameLoop.NetworkManager.BroadcastMsg(msg);
-                                                        }
+                                                        string json =  JsonConvert.SerializeObject(GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos), Formatting.Indented);
+                                                        GameLoop.SendMessageIfNeeded(new string[] { "updateTile", mapPos.X.ToString(), mapPos.Y.ToString(), GameLoop.World.Player.MapPos.ToString(), json }, false, false);
+                                                        
                                                     } else {
                                                         GameLoop.UIManager.AddMsg("That's already been built there!");
                                                     }
@@ -274,11 +343,8 @@ namespace LofiHollow.UI {
                                                 GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[mapPos.X + (mapPos.Y * GameLoop.MapWidth)].UpdateAppearance();
                                                 GameLoop.UIManager.Map.UpdateVision();
 
-                                                if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
-                                                    string msg = "updateTile;" + mapPos.X + ";" + mapPos.Y + ";" + GameLoop.World.Player.MapPos.X + ";" +
-                                                        GameLoop.World.Player.MapPos.Y + ";" + GameLoop.World.Player.MapPos.Z + ";" + JsonConvert.SerializeObject(GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[mapPos.X + (mapPos.Y * GameLoop.MapWidth)], Formatting.Indented);
-                                                    GameLoop.NetworkManager.BroadcastMsg(msg);
-                                                }
+                                                string json = JsonConvert.SerializeObject(GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[mapPos.X + (mapPos.Y * GameLoop.MapWidth)], Formatting.Indented);
+                                                GameLoop.SendMessageIfNeeded(new string[] { "updateTile", mapPos.X.ToString(), mapPos.Y.ToString(), GameLoop.World.Player.MapPos.ToString(), json }, false, false);
                                             }
                                         }
                                     }
@@ -293,9 +359,9 @@ namespace LofiHollow.UI {
                 }
 
                 if (tempCat == 12) { // Clicked with a permit in-hand
-                    if (GameLoop.World.Player.Inventory[hotbarSelect].SubID == 1) { // Permit is for the farm
-                        if (GameLoop.NetworkManager == null || (GameLoop.NetworkManager != null && GameLoop.NetworkManager.isHost)) {
-                            if (!GameLoop.World.Player.OwnsFarm) {
+                    if (GameLoop.World.Player.Inventory[hotbarSelect].Name == "Farm Permit") { // Permit is for the farm
+                        if (GameLoop.SingleOrHosting()) {
+                            if (!GameLoop.CheckFlag("farm")) {
                                 GameLoop.World.Player.OwnsFarm = true;
                                 CommandManager.RemoveOneItem(GameLoop.World.Player, hotbarSelect);
                                 GameLoop.UIManager.AddMsg(new ColoredString("You unlocked the farm!", Color.Cyan, Color.Black));
@@ -308,15 +374,12 @@ namespace LofiHollow.UI {
                                 GameLoop.World.maps[new Point3D(-1, 0, 0)].MinimumMonsters = 0;
                                 GameLoop.World.maps[new Point3D(-1, 0, 0)].MinimapTile.name = "Your Farm";
 
-                                if (GameLoop.NetworkManager != null) {
-                                    string msg = "usedPermit;farm;" + GameLoop.World.Player.Name;
-                                    GameLoop.NetworkManager.BroadcastMsg(msg);
-                                }
+                                GameLoop.SendMessageIfNeeded(new string[] { "usedPermit", "farm" }, false, false);
                             } else {
                                 GameLoop.UIManager.AddMsg(new ColoredString("You already own the farm!", Color.Red, Color.Black));
                             }
-                        } else if (GameLoop.NetworkManager != null && !GameLoop.NetworkManager.isHost) {
-                            if (!GameLoop.NetworkManager.HostOwnsFarm) {
+                        } else if (!GameLoop.SingleOrHosting()) {
+                            if (!GameLoop.CheckFlag("farm")) {
                                 if (GameLoop.World.Player.Inventory[hotbarSelect].Weight != 0f) {
                                     GameLoop.UIManager.AddMsg("Use again to unlock for the HOST player (not yourself!)");
                                     GameLoop.World.Player.Inventory[hotbarSelect].Weight = 0f;
@@ -331,8 +394,7 @@ namespace LofiHollow.UI {
                                     GameLoop.World.maps[new Point3D(-1, 0, 0)].MinimumMonsters = 0;
                                     GameLoop.World.maps[new Point3D(-1, 0, 0)].MinimapTile.name = "Your Farm";
 
-                                    string msg = "usedPermit;farm;" + GameLoop.World.Player.Name;
-                                    GameLoop.NetworkManager.BroadcastMsg(msg);
+                                    GameLoop.SendMessageIfNeeded(new string[] { "usedPermit", "farm" }, false, false); 
                                     CommandManager.RemoveOneItem(GameLoop.World.Player, hotbarSelect);
                                 }
                             } else {
@@ -341,11 +403,39 @@ namespace LofiHollow.UI {
                         }
                     }
                 }
+
+                if (GameLoop.World.Player.Inventory[hotbarSelect].Name == "Medium Backpack") { // Used Medium Backpack
+                    CommandManager.RemoveOneItem(GameLoop.World.Player, hotbarSelect);
+                    List<Item> previous = GameLoop.World.Player.Inventory.ToList();
+                    GameLoop.World.Player.Inventory = new Item[18];
+
+                    for (int i = 0; i < GameLoop.World.Player.Inventory.Length; i++) {
+                        GameLoop.World.Player.Inventory[i] = new("lh:(EMPTY)");
+                    }
+
+                    for (int i = 0; i < previous.Count; i++) {
+                        GameLoop.World.Player.Inventory[i] = previous[i];
+                    }
+                }
+
+                if (GameLoop.World.Player.Inventory[hotbarSelect].Name == "Large Backpack") { // Used Medium Backpack
+                    CommandManager.RemoveOneItem(GameLoop.World.Player, hotbarSelect);
+                    List<Item> previous = GameLoop.World.Player.Inventory.ToList();
+                    GameLoop.World.Player.Inventory = new Item[27];
+
+                    for (int i = 0; i < GameLoop.World.Player.Inventory.Length; i++) {
+                        GameLoop.World.Player.Inventory[i] = new("lh:(EMPTY)");
+                    }
+
+                    for (int i = 0; i < previous.Count; i++) {
+                        GameLoop.World.Player.Inventory[i] = previous[i];
+                    }
+                }
             }
 
 
             if (GameHost.Instance.Mouse.LeftButtonDown) {
-                if (GameLoop.World.Player.Inventory[hotbarSelect].ItemID != 0) {
+                if (GameLoop.World.Player.Inventory[hotbarSelect].Name != "(EMPTY)") {
                     if (GameLoop.World.Player.Inventory[hotbarSelect].ItemCategory == 7) { // Fishing rod
                         if (ChargeBar < 100) {
                             ChargeBar++;
@@ -362,12 +452,10 @@ namespace LofiHollow.UI {
                                         GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos).Name = "Tilled Dirt";
                                         GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos).TileGlyph = 34;
                                         GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos).UpdateAppearance();
+                                        GameLoop.World.Player.ExpendStamina(1);
 
-                                        if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
-                                            string msg = "updateTile;" + mapPos.X + ";" + mapPos.Y + ";" + GameLoop.World.Player.MapPos.X + ";" +
-                                                GameLoop.World.Player.MapPos.Y + ";" + GameLoop.World.Player.MapPos.Z + ";" + JsonConvert.SerializeObject(GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos), Formatting.Indented);
-                                            GameLoop.NetworkManager.BroadcastMsg(msg);
-                                        }
+                                        string json = JsonConvert.SerializeObject(GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mapPos), Formatting.Indented);
+                                        GameLoop.SendMessageIfNeeded(new string[] { "updateTile", mapPos.X.ToString(), mapPos.Y.ToString(), GameLoop.World.Player.MapPos.ToString(), json }, false, false);
                                     }
                                 }
                             }
@@ -389,13 +477,10 @@ namespace LofiHollow.UI {
                                             GameLoop.UIManager.Map.MapConsole.SetEffect(mapPos.X, mapPos.Y, null);
                                             tile.UpdateAppearance();
                                             GameLoop.UIManager.Map.MapConsole.SetCellAppearance(mapPos.X, mapPos.Y, tile);
+                                            GameLoop.World.Player.ExpendStamina(1);
                                         }
-
-                                        if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
-                                            string msg = "updateTile;" + mapPos.X + ";" + mapPos.Y + ";" + GameLoop.World.Player.MapPos.X + ";" +
-                                                GameLoop.World.Player.MapPos.Y + ";" + GameLoop.World.Player.MapPos.Z + ";" + JsonConvert.SerializeObject(tile, Formatting.Indented);
-                                            GameLoop.NetworkManager.BroadcastMsg(msg);
-                                        }
+                                        string json = JsonConvert.SerializeObject(tile, Formatting.Indented);
+                                        GameLoop.SendMessageIfNeeded(new string[] { "updateTile", mapPos.X.ToString(), mapPos.Y.ToString(), GameLoop.World.Player.MapPos.ToString(), json }, false, false);
                                     }
                                 }
                             }
@@ -417,11 +502,8 @@ namespace LofiHollow.UI {
                                                 GameLoop.UIManager.Map.MapConsole.SetEffect(mapPos.X, mapPos.Y, new CustomBlink(168, Color.Blue));
                                                 CommandManager.RemoveOneItem(GameLoop.World.Player, hotbarSelect);
 
-                                                if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
-                                                    string msg = "updateTile;" + mapPos.X + ";" + mapPos.Y + ";" + GameLoop.World.Player.MapPos.X + ";" +
-                                                        GameLoop.World.Player.MapPos.Y + ";" + GameLoop.World.Player.MapPos.Z + ";" + JsonConvert.SerializeObject(tile, Formatting.Indented);
-                                                    GameLoop.NetworkManager.BroadcastMsg(msg);
-                                                }
+                                                string json = JsonConvert.SerializeObject(tile, Formatting.Indented);
+                                                GameLoop.SendMessageIfNeeded(new string[] { "updateTile", mapPos.X.ToString(), mapPos.Y.ToString(), GameLoop.World.Player.MapPos.ToString(), json }, false, false);
                                             } else {
                                                 Harvesting = true;
                                                 GameLoop.UIManager.AddMsg(new ColoredString("You can't plant that right now. (" + GameLoop.World.Player.Inventory[hotbarSelect].Plant.GrowthSeason + ")", Color.Red, Color.Black));
@@ -441,24 +523,26 @@ namespace LofiHollow.UI {
             if (!GameHost.Instance.Mouse.LeftButtonDown) {
                 if (ChargeBar != 0) {
                     if (LocalLure != null) {
-                        if (GameLoop.World.maps[GameLoop.World.Player.MapPos].GetEntityAt<Item>(LocalLure.Position) != null) {
-                            Item item = GameLoop.World.maps[GameLoop.World.Player.MapPos].GetEntityAt<Item>(LocalLure.Position);
-                            GameLoop.UIManager.AddMsg("Snagged the " + item.Name + "!");
-                            CommandManager.AddItemToInv(GameLoop.World.Player, item);
+                        if (GameLoop.World.maps[GameLoop.World.Player.MapPos].GetEntityAt<ItemWrapper>(LocalLure.Position) != null) {
+                            ItemWrapper wrap = GameLoop.World.maps[GameLoop.World.Player.MapPos].GetEntityAt<ItemWrapper>(LocalLure.Position);
+                            GameLoop.UIManager.AddMsg("Snagged the " + wrap.item.Name + "!");
+                            CommandManager.AddItemToInv(GameLoop.World.Player, wrap.item);
                             //  GameLoop.CommandManager.DestroyItem(item);
-                            item.Position = new Point(-1, -2);
+                            GameLoop.World.Player.ExpendStamina(1);
+                            wrap.Position = new Point(-1, -2);
                         } else if (LocalLure.FishOnHook) {
-                            GameLoop.UIManager.Minigames.InitiateFishing(GameLoop.World.Player.Clock.GetSeason(), 
+                            GameLoop.UIManager.Minigames.FishingManager.InitiateFishing(GameLoop.World.Player.Clock.GetSeason(), 
                                 GameLoop.World.maps[GameLoop.World.Player.MapPos].MinimapTile.name, 
                                 GameLoop.World.Player.Clock.GetCurrentTime(),
                                 GameLoop.World.Player.Skills["Fishing"].Level);
+                            GameLoop.World.Player.ExpendStamina(1);
                         } else { 
                             GameLoop.UIManager.Map.MapConsole.ClearDecorators(LocalLure.Position.X, LocalLure.Position.Y, 1);
                             LocalLure.Position = new Point(-1, -1);
                         }
                     }
                     if (ChargeBar >= 10) {
-                        if (GameLoop.World.Player.Inventory[hotbarSelect].ItemID != 0) {
+                        if (GameLoop.World.Player.Inventory[hotbarSelect].Name != "(EMPTY)") {
                             if (GameLoop.World.Player.Inventory[hotbarSelect].ItemCategory == 7) { // Fishing rod
                                 Point target = LureSpot * new Point(2, 2);
                                 int xDist = (int)((double)((target.X / 10) * (ChargeBar / 10)));
@@ -501,7 +585,7 @@ namespace LofiHollow.UI {
                 thisMap.name += " ";
             }
 
-            if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F1)) {
+            if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F11)) {
                 if (GameLoop.UIManager.selectedMenu == "Map Editor") {
                     GameLoop.UIManager.selectedMenu = "None";
                 } else {
@@ -561,9 +645,6 @@ namespace LofiHollow.UI {
                             selectedTile.Lock.LockTime += 60;
                         else
                             selectedTile.Lock.LockTime++;
-                } else if (sidebarMouse.Y == 43) {
-                    if (selectedTile.Lock != null)
-                        selectedTile.Lock.KeySubID++;
                 }
             } else if (GameHost.Instance.Mouse.ScrollWheelValueChange > 0) {
                 if (sidebarMouse.Y == 19) {
@@ -602,9 +683,6 @@ namespace LofiHollow.UI {
                             selectedTile.Lock.LockTime -= 60;
                         else
                             selectedTile.Lock.LockTime--;
-                } else if (sidebarMouse.Y == 43) {
-                    if (selectedTile.Lock != null && selectedTile.Lock.KeySubID > -1)
-                        selectedTile.Lock.KeySubID--;
                 }
             }
 
@@ -626,7 +704,6 @@ namespace LofiHollow.UI {
                 GameLoop.World.maps[GameLoop.World.Player.MapPos].MinimumMonsters = 5;
                 GameLoop.World.maps[GameLoop.World.Player.MapPos].MaximumMonsters = 10;
 
-                World.SaveMapToFile(GameLoop.World.maps[GameLoop.World.Player.MapPos], GameLoop.World.Player.MapPos);
             }
 
             Point mousePos = GameHost.Instance.Mouse.ScreenPosition.PixelLocationToSurface(12, 12) - new Point(1, 1);
@@ -638,11 +715,8 @@ namespace LofiHollow.UI {
                         if (mousePos.ToIndex(GameLoop.MapWidth) < GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles.Length) { 
                             GameLoop.World.maps[GameLoop.World.Player.MapPos].Tiles[mousePos.ToIndex(GameLoop.MapWidth)] = tile;
 
-                            if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
-                                string msg = "updateTile;" + mousePos.X + ";" + mousePos.Y + ";" + GameLoop.World.Player.MapPos.X + ";" + 
-                                    GameLoop.World.Player.MapPos.Y + ";" + GameLoop.World.Player.MapPos.Z + ";" + JsonConvert.SerializeObject(tile, Formatting.Indented);
-                                GameLoop.NetworkManager.BroadcastMsg(msg); 
-                            } 
+                            string json = JsonConvert.SerializeObject(tile, Formatting.Indented);
+                            GameLoop.SendMessageIfNeeded(new string[] { "updateTile", mousePos.X.ToString(), mousePos.Y.ToString(), GameLoop.World.Player.MapPos.ToString(), json }, false, false);
                         }
                     }
                 }
@@ -706,6 +780,7 @@ namespace LofiHollow.UI {
             SidebarConsole.Clear();
             string time = "";
             string[] months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
 
             if (LocalLure != null)
                 LocalLure.Update();
@@ -799,7 +874,7 @@ namespace LofiHollow.UI {
                         SidebarConsole.Print(0, 40, "Always Locked: " + tile.Lock.AlwaysLocked);
                         SidebarConsole.Print(0, 41, "Unlocks at: " + GameLoop.World.Player.Clock.MinutesToTime(tile.Lock.UnlockTime));
                         SidebarConsole.Print(0, 42, "Locks at: " + GameLoop.World.Player.Clock.MinutesToTime(tile.Lock.LockTime));
-                        SidebarConsole.Print(0, 43, "Key SubID: " + tile.Lock.KeySubID);
+                        SidebarConsole.Print(0, 43, "Key Name: " + tile.Lock.UnlockKeyName);
                     }
                 }
             } else { // Print non-map editor stuff
@@ -822,10 +897,15 @@ namespace LofiHollow.UI {
 
                     SidebarConsole.DrawLine(new Point(0, 15), new Point(25, 15), (char)196, Color.White, Color.Black);
 
+
+
                     int y = 16;
 
                     SidebarConsole.Print(0, y, new ColoredString(((char)3).ToString(), Color.Red, Color.Black));
-                    SidebarConsole.Print(1, y, new ColoredString((GameLoop.World.Player.CurrentHP + "/" + GameLoop.World.Player.MaxHP).Align(HorizontalAlignment.Right, 7), Color.Red, Color.Black));
+                    SidebarConsole.Print(1, y, new ColoredString((GameLoop.World.Player.CurrentHP + "/" + GameLoop.World.Player.MaxHP).Align(HorizontalAlignment.Right, 5), Color.Red, Color.Black));
+
+                    SidebarConsole.Print(8, y, new ColoredString(((char)175).ToString(), Color.Lime, Color.Black));
+                    SidebarConsole.Print(9, y, new ColoredString((GameLoop.World.Player.CurrentStamina + "/" + GameLoop.World.Player.MaxStamina).Align(HorizontalAlignment.Right, 7), Color.Lime, Color.Black));
 
                     GameLoop.World.Player.CalculateCombatLevel();
                     SidebarConsole.Print(0, y + 1, "Combat Lv: " + GameLoop.World.Player.CombatLevel);
@@ -839,8 +919,92 @@ namespace LofiHollow.UI {
                         SidebarConsole.Print(19, y++, ("Year " + GameLoop.World.Player.Clock.Year).Align(HorizontalAlignment.Right, 7));
                     }
 
-
+                    SidebarConsole.DrawLine(new Point(0, y), new Point(25, y), (char)196, Color.White, Color.Black);
                     y++;
+
+                    SidebarConsole.Print(0, y++, "Mouse-Look");
+                    Point mouseOverMap = new MouseScreenObjectState(GameLoop.UIManager.Map.MapConsole, GameHost.Instance.Mouse).CellPosition;
+                    if (mouseOverMap.X >= 0 && mouseOverMap.Y >= 0 && mouseOverMap.X <= GameLoop.MapWidth && mouseOverMap.Y <= GameLoop.MapHeight) {
+                        if (GameLoop.UIManager.Map.FOV.CurrentFOV.Contains(new GoRogue.Coord(mouseOverMap.X, mouseOverMap.Y))) {
+                            TileBase tile = GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mouseOverMap);
+
+                            SidebarConsole.Print(0, y++, tile.AsColoredGlyph() + new ColoredString(" " + tile.Name, Color.White, Color.Black));
+                            if (tile.Dec != null) 
+                                SidebarConsole.SetDecorator(0, y - 1, 1, tile.GetDecorator());
+                            y++;
+                            
+                            if (GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mouseOverMap).Container == null) {
+                                SidebarConsole.Print(0, y++, "Monsters");
+                                List<Monster> MonstersOnTile = GameLoop.World.maps[GameLoop.World.Player.MapPos].GetAllEntities<Monster>(mouseOverMap);
+
+                                if (MonstersOnTile != null && MonstersOnTile.Count > 0) {
+                                    for (int i = 0; i < MonstersOnTile.Count; i++) {
+                                        SidebarConsole.Print(0, y++, MonstersOnTile[i].GetAppearance() + new ColoredString(" " + MonstersOnTile[i].Name, Color.White, Color.Black));
+                                    }
+                                } else {
+                                    SidebarConsole.Print(0, y++, new ColoredString(" (None)", Color.DarkSlateGray, Color.Black));
+                                }
+
+                                y++;
+
+                            
+                                SidebarConsole.Print(0, y++, "Items");
+                                List<ItemWrapper> ItemsOnTile = GameLoop.World.maps[GameLoop.World.Player.MapPos].GetAllEntities<ItemWrapper>(mouseOverMap);
+
+                                if (ItemsOnTile != null && ItemsOnTile.Count > 0) {
+                                    for (int i = 0; i < ItemsOnTile.Count; i++) {
+                                        string qty = "";
+                                        if (ItemsOnTile[i].item.ItemQuantity > 1)
+                                            qty = ItemsOnTile[i].item.ItemQuantity + "x ";
+
+                                        ColoredString LetterGrade = new("");
+                                        if (ItemsOnTile[i].item.Quality > 0)
+                                            LetterGrade = new ColoredString(" [") + ItemsOnTile[i].item.LetterGrade() + new ColoredString("]");
+
+                                        SidebarConsole.Print(0, y++, ItemsOnTile[i].AsColoredGlyph() + new ColoredString(" " + qty + ItemsOnTile[i].item.Name, Color.White, Color.Black) + LetterGrade);
+                                        if (ItemsOnTile[i].item.Dec != null)
+                                            SidebarConsole.SetDecorator(0, y - 1, 1, ItemsOnTile[i].GetDecorator());
+
+                                        if (y >= 35)
+                                            break;
+                                    }
+                                } else {
+                                    SidebarConsole.Print(0, y++, new ColoredString(" (None)", Color.DarkSlateGray, Color.Black));
+                                }
+                            } else {
+                                SidebarConsole.Print(0, y - 2, tile.AsColoredGlyph() + new ColoredString((" " + tile.Container.Name).Align(HorizontalAlignment.Left, 20), Color.White, Color.Black));
+                                if (tile.Dec != null)
+                                    SidebarConsole.SetDecorator(0, y - 2, 1, tile.GetDecorator());
+
+                                SidebarConsole.Print(0, y++, "Container");
+                                List<Item> ItemsOnTile = GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(mouseOverMap).Container.Items;
+
+                                if (ItemsOnTile != null && ItemsOnTile.Count > 0) {
+                                    for (int i = 0; i < ItemsOnTile.Count; i++) { 
+                                        string qty = "";
+                                        if (ItemsOnTile[i].ItemQuantity > 1)
+                                            qty = ItemsOnTile[i].ItemQuantity + "x ";
+
+                                        ColoredString LetterGrade = new("");
+                                        if (ItemsOnTile[i].Quality > 0)
+                                            LetterGrade = new ColoredString(" [") + ItemsOnTile[i].LetterGrade() + new ColoredString("]");
+
+                                        SidebarConsole.Print(0, y++, ItemsOnTile[i].AsColoredGlyph() + new ColoredString(" " + qty + ItemsOnTile[i].Name, Color.White, Color.Black) + LetterGrade);
+                                        if (ItemsOnTile[i].Dec != null)
+                                            SidebarConsole.SetDecorator(0, y - 1, 1, ItemsOnTile[i].GetDecorator());
+
+                                        if (y >= 35)
+                                            break;
+                                    }
+                                } else {
+                                    SidebarConsole.Print(0, y++, new ColoredString(" (Empty)", Color.DarkSlateGray, Color.Black));
+                                }
+                            }
+                        }
+                    } 
+                    y = 35;
+
+                    SidebarConsole.DrawLine(new Point(0, y), new Point(25, y), (char)196, Color.White, Color.Black);
                     y++;
                     SidebarConsole.Print(0, y, "Backpack");
                     y++;
@@ -848,21 +1012,21 @@ namespace LofiHollow.UI {
                     for (int i = 0; i < 9; i++) {
                         Item item = GameLoop.World.Player.Inventory[i];
 
-                        string nameWithDurability = item.Name;
-
-                        if (item.Durability >= 0)
-                            nameWithDurability = "[" + item.Durability + "] " + item.Name;
-
                         SidebarConsole.Print(0, y, "|");
                         SidebarConsole.Print(1, y, item.AsColoredGlyph());
                         if (item.Dec != null) {
                             SidebarConsole.SetDecorator(1, y, 1, new CellDecorator(new Color(item.Dec.R, item.Dec.G, item.Dec.B), item.Dec.Glyph, Mirror.None));
                         }
 
+                        ColoredString LetterGrade = new("");
+                        if (item.Quality > 0)
+                            LetterGrade = new ColoredString(" [") + item.LetterGrade() + new ColoredString("]");
+
+
                         if (!item.IsStackable || (item.IsStackable && item.ItemQuantity == 1))
-                            SidebarConsole.Print(3, y, new ColoredString(nameWithDurability, i == hotbarSelect ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.TransparentBlack));
+                            SidebarConsole.Print(3, y, new ColoredString(item.Name, i == hotbarSelect ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.TransparentBlack) + LetterGrade);
                         else
-                            SidebarConsole.Print(3, y, new ColoredString(("(" + item.ItemQuantity + ") " + item.Name), i == hotbarSelect ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.TransparentBlack));
+                            SidebarConsole.Print(3, y, new ColoredString(("(" + item.ItemQuantity + ") " + item.Name), i == hotbarSelect ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.TransparentBlack) + LetterGrade);
 
                         if (i == hotbarSelect && item.ItemCategory == 7) {
                             SidebarConsole.Print(15, y, "[");
@@ -895,19 +1059,13 @@ namespace LofiHollow.UI {
 
                     for (int i = 0; i < 10; i++) {
                         Item item = GameLoop.World.Player.Equipment[i];
-
-                        string nameWithDurability = item.Name;
-
-                        if (item.Durability >= 0)
-                            nameWithDurability = "[" + item.Durability + "] " + item.Name;
-
-
+                          
                         SidebarConsole.Print(0, y, "|");
                         SidebarConsole.Print(1, y, item.AsColoredGlyph());
                         if (item.Dec != null) {
                             SidebarConsole.SetDecorator(1, y, 1, new CellDecorator(new Color(item.Dec.R, item.Dec.G, item.Dec.B), item.Dec.Glyph, Mirror.None));
                         }
-                        SidebarConsole.Print(3, y, new ColoredString(nameWithDurability, mousePos.Y == y ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.TransparentBlack));
+                        SidebarConsole.Print(3, y, new ColoredString(item.Name, mousePos.Y == y ? Color.Yellow : item.Name == "(EMPTY)" ? Color.DarkSlateGray : Color.White, Color.TransparentBlack));
                         y++;
                     }
                 }

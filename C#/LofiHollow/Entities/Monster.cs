@@ -144,10 +144,7 @@ namespace LofiHollow.Entities {
                 }
 
                 if (oldPos != Position) {
-                    if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null && GameLoop.NetworkManager.isHost) {
-                        string msg = "moveMonster;" + UniqueID + ";" + Position.X + ";" + Position.Y + ";" + MapPos.X + ";" + MapPos.Y + ";" + MapPos.Z;
-                        GameLoop.NetworkManager.BroadcastMsg(msg);
-                    }
+                    GameLoop.SendMessageIfNeeded(new string[] { "moveMonster", UniqueID, Position.X.ToString(), Position.Y.ToString(), MapPos.ToString() }, true, false);
                 }
             } else if (distanceToNearest == 1) { // Already adjacent, make an attack
                 if (defender != null) {

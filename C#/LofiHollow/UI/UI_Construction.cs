@@ -42,7 +42,7 @@ namespace LofiHollow.UI {
             ConstructionConsole.Clear();
 
             ConstructionConsole.Print(50, 0, "Deconstruct Mode -" + (char) 12);
-            ConstructionConsole.Print(69, 0, new ColoredString("X", mousePos == new Point(69, 0) ? Color.Yellow : Color.White, Color.Black));
+            ConstructionConsole.Print(69, 0, Helper.HoverColoredString("X", mousePos == new Point(69, 0)));
 
             ConstructionConsole.Print(33, 1, "Block");
             ConstructionConsole.Print(39, 1, "Block");
@@ -53,7 +53,7 @@ namespace LofiHollow.UI {
 
                 ColoredString line = GameLoop.World.constructibles[i].Appearance();
                 line += new ColoredString(" ", Color.White, Color.Black);
-                line += new ColoredString(GameLoop.World.constructibles[i].Name.Align(HorizontalAlignment.Center, 25, ' '), mousePos.Y == i + 4 ? Color.Yellow : Color.White, Color.Black);
+                line += Helper.HoverColoredString(GameLoop.World.constructibles[i].Name.Align(HorizontalAlignment.Center, 25, ' '), mousePos.Y == i + 4);
                 line += new ColoredString("|", Color.White, Color.Black); 
                 line += new ColoredString(("" + GameLoop.World.constructibles[i].RequiredLevel).Align(HorizontalAlignment.Center, 4, ' '), Color.White, Color.Black);
                 line += new ColoredString("|", Color.White, Color.Black); 
@@ -105,12 +105,12 @@ namespace LofiHollow.UI {
                 int quantity = 0;
 
                 for (int j = 0; j < GameLoop.World.Player.Inventory.Length; j++) {
-                    if (con.MaterialsNeeded[i].ItemID == 40) {
-                        if (GameLoop.World.Player.Inventory[j].ItemID == con.MaterialsNeeded[i].ItemID && GameLoop.World.Player.Inventory[j].SubID >= con.MaterialsNeeded[i].SubID) {
+                    if (con.MaterialsNeeded[i].Name.Contains("Nails")) {
+                        if (GameLoop.World.Player.Inventory[j].Name.Contains("Nails") && GameLoop.World.Player.Inventory[j].SubID >= con.MaterialsNeeded[i].SubID) {
                             quantity += GameLoop.World.Player.Inventory[j].ItemQuantity;
                         }
                     } else {
-                        if (GameLoop.World.Player.Inventory[j].ItemID == con.MaterialsNeeded[i].ItemID && GameLoop.World.Player.Inventory[j].SubID == con.MaterialsNeeded[i].SubID) {
+                        if (GameLoop.World.Player.Inventory[j].Name == con.MaterialsNeeded[i].Name && GameLoop.World.Player.Inventory[j].SubID == con.MaterialsNeeded[i].SubID) {
                             quantity += GameLoop.World.Player.Inventory[j].ItemQuantity;
                         }
                     }

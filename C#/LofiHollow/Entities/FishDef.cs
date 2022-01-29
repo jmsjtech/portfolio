@@ -11,7 +11,7 @@ namespace LofiHollow.Entities {
     [JsonObject(MemberSerialization.OptIn)]
     public class FishDef {
         [JsonProperty]
-        public int FishID = 0;
+        public string PackageID = "";
         [JsonProperty]
         public string Name = "";
         [JsonProperty]
@@ -23,12 +23,12 @@ namespace LofiHollow.Entities {
         [JsonProperty]
         public string CatchLocation = "";
         [JsonProperty]
-        public double MinWeightKG = 0;
+        public double Weight = 0;
         [JsonProperty]
-        public double MaxWeightKG = 0;
+        public int AverageValue = 2;
 
         [JsonProperty]
-        public int CoppersPerKG = 0;
+        public int MaxQuality = 1; 
 
         [JsonProperty]
         public int RequiredLevel = 0;
@@ -49,7 +49,14 @@ namespace LofiHollow.Entities {
         [JsonProperty]
         public int colB = 0;
         [JsonProperty]
+        public int colA = 255;
+        [JsonProperty]
         public int glyph = 0;
+
+        [JsonProperty]
+        public Item RawFish;
+        [JsonProperty]
+        public string FilletName;
 
         public ColoredString GetAppearance() {
             return new ColoredString(((char) glyph).ToString(), new Color(colR, colG, colB), Color.Black);

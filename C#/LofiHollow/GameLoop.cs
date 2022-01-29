@@ -9,6 +9,7 @@ using LofiHollow.Managers;
 using LofiHollow.Entities;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace LofiHollow {
     class GameLoop {
@@ -20,8 +21,9 @@ namespace LofiHollow {
         public static UIManager UIManager;
         public static World World;
         public static CommandManager CommandManager;
-
+        public static SteamManager SteamManager;
         public static NetworkManager NetworkManager;
+        public static MissionManager MissionManager;
 
 
         public static Random rand;
@@ -83,6 +85,8 @@ namespace LofiHollow {
                 UpdatedMaps.Clear(); 
             }
 
+            SteamManager.RunCallbacks();
+
         }
 
         private static void Init() { 
@@ -92,7 +96,8 @@ namespace LofiHollow {
             UIManager.Init();
 
             
-            CommandManager = new CommandManager();
+            CommandManager = new CommandManager(); 
+            SteamManager = new SteamManager();
 
             //  World.LoadExistingMaps();
             World.LoadMapAt(new Point3D(1, 3, 0));
@@ -112,6 +117,36 @@ namespace LofiHollow {
 
 
             return false;
+        }
+
+        public static bool SingleOrHosting() {
+            if (NetworkManager == null)
+                return true;
+            return NetworkManager.isHost;
+        }
+
+        public static void SendMessageIfNeeded(string[] messagePieces, bool OnlyIfHost, bool AddOwnID, long OnlyToID = -1) {
+            if (NetworkManager != null && NetworkManager.lobbyManager != null) {
+                if (!OnlyIfHost || (OnlyIfHost && NetworkManager.isHost)) {
+                    string msg = "";
+
+                    for (int i = 0; i < messagePieces.Length; i++) {
+                        msg += messagePieces[i] + ";";
+
+                        if (i == 0 && AddOwnID)
+                            msg += NetworkManager.ownID + ";";
+                    } 
+
+                    if (OnlyToID == -1) {
+                        NetworkManager.BroadcastMsg(msg);
+                    } else if (OnlyToID == 0) {
+                        var lobbyOwnerId = NetworkManager.lobbyManager.GetLobby(NetworkManager.lobbyID).OwnerId;
+                        NetworkManager.lobbyManager.SendNetworkMessage(NetworkManager.lobbyID, lobbyOwnerId, 0, Encoding.UTF8.GetBytes(msg));
+                    } else {
+                        NetworkManager.lobbyManager.SendNetworkMessage(NetworkManager.lobbyID, OnlyToID, 0, Encoding.UTF8.GetBytes(msg));
+                    }
+                }
+            }
         }
     }
 }

@@ -73,7 +73,10 @@ namespace LofiHollow.Managers {
                             } else {
 								GameLoop.World.maps.Add(new Point3D(-1, 0, 0), sentMap);
                             }
-                        }
+
+							if (GameLoop.World.Player.MapPos == new Point3D(-1, 0, 0))
+								GameLoop.UIManager.Map.UpdateVision();
+						} 
 
 						break;
 					case "usedPermit":
@@ -122,7 +125,7 @@ namespace LofiHollow.Managers {
 									entityMsg = "spawnMonster;" + JsonConvert.SerializeObject(monEntity, Formatting.Indented);
 								}
 
-								if (ent is Item itemEntity) {
+								if (ent is ItemWrapper itemEntity) {
 									entityMsg = "spawnItem;" + JsonConvert.SerializeObject(itemEntity, Formatting.Indented);
 								}
 
@@ -223,20 +226,21 @@ namespace LofiHollow.Managers {
 						Point mineTilePos = new(mineTilePosX, mineTilePosY);
 						
 						if (Loc == "Mountain") {
-							if (GameLoop.UIManager.Minigames.MountainMine != null && GameLoop.UIManager.Minigames.MountainMine.Levels.ContainsKey(Depth))
-								GameLoop.UIManager.Minigames.MountainMine.Levels[Depth].SetTile(mineTilePos, mineTile);
+							if (GameLoop.UIManager.Minigames.MineManager.MountainMine != null && GameLoop.UIManager.Minigames.MineManager.MountainMine.Levels.ContainsKey(Depth))
+								GameLoop.UIManager.Minigames.MineManager.MountainMine.Levels[Depth].SetTile(mineTilePos, mineTile);
                         }
 
 						if (Loc == "Lake") {
-							if (GameLoop.UIManager.Minigames.LakeMine != null && GameLoop.UIManager.Minigames.LakeMine.Levels.ContainsKey(Depth))
-								GameLoop.UIManager.Minigames.LakeMine.Levels[Depth].SetTile(mineTilePos, mineTile);
+							if (GameLoop.UIManager.Minigames.MineManager.LakeMine != null && GameLoop.UIManager.Minigames.MineManager.LakeMine.Levels.ContainsKey(Depth))
+								GameLoop.UIManager.Minigames.MineManager.LakeMine.Levels[Depth].SetTile(mineTilePos, mineTile);
 						}
 
 
 						break;
 					case "spawnItem":
 						Item spawnItem = JsonConvert.DeserializeObject<Item>(splitMsg[1]);
-						CommandManager.SpawnItem(spawnItem);
+						ItemWrapper wrap = new(spawnItem);
+						CommandManager.SpawnItem(wrap);
 						break;
 					case "updateSkill":
 						long skillID = long.Parse(splitMsg[1]); 
@@ -264,7 +268,8 @@ namespace LofiHollow.Managers {
 						break;
 					case "destroyItem":
 						Item destroyItem = JsonConvert.DeserializeObject<Item>(splitMsg[1]);
-						CommandManager.DestroyItem(destroyItem);
+						ItemWrapper destroyWrap = new(destroyItem);
+						CommandManager.DestroyItem(destroyWrap);
 						break;
 					case "movePlayer":
 						long moveID = long.Parse(splitMsg[1]);
@@ -287,6 +292,28 @@ namespace LofiHollow.Managers {
 						GameLoop.World.otherPlayers[mineID].MineLocation = mineLoc;
 						GameLoop.World.otherPlayers[mineID].MineDepth = mineDepth;
 						break;
+					case "updateChest":
+						int chestX = Int32.Parse(splitMsg[1]);
+						int chestY = Int32.Parse(splitMsg[2]);
+						int chestMX = Int32.Parse(splitMsg[3]);
+						int chestMY = Int32.Parse(splitMsg[4]);
+						int chestMZ = Int32.Parse(splitMsg[5]);
+
+						Point3D chestMap = new Point3D(chestMX, chestMY, chestMZ);
+						Point chestPos = new Point(chestX, chestY);
+
+						Container chestContents = JsonConvert.DeserializeObject<Container>(splitMsg[6]);
+
+						if (!GameLoop.World.maps.ContainsKey(chestMap))
+							GameLoop.World.LoadMapAt(chestMap);
+
+						if (GameLoop.World.maps[chestMap].GetTile(chestPos).Container != null)
+							GameLoop.World.maps[chestMap].GetTile(chestPos).Container = chestContents;
+
+						if (GameLoop.World.Player.MapPos == chestMap && chestPos == GameLoop.UIManager.Container.ContainerPosition) {
+							GameLoop.UIManager.Container.CurrentContainer = GameLoop.World.maps[chestMap].GetTile(chestPos).Container; 
+						}
+						break;
 					case "requestMine":
 						if (isHost) {
 							string mineName = splitMsg[1];
@@ -295,9 +322,9 @@ namespace LofiHollow.Managers {
 							string mineSend = "fullMine;" + mineName + ";" + mineLevel + ";";
 
 							if (mineName == "Mountain") {
-								mineSend += JsonConvert.SerializeObject(GameLoop.UIManager.Minigames.MountainMine.Levels[mineLevel], Formatting.Indented);
+								mineSend += JsonConvert.SerializeObject(GameLoop.UIManager.Minigames.MineManager.MountainMine.Levels[mineLevel], Formatting.Indented);
 							} else if (mineName == "Lake") {
-								mineSend += JsonConvert.SerializeObject(GameLoop.UIManager.Minigames.LakeMine, Formatting.Indented);
+								mineSend += JsonConvert.SerializeObject(GameLoop.UIManager.Minigames.MineManager.LakeMine, Formatting.Indented);
 							}
 
 							lobbyManager.SendNetworkMessage(lobbyID, userId, 0, Encoding.UTF8.GetBytes(mineSend));
@@ -311,24 +338,66 @@ namespace LofiHollow.Managers {
 							MineLevel sentMine = JsonConvert.DeserializeObject<MineLevel>(splitMsg[3]);
 
 							if (mineName == "Mountain") {
-								if (GameLoop.UIManager.Minigames.MountainMine.Levels.ContainsKey(mineLevel)) {
-									GameLoop.UIManager.Minigames.MountainMine.Levels[mineLevel] = sentMine; 
+								if (GameLoop.UIManager.Minigames.MineManager.MountainMine.Levels.ContainsKey(mineLevel)) {
+									GameLoop.UIManager.Minigames.MineManager.MountainMine.Levels[mineLevel] = sentMine; 
 								} else {
-									GameLoop.UIManager.Minigames.MountainMine.Levels.Add(mineLevel, sentMine);
+									GameLoop.UIManager.Minigames.MineManager.MountainMine.Levels.Add(mineLevel, sentMine);
 								}
 								GameLoop.UIManager.Minigames.ToggleMinigame();
-								GameLoop.UIManager.Minigames.MiningFOV = new GoRogue.FOV(GameLoop.UIManager.Minigames.MountainMine.Levels[GameLoop.World.Player.MineDepth].MapFOV);
+								GameLoop.UIManager.Minigames.MineManager.MiningFOV = new GoRogue.FOV(GameLoop.UIManager.Minigames.MineManager.MountainMine.Levels[GameLoop.World.Player.MineDepth].MapFOV);
 							} else if (mineName == "Lake") {
-								if (GameLoop.UIManager.Minigames.LakeMine.Levels.ContainsKey(mineLevel)) {
-									GameLoop.UIManager.Minigames.LakeMine.Levels[mineLevel] = sentMine;
+								if (GameLoop.UIManager.Minigames.MineManager.LakeMine.Levels.ContainsKey(mineLevel)) {
+									GameLoop.UIManager.Minigames.MineManager.LakeMine.Levels[mineLevel] = sentMine;
 								} else {
-									GameLoop.UIManager.Minigames.LakeMine.Levels.Add(mineLevel, sentMine);
+									GameLoop.UIManager.Minigames.MineManager.LakeMine.Levels.Add(mineLevel, sentMine);
 								}
 								GameLoop.UIManager.Minigames.ToggleMinigame();
-								GameLoop.UIManager.Minigames.MiningFOV = new GoRogue.FOV(GameLoop.UIManager.Minigames.LakeMine.Levels[GameLoop.World.Player.MineDepth].MapFOV);
+								GameLoop.UIManager.Minigames.MineManager.MiningFOV = new GoRogue.FOV(GameLoop.UIManager.Minigames.MineManager.LakeMine.Levels[GameLoop.World.Player.MineDepth].MapFOV);
 							}
 						}
 
+						break;
+					case "newDay":
+						bool passedOut = Boolean.Parse(splitMsg[1]);
+						if (passedOut)
+							GameLoop.UIManager.AddMsg(new ColoredString("You passed out!", Color.Red, Color.Black));
+						else
+							GameLoop.UIManager.AddMsg(new ColoredString("You sleep through the night.", Color.Lime, Color.Black));
+
+						GameLoop.World.Player.Sleeping = false;
+						GameLoop.World.Player.CurrentHP = GameLoop.World.Player.MaxHP;
+
+						foreach (KeyValuePair<long, Player> kv in GameLoop.World.otherPlayers) {
+							kv.Value.CurrentHP = kv.Value.MaxHP;
+							kv.Value.Sleeping = false;
+                        }
+
+						GameLoop.World.SavePlayer();
+						break;
+					case "sleep":
+						long sleepID = long.Parse(splitMsg[1]);
+						bool sleeping = Boolean.Parse(splitMsg[2]);
+
+						if (GameLoop.World.otherPlayers.ContainsKey(sleepID)) {
+							GameLoop.World.otherPlayers[sleepID].Sleeping = sleeping;
+
+							int sleepCount = 0;
+							int totalPlayers = 1;
+							if (GameLoop.World.Player.Sleeping)
+								sleepCount++;
+
+							foreach (KeyValuePair<long, Player> kv in GameLoop.World.otherPlayers) {
+								totalPlayers++;
+								if (kv.Value.Sleeping)
+									sleepCount++;
+							}
+
+							if (sleeping) {
+								GameLoop.UIManager.AddMsg(new ColoredString(GameLoop.World.otherPlayers[sleepID].Name + " went to sleep. (" + sleepCount + "/" + totalPlayers + ")", Color.Lime, Color.Black));
+							} else {
+								GameLoop.UIManager.AddMsg(new ColoredString(GameLoop.World.otherPlayers[sleepID].Name + " decided not to sleep. (" + sleepCount + "/" + totalPlayers + ")", Color.Lime, Color.Black));
+							}
+						}
 						break;
 					default:
 						GameLoop.UIManager.AddMsg(msg);
@@ -348,6 +417,8 @@ namespace LofiHollow.Managers {
 
 			string lobbyCode = GetRoomCode();
 			transaction.SetMetadata("RoomCode", lobbyCode);
+
+			GameLoop.UIManager.MainMenu.joinError = "Creating lobby...";
 			
 
 			lobbyManager.CreateLobby(transaction, (Discord.Result result, ref Discord.Lobby lobby) => {
@@ -364,7 +435,14 @@ namespace LofiHollow.Managers {
                     lobbyManager.OnMemberConnect += MemberConnected;
                     lobbyManager.OnMemberDisconnect += MemberDisconnected;
 
-					isHost = true;
+					isHost = true; 
+
+					GameLoop.UIManager.MainMenu.MainMenuWindow.IsVisible = false;
+					GameLoop.UIManager.Map.MapWindow.IsVisible = true;
+					GameLoop.UIManager.Map.MessageLog.IsVisible = true;
+					GameLoop.UIManager.Sidebar.BattleLog.IsVisible = true;
+					GameLoop.UIManager.Sidebar.SidebarWindow.IsVisible = true;
+					GameLoop.UIManager.selectedMenu = "None";
 
 					GameLoop.UIManager.AddMsg(new ColoredString("Created a lobby with code " + lobbyCode, Color.Green, Color.Black));
 				}
@@ -406,8 +484,18 @@ namespace LofiHollow.Managers {
 				if (GameLoop.World.Player.OwnsFarm) {
 					if (!GameLoop.World.maps.ContainsKey(new Point3D(-1, 0, 0)))
 						GameLoop.World.LoadMapAt(new Point3D(-1, 0, 0));
-					string hostFarm = "hostMap;farm;" + JsonConvert.SerializeObject(GameLoop.World.maps[new Point3D(-1, 0, 0)], Formatting.Indented);
-					lobbyManager.SendNetworkMessage(lobbyId, userId, 0, Encoding.UTF8.GetBytes(hostFarm));
+
+					Map normalFarm = GameLoop.World.UnchangedMap(new Point3D(-1, 0, 0));
+
+					for (int i = 0; i < GameLoop.World.maps[new Point3D(-1, 0, 0)].Tiles.Length; i++) {
+						if (GameLoop.World.maps[new Point3D(-1, 0, 0)].Tiles[i] != normalFarm.Tiles[i]) {
+							string json = JsonConvert.SerializeObject(GameLoop.World.maps[new Point3D(-1, 0, 0)].Tiles[i], Formatting.Indented);
+							GameLoop.SendMessageIfNeeded(new string[] { "updateTile", (i % GameLoop.MapWidth).ToString(), (i / GameLoop.MapWidth).ToString(), "-1;0;0", json }, false, false);
+						}
+                    }
+
+				//	string hostFarm = "hostMap;farm;" + JsonConvert.SerializeObject(GameLoop.World.maps[new Point3D(-1, 0, 0)], Formatting.Indented);
+				//	lobbyManager.SendNetworkMessage(lobbyId, userId, 0, Encoding.UTF8.GetBytes(hostFarm));
 				}
 
 				foreach (KeyValuePair<int, NPC> kv in GameLoop.World.npcLibrary) {

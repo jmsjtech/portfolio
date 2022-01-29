@@ -30,6 +30,9 @@ namespace LofiHollow {
         public Decorator Dec;
 
         [JsonProperty]
+        public LockOwner Lock;
+
+        [JsonProperty]
         public string SpecialProps = "";
 
         [JsonProperty]
@@ -42,6 +45,9 @@ namespace LofiHollow {
 
         [JsonProperty]
         public bool BlocksLOS = false;
+
+        [JsonProperty]
+        public Container Container;
 
         [JsonProperty]
         public List<ConstructionMaterial> MaterialsNeeded = new();

@@ -42,11 +42,7 @@ namespace LofiHollow {
                     GameLoop.World.Player.CurrentHP += 1;
                 }
 
-                if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
-                    string msg = "updateSkill;" + GameLoop.NetworkManager.ownID + ";" + Name + ";" + Level; 
-                    
-                    GameLoop.NetworkManager.BroadcastMsg(msg);
-                }
+                GameLoop.SendMessageIfNeeded(new string[] { "updateSkill", Name, Level.ToString() }, false, true);
             }
         }
 

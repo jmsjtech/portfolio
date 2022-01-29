@@ -16,7 +16,12 @@ namespace LofiHollow.Entities {
         public int CurrentHP;
         [JsonProperty]
         public int MaxHP;
-         
+
+        [JsonProperty]
+        public int CurrentStamina = 100;
+        [JsonProperty]
+        public int MaxStamina = 100;
+
         public SadConsole.Console ScreenAppearance;
 
 
@@ -29,6 +34,7 @@ namespace LofiHollow.Entities {
         [JsonProperty]
         public string CombatMode = "Attack";
 
+        
 
         [JsonProperty]
         public int CombatLevel = 1;
@@ -75,7 +81,7 @@ namespace LofiHollow.Entities {
             Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
             Appearance.Background = new Color(0, 0, 0, 50);
             Appearance.Glyph = ActorGlyph; 
-        }
+        } 
 
         public void UpdateAppearance() {
             Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
@@ -150,18 +156,22 @@ namespace LofiHollow.Entities {
             ForegroundR = foreground.R;
             ForegroundG = foreground.G;
             ForegroundB = foreground.B;
+
+            MaxStamina = 100;
+            CurrentStamina = MaxStamina;
+            
              
 
             Equipment = new Item[10];
             for (int i = 0; i < Equipment.Length; i++) {
-                Equipment[i] = new Item(0);
+                Equipment[i] = new Item("lh:(EMPTY)");
             }
 
             if (initInventory) {
                 Inventory = new Item[9];
 
                 for (int i = 0; i < Inventory.Length; i++) {
-                    Inventory[i] = new Item(0);
+                    Inventory[i] = new Item("lh:(EMPTY)");
                 }
             }
         }
@@ -347,18 +357,38 @@ namespace LofiHollow.Entities {
                     return types[3];
             }
 
-            return "Crushing";
+            return "Crush";
         }
 
 
 
-        public bool HasInventorySlotOpen(int stackID = -1) {
+        public bool HasInventorySlotOpen(string stackID = "") {
             for (int i = 0; i < Inventory.Length; i++) {
-                if (Inventory[i].ItemID == 0 || (Inventory[i].ItemID == stackID && stackID != -1)) {
+                if (Inventory[i].Name == "(EMPTY)" || (Inventory[i].Name == stackID && stackID != "")) {
                     return true;
                 }
             }
             return false;
+        }
+
+        public int TakeDamage(int damage) {
+            int damageTaken = 0;
+            if (damage > CurrentHP) {
+                damageTaken = CurrentHP;
+                CurrentHP = 0; 
+            } else {
+                CurrentHP -= damage;
+                damageTaken = damage;
+            }
+
+            if (CurrentHP <= 0) {
+                if (this is Player player)
+                    player.PlayerDied();
+                else
+                    Death(true);
+            }
+
+            return damageTaken;
         }
 
         public bool MoveBy(Point positionChange) {
@@ -391,8 +421,15 @@ namespace LofiHollow.Entities {
                         if (map.GetTile(newPosition).MiscString != "" && map.GetTile(newPosition).MiscString.Split(",").Length > 1) {
                             string[] split = map.GetTile(newPosition).MiscString.Split(",");
                             if (split[0] == "Skill") {
-                                GameLoop.UIManager.Crafting.SetupCrafting(split[1]);
-                            } 
+                                if (split.Length > 2)
+                                    GameLoop.UIManager.Crafting.SetupCrafting(split[1], split[2], Int32.Parse(split[3]));
+                                else
+                                    GameLoop.UIManager.Crafting.SetupCrafting(split[1], "None", 1);
+                            } else if (split[0] == "Monster Pen") {
+                                GameLoop.UIManager.Minigames.CurrentGame = "Monster Pen";
+                                GameLoop.UIManager.Minigames.MonsterPenManager.Setup(Int32.Parse(split[1]));
+                                GameLoop.UIManager.Minigames.ToggleMinigame();
+                            }
                         }
 
                         if (map.GetTile(newPosition).SkillableTile != null) {
@@ -404,6 +441,7 @@ namespace LofiHollow.Entities {
                                             if (HasInventorySlotOpen()) {
                                                 CommandManager.AddItemToInv(this, new Item(tile.ItemGiven));
                                                 GameLoop.UIManager.AddMsg(tile.HarvestMessage);
+                                                ExpendStamina(1);
 
                                                 int choppedChance = GameLoop.rand.Next(100) + 1;
 
@@ -536,16 +574,11 @@ namespace LofiHollow.Entities {
 
                 if (movedMaps && ID == GameLoop.World.Player.ID) {
                     GameLoop.UIManager.Map.LoadMap(MapPos);
+                    GameLoop.SendMessageIfNeeded(new string[] { "requestEntities", GameLoop.World.Player.MapPos.ToString() }, false, false, 0);
+                    
+                    GameLoop.World.maps[GameLoop.World.Player.MapPos].Entities.Clear(); 
 
-                    if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null && !GameLoop.NetworkManager.isHost) {
-                        string initialRequest = "requestEntities;" + GameLoop.World.Player.MapPos.X + ";" + GameLoop.World.Player.MapPos.Y + ";" + GameLoop.World.Player.MapPos.Z;
-                        var lobbyOwnerId = GameLoop.NetworkManager.lobbyManager.GetLobby(GameLoop.NetworkManager.lobbyID).OwnerId;
-
-                        GameLoop.World.maps[GameLoop.World.Player.MapPos].Entities.Clear(); 
-                        GameLoop.NetworkManager.lobbyManager.SendNetworkMessage(GameLoop.NetworkManager.lobbyID, lobbyOwnerId, 0, Encoding.UTF8.GetBytes(initialRequest));
-                    }
-
-                    if (GameLoop.NetworkManager == null || GameLoop.NetworkManager.lobbyManager == null || GameLoop.NetworkManager.isHost) {
+                    if (GameLoop.SingleOrHosting()) {
                         if (!GameLoop.World.Player.VisitedMaps.Contains(MapPos)) {
                             GameLoop.World.maps[MapPos].PopulateMonsters(MapPos);
                             GameLoop.World.Player.VisitedMaps.Add(MapPos);
@@ -559,14 +592,28 @@ namespace LofiHollow.Entities {
                     if (map.GetTile(newPosition).Name.ToLower().Contains("door")) {
                         if (map.GetTile(newPosition).Lock.Closed) {
                             if (map.GetTile(newPosition).Lock.CanOpen()) {
-                                map.ToggleDoor(newPosition, MapPos);
+                                map.ToggleLock(newPosition, MapPos);
                                 return false;
                             } else {
                                 GameLoop.UIManager.AddMsg(new ColoredString("The door won't budge. Must be locked.", Color.Brown, Color.Black));
                                 return false;
                             }
                         }
-                    } 
+                    }
+
+                    if (map.GetTile(newPosition).Container != null) {
+                        if (map.GetTile(newPosition).Lock != null && map.GetTile(newPosition).Lock.Closed) {
+                            if (map.GetTile(newPosition).Lock.CanOpen()) {
+                                map.ToggleLock(newPosition, MapPos);
+                                return false;
+                            } else {
+                                GameLoop.UIManager.AddMsg(new ColoredString("The " + map.GetTile(newPosition).Name + " won't open. Must be locked.", Color.Brown, Color.Black));
+                                return false;
+                            }
+                        } else {
+                            GameLoop.UIManager.Container.SetupContainer(map.GetTile(newPosition).Container, newPosition);
+                        }
+                    }
 
                     if (map.IsTileWalkable(Position + positionChange)) {
                         // if there's an NPC here, initiate dialogue
@@ -574,22 +621,9 @@ namespace LofiHollow.Entities {
                             for (int i = 0; i < GameLoop.World.npcLibrary.Count; i++) {
                                 NPC.NPC npc = GameLoop.World.npcLibrary[i];
                                 if (npc.Position == newPosition && npc.MapPos == MapPos) {
-                                    GameLoop.UIManager.DialogueWindow.DialogueNPC = npc;
-                                    GameLoop.UIManager.selectedMenu = "Dialogue";
-                                    GameLoop.UIManager.DialogueWindow.DialogueWindow.IsVisible = true;
+                                    GameLoop.UIManager.DialogueWindow.SetupDialogue(npc); 
 
-                                    if (GameLoop.World.Player.MetNPCs.ContainsKey(GameLoop.UIManager.DialogueWindow.DialogueNPC.Name)) {
-                                        if (GameLoop.UIManager.DialogueWindow.DialogueNPC.Greetings.ContainsKey(GameLoop.UIManager.DialogueWindow.DialogueNPC.RelationshipDescriptor())) {
-                                            GameLoop.UIManager.DialogueWindow.dialogueLatest = GameLoop.UIManager.DialogueWindow.DialogueNPC.Greetings[GameLoop.UIManager.DialogueWindow.DialogueNPC.RelationshipDescriptor()];
-                                        } else {
-                                            GameLoop.UIManager.DialogueWindow.dialogueLatest = "Error: Greeting not found for relationship " + GameLoop.UIManager.DialogueWindow.DialogueNPC.RelationshipDescriptor();
-                                        }
-                                    } else {
-                                        GameLoop.UIManager.DialogueWindow.dialogueLatest = GameLoop.UIManager.DialogueWindow.DialogueNPC.Introduction;
-                                        GameLoop.World.Player.MetNPCs.Add(GameLoop.UIManager.DialogueWindow.DialogueNPC.Name, 0);
-                                    }
-
-                                    GameLoop.UIManager.DialogueWindow.DialogueNPC.UpdateChitChats();
+                                    
 
                                     return false;
                                 }
@@ -642,10 +676,10 @@ namespace LofiHollow.Entities {
                 int roll = GameLoop.rand.Next(drop.DropChance);
 
                 if (roll == 0) {
-                    Item item = new(drop.ItemID);
+                    ItemWrapper item = new(drop.Name);
 
-                    if (item.IsStackable) {
-                        item.ItemQuantity = GameLoop.rand.Next(drop.DropQuantity) + 1;
+                    if (item.item.IsStackable) {
+                        item.item.ItemQuantity = GameLoop.rand.Next(drop.DropQuantity) + 1;
                         item.Position = Position;
                         item.MapPos = MapPos;
                         CommandManager.SpawnItem(item);
@@ -653,7 +687,7 @@ namespace LofiHollow.Entities {
                         int qty = GameLoop.rand.Next(drop.DropQuantity) + 1;
 
                         for (int j = 0; j < qty; j++) {
-                            Item itemNonStack = new(drop.ItemID);
+                            ItemWrapper itemNonStack = new(drop.Name);
                             itemNonStack.Position = Position;
                             itemNonStack.MapPos = MapPos;
                             CommandManager.SpawnItem(itemNonStack);
@@ -678,6 +712,21 @@ namespace LofiHollow.Entities {
 
             if (GameLoop.World.maps[MapPos].SpawnedMonsters == 0) {
                 GameLoop.World.Player.MapsClearedToday++; 
+            }
+        }
+
+        public void ExpendStamina(int amount) {
+            CurrentStamina -= amount;
+            if (CurrentStamina < 0) {
+                if (this == GameLoop.World.Player) {
+                    if (GameLoop.NetworkManager == null) { // in single-player, skip to the next day
+                        GameLoop.World.Player.Clock.NextDay(true);
+                    } else {
+                        GameLoop.UIManager.AddMsg(new ColoredString("You blacked out!", Color.Red, Color.Black));
+                        MoveTo(new Point(35, 6), new Point3D(0, 0, 0));
+                        CurrentStamina = 0;
+                    }
+                }
             }
         }
     }

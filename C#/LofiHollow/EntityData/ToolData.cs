@@ -23,6 +23,9 @@ namespace LofiHollow.EntityData {
         }
 
         public bool ActorHasTool(Actor act) {
+            if (GameLoop.UIManager.Crafting.StationTool != "None" && GameLoop.UIManager.Crafting.StationTool == Property && GameLoop.UIManager.Crafting.StationTier >= Tier)
+                return true;
+
             for (int i = 0; i < act.Inventory.Length; i++) {
                 if (act.Inventory[i].Tool != null) {
                     for (int j = 0; j < act.Inventory[i].Tool.Count; j++) {

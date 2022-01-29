@@ -20,9 +20,9 @@ namespace LofiHollow.EntityData {
         [JsonProperty]
         public int RequiredLevel; // Skill level required to harvest this tile
         [JsonProperty]
-        public int ItemGiven; // Item ID of item on regular harvest
+        public string ItemGiven; // Item ID of item on regular harvest
         [JsonProperty]
-        public int DepletedItem; // Item ID of item on depleting harvest, if different than normal
+        public string DepletedItem; // Item ID of item on depleting harvest, if different than normal
         [JsonProperty]
         public string RestoreTime; // "Hour", "Day", "Week", "Month", or "Year". 1 of the chosen increment must past before the tile is restored
         [JsonProperty]

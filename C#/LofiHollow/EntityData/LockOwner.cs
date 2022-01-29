@@ -24,7 +24,11 @@ namespace LofiHollow.EntityData {
         [JsonProperty]
         public bool Closed = true;
         [JsonProperty]
-        public int KeySubID = -1;
+        public string UnlockKeyName = "";
+        [JsonProperty]
+        public bool ClosedBlocksLOS = true;
+        [JsonProperty]
+        public bool OpenBlocksMove = false;
 
         public void UpdateOwner() { 
             if (OwnerID == -1)
@@ -38,7 +42,7 @@ namespace LofiHollow.EntityData {
         
 
         public bool CanOpen() {
-            if (Owner == "" && MissionUnlock == -1)
+            if (Owner == "" && MissionUnlock == -1 && UnlockKeyName == "")
                 return true;
 
             if (GameLoop.World.Player.MetNPCs.ContainsKey(Owner) && GameLoop.World.Player.MetNPCs[Owner] >= RelationshipUnlock && RelationshipUnlock != 0)
@@ -48,9 +52,9 @@ namespace LofiHollow.EntityData {
             if (GameLoop.World.Player.Clock.GetCurrentTime() > UnlockTime && GameLoop.World.Player.Clock.GetCurrentTime() < LockTime)
                 return true;
 
-            if (KeySubID != -1)
+            if (UnlockKeyName != "")
                 for (int i = 0; i < GameLoop.World.Player.Inventory.Length; i++)
-                    if (GameLoop.World.Player.Inventory[i].ItemID == 1 && GameLoop.World.Player.Inventory[i].SubID == KeySubID)
+                    if (GameLoop.World.Player.Inventory[i].Package + ":" + GameLoop.World.Player.Inventory[i].Name == UnlockKeyName)
                         return true; 
 
             // Do some code to see if the player has completed the mission needed to pass this lock

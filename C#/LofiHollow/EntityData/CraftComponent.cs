@@ -33,16 +33,20 @@ namespace LofiHollow.EntityData {
 
 
 
-        public bool ActorHasComponent(Actor act, int CraftAmount) {
+        public int ActorHasComponent(Actor act, int CraftAmount, int MinQuality) {
             int heldQty = 0;
             int heldTotal = 0;
+            int Quality = 0;
             for (int i = 0; i < act.Inventory.Length; i++) {
                 if (act.Inventory[i].Craft != null) {
                     for (int j = 0; j < act.Inventory[i].Craft.Count; j++) {
-                        if (act.Inventory[i].Craft[j].Property == Property && act.Inventory[i].Craft[j].Tier >= Tier) {
+                        if (act.Inventory[i].Craft[j].Property == Property && act.Inventory[i].Craft[j].Tier >= Tier && (act.Inventory[i].Quality == 0 || act.Inventory[i].Quality >= MinQuality)) {
                             if (CountsAsMultiple)
                                 heldTotal += act.Inventory[i].Craft[j].Tier;
                             heldQty += act.Inventory[i].ItemQuantity;
+
+                            if (act.Inventory[i].Quality > Quality)
+                                Quality = act.Inventory[i].Quality;
                         }
                     }
                 }
@@ -50,13 +54,13 @@ namespace LofiHollow.EntityData {
 
             if (CountsAsMultiple) {
                 if (heldTotal >= Tier * CraftAmount)
-                    return true;
+                    return Quality;
             } else {
                 if (heldQty >= Quantity * CraftAmount)
-                    return true;
+                    return Quality;
             }
 
-            return false;
+            return -1;
         }
     }
 }

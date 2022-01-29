@@ -66,27 +66,26 @@ namespace LofiHollow {
             return !Tiles[location.Y * Width + location.X].IsBlockingLOS;
         }
 
-        public void ToggleDoor(Point location, Point3D mapPos) {
+        public void ToggleLock(Point location, Point3D mapPos) {
             if (location.X < 0 || location.Y < 0 || location.X >= Width || location.Y >= Height)
                 return;
             if (Tiles[location.Y * Width + location.X].Lock != null) {
                 LockOwner lockData = Tiles[location.Y * Width + location.X].Lock;
 
-                if (lockData.Closed)
-                    Tiles[location.Y * Width + location.X].Glyph = lockData.OpenedGlyph; 
-                else
+                if (lockData.Closed) {
+                    Tiles[location.Y * Width + location.X].Glyph = lockData.OpenedGlyph;
+                    Tiles[location.Y * Width + location.X].IsBlockingMove = lockData.OpenBlocksMove;
+                    Tiles[location.Y * Width + location.X].IsBlockingLOS = false;
+                } else {
                     Tiles[location.Y * Width + location.X].Glyph = lockData.ClosedGlyph;
-
-                Tiles[location.Y * Width + location.X].Lock.Closed = !Tiles[location.Y * Width + location.X].Lock.Closed;
-                Tiles[location.Y * Width + location.X].IsBlockingMove = lockData.Closed;
-                Tiles[location.Y * Width + location.X].IsBlockingLOS = lockData.Closed;
-
-                if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
-                    string msg = "updateTile;" + location.X + ";" + location.Y + ";" + mapPos.X + ";" +
-                        mapPos.Y + ";" + mapPos.Z + ";" + JsonConvert.SerializeObject(Tiles[location.Y * Width + location.X], Formatting.Indented);
-                    GameLoop.NetworkManager.BroadcastMsg(msg);
+                    Tiles[location.Y * Width + location.X].IsBlockingMove = true;
+                    Tiles[location.Y * Width + location.X].IsBlockingLOS = lockData.ClosedBlocksLOS;
                 }
 
+                Tiles[location.Y * Width + location.X].Lock.Closed = !Tiles[location.Y * Width + location.X].Lock.Closed;
+                String serialized = JsonConvert.SerializeObject(Tiles[location.Y * Width + location.X], Formatting.Indented);
+                GameLoop.SendMessageIfNeeded(new string[] { "updateTile", location.X.ToString(), location.Y.ToString(), mapPos.ToString(), serialized}, false, false);
+                  
                 return;
             }
 
@@ -95,6 +94,10 @@ namespace LofiHollow {
 
         public T GetEntityAt<T>(Point location) where T : Entity {
             return Entities.GetItems(new GoRogue.Coord(location.X, location.Y)).OfType<T>().FirstOrDefault();
+        }
+
+        public List<T> GetAllEntities<T>(Point location) where T : Entity {
+            return Entities.GetItems(new GoRogue.Coord(location.X, location.Y)).OfType<T>().ToList();
         }
 
         public T GetEntityAt<T>(Point location, string name) where T : Entity {

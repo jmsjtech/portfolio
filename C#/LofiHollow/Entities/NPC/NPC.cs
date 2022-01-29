@@ -37,13 +37,13 @@ namespace LofiHollow.Entities.NPC {
         public Dictionary<string, string> GiftResponses = new();
 
         [JsonProperty]
-        public List<int> HatedGiftIDs = new();
+        public List<string> HatedGiftIDs = new();
         [JsonProperty]
-        public List<int> DislikedGiftIDs = new(); 
+        public List<string> DislikedGiftIDs = new(); 
         [JsonProperty]
-        public List<int> LikedGiftIDs = new();
+        public List<string> LikedGiftIDs = new();
         [JsonProperty]
-        public List<int> LovedGiftIDs = new();
+        public List<string> LovedGiftIDs = new();
 
         public bool ReceivedGiftToday = false; 
 
@@ -83,10 +83,7 @@ namespace LofiHollow.Entities.NPC {
             AI.MoveTowardsNode(GameLoop.World.Player.Clock.GetCurrentTime(), this);
 
             if (oldPos != Position) {
-                if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
-                    string msg = "moveNPC;" + npcID + ";" + Position.X + ";" + Position.Y + ";" + MapPos.X + ";" + MapPos.Y + ";" + MapPos.Z;
-                    GameLoop.NetworkManager.BroadcastMsg(msg);
-                }
+                GameLoop.SendMessageIfNeeded(new string[] { "moveNPC", npcID.ToString(), Position.X.ToString(), Position.Y.ToString(), MapPos.ToString() }, true, false);
             }
         }
 
@@ -159,7 +156,7 @@ namespace LofiHollow.Entities.NPC {
             GameLoop.UIManager.DialogueWindow.chitChat5 = ChitChats.ElementAt(fifth).Key;
         }
 
-        public string ReactGift(int ID) {
+        public string ReactGift(string ID) {
             string react = "Neutral";
             int relModifier = 0;
             if (HatedGiftIDs.Contains(ID)) {
@@ -168,10 +165,10 @@ namespace LofiHollow.Entities.NPC {
             } else if (DislikedGiftIDs.Contains(ID)) {
                 relModifier = -5;
                 react = "Disliked";
-            } else if (LikedGiftIDs.Contains(ID) || ID == -3) { // 1 silver or more = liked gift
+            } else if (LikedGiftIDs.Contains(ID) || ID == "-3") { // 1 silver or more = liked gift
                 relModifier = 5;
                 react = "Liked";
-            } else if (LovedGiftIDs.Contains(ID) || ID == -2) { // More than 10 silver = loved gift
+            } else if (LovedGiftIDs.Contains(ID) || ID == "-2") { // More than 10 silver = loved gift
                 relModifier = 10;
                 react = "Loved";
             }

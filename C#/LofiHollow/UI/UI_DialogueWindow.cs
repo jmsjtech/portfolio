@@ -1,6 +1,7 @@
 ﻿using LofiHollow.Entities;
 using LofiHollow.Entities.NPC;
 using LofiHollow.Managers;
+using LofiHollow.Missions;
 using SadConsole;
 using SadConsole.Input;
 using SadConsole.UI;
@@ -28,9 +29,12 @@ namespace LofiHollow.UI {
 
         public string dialogueOption = "None";
         public string dialogueLatest = "";
+        public Mission CurrentMission;
 
         public NPC DialogueNPC = null;
         List<Item> TownHallPermits = new();
+
+        public int shopTopIndex = 0;
 
         public SadConsole.Console DialogueConsole;
         public Window DialogueWindow;
@@ -54,6 +58,41 @@ namespace LofiHollow.UI {
             DialogueWindow.Show();
             DialogueWindow.IsVisible = false;
         }
+
+
+        public void SetupDialogue(NPC npc) {
+            DialogueNPC = npc;
+            GameLoop.UIManager.selectedMenu = "Dialogue";
+            DialogueConsole.Clear();
+
+            dialogueOption = "None";
+            DialogueWindow.IsVisible = true;
+
+            foreach (KeyValuePair<string, Mission> kv in GameLoop.World.Player.MissionLog) {
+                if (kv.Value.Stages[kv.Value.CurrentStage] != null) {
+                    if (kv.Value.Stages[kv.Value.CurrentStage].NPC == DialogueNPC.Name || kv.Value.Stages[kv.Value.CurrentStage].NPC == "Any") {
+                        if (kv.Value.Stages[kv.Value.CurrentStage].AllRequirementsMet(GameLoop.World.Player)) {
+                            CurrentMission = kv.Value; 
+                            break;
+                        }
+                    }
+                }
+            }  
+
+            if (GameLoop.World.Player.MetNPCs.ContainsKey(DialogueNPC.Name)) {
+                if (DialogueNPC.Greetings.ContainsKey(DialogueNPC.RelationshipDescriptor())) {
+                    dialogueLatest = DialogueNPC.Greetings[DialogueNPC.RelationshipDescriptor()];
+                } else {
+                    dialogueLatest = "Error: Greeting not found for relationship " + DialogueNPC.RelationshipDescriptor();
+                }
+            } else {
+               dialogueLatest = GameLoop.UIManager.DialogueWindow.DialogueNPC.Introduction;
+                GameLoop.World.Player.MetNPCs.Add(DialogueNPC.Name, 0);
+            }
+
+            DialogueNPC.UpdateChitChats();
+        }
+
 
         public void RenderDialogue() {
             DialogueConsole.Clear();
@@ -80,24 +119,40 @@ namespace LofiHollow.UI {
                 }
 
                 if (dialogueOption == "None") {
+                    if (CurrentMission == null) {
+                        foreach (KeyValuePair<string, Mission> kv in GameLoop.World.Player.MissionLog) {
+                            if (kv.Value.Stages != null && kv.Value.Stages.Count > kv.Value.CurrentStage && kv.Value.Stages[kv.Value.CurrentStage] != null) {
+                                if (kv.Value.Stages[kv.Value.CurrentStage].NPC == DialogueNPC.Name || kv.Value.Stages[kv.Value.CurrentStage].NPC == "Any") {
+                                    if (kv.Value.Stages[kv.Value.CurrentStage].AllRequirementsMet(GameLoop.World.Player)) {
+                                        CurrentMission = kv.Value;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     //  DialogueConsole.Print(1, DialogueConsole.Height - 19, new ColoredString("Mission: [A book for Cobalt]", mousePos.Y == DialogueConsole.Height - 19 ? Color.Yellow : Color.White, Color.Black));
 
                     DialogueConsole.DrawLine(new Point(0, DialogueConsole.Height - 20), new Point(DialogueConsole.Width - 1, DialogueConsole.Height - 20), 196, Color.White, Color.Black);
 
                     if (DialogueNPC.Shop != null && DialogueNPC.Shop.ShopOpen(DialogueNPC))
-                        DialogueConsole.Print(1, DialogueConsole.Height - 17, new ColoredString("[Open Store]", mousePos.Y == DialogueConsole.Height - 17 ? Color.Yellow : Color.White, Color.Black));
+                        DialogueConsole.Print(1, DialogueConsole.Height - 17, Helper.HoverColoredString("[Open Store]", mousePos.Y == DialogueConsole.Height - 17));
 
-                    DialogueConsole.Print(1, DialogueConsole.Height - 15, new ColoredString("[Give Item]", mousePos.Y == DialogueConsole.Height - 15 ? Color.Yellow : Color.White, Color.Black));
+                    if (CurrentMission != null)
+                        DialogueConsole.Print(1, DialogueConsole.Height - 19, Helper.HoverColoredString("[Mission] " + CurrentMission.Name, mousePos.Y == DialogueConsole.Height - 19));
 
-                    DialogueConsole.Print(1, DialogueConsole.Height - 12, new ColoredString("Chit-chat: " + chitChat1, mousePos.Y == DialogueConsole.Height - 12 ? Color.Yellow : Color.White, Color.Black));
-                    DialogueConsole.Print(1, DialogueConsole.Height - 10, new ColoredString("Chit-chat: " + chitChat2, mousePos.Y == DialogueConsole.Height - 10 ? Color.Yellow : Color.White, Color.Black));
-                    DialogueConsole.Print(1, DialogueConsole.Height - 8, new ColoredString("Chit-chat: " + chitChat3, mousePos.Y == DialogueConsole.Height - 8 ? Color.Yellow : Color.White, Color.Black));
-                    DialogueConsole.Print(1, DialogueConsole.Height - 6, new ColoredString("Chit-chat: " + chitChat4, mousePos.Y == DialogueConsole.Height - 6 ? Color.Yellow : Color.White, Color.Black));
-                    DialogueConsole.Print(1, DialogueConsole.Height - 4, new ColoredString("Chit-chat: " + chitChat5, mousePos.Y == DialogueConsole.Height - 4 ? Color.Yellow : Color.White, Color.Black));
+                    DialogueConsole.Print(1, DialogueConsole.Height - 15, Helper.HoverColoredString("[Give Item]", mousePos.Y == DialogueConsole.Height - 15));
 
-                    DialogueConsole.Print(1, DialogueConsole.Height - 1, new ColoredString("Nevermind.", mousePos.Y == DialogueConsole.Height - 1 ? Color.Yellow : Color.White, Color.Black));
+                    DialogueConsole.Print(1, DialogueConsole.Height - 12, Helper.HoverColoredString("Chit-chat: " + chitChat1, mousePos.Y == DialogueConsole.Height - 12));
+                    DialogueConsole.Print(1, DialogueConsole.Height - 10, Helper.HoverColoredString("Chit-chat: " + chitChat2, mousePos.Y == DialogueConsole.Height - 10));
+                    DialogueConsole.Print(1, DialogueConsole.Height - 8, Helper.HoverColoredString("Chit-chat: " + chitChat3, mousePos.Y == DialogueConsole.Height - 8));
+                    DialogueConsole.Print(1, DialogueConsole.Height - 6, Helper.HoverColoredString("Chit-chat: " + chitChat4, mousePos.Y == DialogueConsole.Height - 6));
+                    DialogueConsole.Print(1, DialogueConsole.Height - 4, Helper.HoverColoredString("Chit-chat: " + chitChat5, mousePos.Y == DialogueConsole.Height - 4));
+
+                    DialogueConsole.Print(1, DialogueConsole.Height - 1, Helper.HoverColoredString("Nevermind.", mousePos.Y == DialogueConsole.Height - 1));
                 } else if (dialogueOption == "Goodbye") {
-                    DialogueConsole.Print(1, DialogueConsole.Height - 1, new ColoredString("[Click anywhere to close]", mousePos.Y == DialogueConsole.Height - 1 ? Color.Yellow : Color.White, Color.Black));
+                    DialogueConsole.Print(1, DialogueConsole.Height - 1, Helper.HoverColoredString("[Click anywhere to close]", mousePos.Y == DialogueConsole.Height - 1));
                 } else if (dialogueOption == "Gift") {
                     int y = 1;
                     DialogueConsole.Print(1, y++, "Give what?");
@@ -122,7 +177,7 @@ namespace LofiHollow.UI {
                         y++;
                     }
 
-                    DialogueConsole.Print(1, y + 2, new ColoredString("Nevermind.", mousePos.Y == y + 2 ? Color.Yellow : Color.White, Color.Black));
+                    DialogueConsole.Print(1, y + 2, Helper.HoverColoredString("Nevermind.", mousePos.Y == y + 2));
                 } else if (dialogueOption == "Shop") {
 
                     ColoredString shopHeader = new(DialogueNPC.Shop.ShopName, Color.White, Color.Black);
@@ -149,59 +204,43 @@ namespace LofiHollow.UI {
                         DialogueConsole.Print(0, 3, " Buy  |" + "Item Name".Align(HorizontalAlignment.Center, 23) + "|" + "Short Description".Align(HorizontalAlignment.Center, 27) + "|" + "Price".Align(HorizontalAlignment.Center, 11));
                         DialogueConsole.DrawLine(new Point(0, 4), new Point(DialogueConsole.Width - 1, 4), 196);
 
-                        if (DialogueNPC.Shop.ShopName == "Town Hall Permits") {
-                            if (TownHallPermits.Count == 0) {
-                                Item FarmPermit = new(3);
-                                FarmPermit.Name = "Farm Permit";
-                                FarmPermit.ShortDesc = "Unlocks the farm";
-                                FarmPermit.AverageValue = 400;
-                                FarmPermit.SubID = 1;
+                        for (int j = shopTopIndex; j < DialogueNPC.Shop.SoldItems.Count && j < shopTopIndex + 14; j++) {
+                            int i = j - shopTopIndex;
+                            if (DialogueNPC.Shop.SoldItems[j].Contains("*")) {
+                                string[] split = DialogueNPC.Shop.SoldItems[j].Split(":");
+                                split[1] = split[1].Replace("*", "");
+                                DialogueNPC.Shop.SoldItems.RemoveAt(j);
 
-                                TownHallPermits.Add(FarmPermit);
-                            }
+                                foreach (KeyValuePair<string, Item> kv in GameLoop.World.itemLibrary) {
+                                    if (kv.Key.Contains(split[0] + ":") && kv.Key.Contains(split[1])) {
+                                        DialogueNPC.Shop.SoldItems.Add(kv.Key);
+                                    }
+                                }
 
-
-                            for (int i = 0; i < TownHallPermits.Count; i++) {
-                                Item item = new(TownHallPermits[i]);
+                                break;
+                            } else {
+                                Item item = new(DialogueNPC.Shop.SoldItems[j]);
                                 int price = DialogueNPC.Shop.GetPrice(GameLoop.World.Player.MetNPCs[DialogueNPC.Name], item, false);
 
                                 int buyQuantity = 0;
 
-                                for (int j = 0; j < BuyingItems.Count; j++) {
-                                    if (BuyingItems[j].ItemID == item.ItemID && BuyingItems[j].SubID == item.SubID) {
-                                        buyQuantity += BuyingItems[j].ItemQuantity;
+                                for (int k = 0; k < BuyingItems.Count; k++) {
+                                    if (BuyingItems[k].StacksWith(item, true)) {
+                                        buyQuantity += BuyingItems[k].ItemQuantity;
                                     }
                                 }
 
-                                DialogueConsole.Print(0, 5 + i, new ColoredString("-", mousePos.Y == 5 + i && mousePos.X == 0 ? Color.Red : Color.White, Color.Black));
-                                DialogueConsole.Print(1, 5 + i, new ColoredString(buyQuantity.ToString().Align(HorizontalAlignment.Center, 3), Color.White, Color.Black));
-                                DialogueConsole.Print(5, 5 + i, new ColoredString("+", mousePos.Y == 5 + i && mousePos.X == 5 ? Color.Lime : Color.White, Color.Black));
-                                DialogueConsole.Print(6, 5 + i, new ColoredString("|" + item.Name.Align(HorizontalAlignment.Center, 23) + "|" + item.ShortDesc.Align(HorizontalAlignment.Center, 27) + "|", mousePos.Y == 5 + i ? Color.Yellow : Color.White, Color.Black));
-                                DialogueConsole.Print(DialogueConsole.Width - 10, 5 + i, ConvertCoppers(price));
-                            } 
-                        } else {
-                            for (int i = 0; i < DialogueNPC.Shop.SoldItems.Count; i++) {
-                                Item item = new(DialogueNPC.Shop.SoldItems[i]);
-                                int price = DialogueNPC.Shop.GetPrice(GameLoop.World.Player.MetNPCs[DialogueNPC.Name], item, false);
-
-                                int buyQuantity = 0;
-
-                                for (int j = 0; j < BuyingItems.Count; j++) {
-                                    if (BuyingItems[j].ItemID == item.ItemID && BuyingItems[j].SubID == item.SubID) {
-                                        buyQuantity += BuyingItems[j].ItemQuantity;
-                                    }
-                                }
-
-                                DialogueConsole.Print(0, 5 + i, new ColoredString("-", mousePos.Y == 5 + i && mousePos.X == 0 ? Color.Red : Color.White, Color.Black));
-                                DialogueConsole.Print(1, 5 + i, new ColoredString(buyQuantity.ToString().Align(HorizontalAlignment.Center, 3), Color.White, Color.Black));
-                                DialogueConsole.Print(5, 5 + i, new ColoredString("+", mousePos.Y == 5 + i && mousePos.X == 5 ? Color.Lime : Color.White, Color.Black));
-                                DialogueConsole.Print(6, 5 + i, new ColoredString("|" + item.Name.Align(HorizontalAlignment.Center, 23) + "|" + item.ShortDesc.Align(HorizontalAlignment.Center, 27) + "|", mousePos.Y == 5 + i ? Color.Yellow : Color.White, Color.Black));
-                                DialogueConsole.Print(DialogueConsole.Width - 10, 5 + i, ConvertCoppers(price));
+                                DialogueConsole.Print(0, 5 + (2 * i), new ColoredString("-", mousePos.Y == 5 + (2 * i) && mousePos.X == 0 ? Color.Red : Color.White, Color.Black));
+                                DialogueConsole.Print(1, 5 + (2 * i), new ColoredString(buyQuantity.ToString().Align(HorizontalAlignment.Center, 3), Color.White, Color.Black));
+                                DialogueConsole.Print(5, 5 + (2 * i), new ColoredString("+", mousePos.Y == 5 + (2 * i) && mousePos.X == 5 ? Color.Lime : Color.White, Color.Black));
+                                DialogueConsole.Print(6, 5 + (2 * i), Helper.HoverColoredString("|" + item.Name.Align(HorizontalAlignment.Center, 23) + "|" + item.ShortDesc.Align(HorizontalAlignment.Center, 27) + "|", mousePos.Y == 5 + (2 *i)));
+                                DialogueConsole.Print(DialogueConsole.Width - 10, 5 + (2 * i), Helper.ConvertCoppers(price));
+                                DialogueConsole.DrawLine(new Point(0, 6 + (2 * i)), new Point(DialogueConsole.Width, 6 + (2 * i)), '-', Color.White, Color.Black);
                             }
                         }
 
                         DialogueConsole.DrawLine(new Point(0, DialogueConsole.Height - 7), new Point(DialogueConsole.Width - 1, DialogueConsole.Height - 7), 196);
-                        DialogueConsole.Print(1, DialogueConsole.Height - 6, new ColoredString("[View Inventory]", (mousePos.Y == DialogueConsole.Height - 6 && mousePos.X >= 1 && mousePos.X <= 16) ? Color.Yellow : Color.White, Color.Black));
+                        DialogueConsole.Print(1, DialogueConsole.Height - 6, Helper.HoverColoredString("[View Inventory]", (mousePos.Y == DialogueConsole.Height - 6 && mousePos.X >= 1 && mousePos.X <= 16)));
                     } else {
                         DialogueConsole.Print(0, 3, " Sell |" + "Item Name".Align(HorizontalAlignment.Center, 23) + "|" + "Short Description".Align(HorizontalAlignment.Center, 27) + "|" + "Price".Align(HorizontalAlignment.Center, 11));
                         DialogueConsole.DrawLine(new Point(0, 4), new Point(DialogueConsole.Width - 1, 4), 196);
@@ -215,7 +254,7 @@ namespace LofiHollow.UI {
                             int sellQuantity = 0;
 
                             for (int j = 0; j < SellingItems.Count; j++) {
-                                if (SellingItems[j].ItemID == item.ItemID && SellingItems[j].SubID == item.SubID) {
+                                if (SellingItems[j].StacksWith(item, true)) {
                                     sellQuantity = SellingItems[j].ItemQuantity;
                                 }
                             }
@@ -229,12 +268,12 @@ namespace LofiHollow.UI {
                             DialogueConsole.Print(0, 5 + i, new ColoredString("-", mousePos.Y == 5 + i && mousePos.X == 0 ? Color.Red : Color.White, Color.Black));
                             DialogueConsole.Print(1, 5 + i, new ColoredString(sellQuantity.ToString().Align(HorizontalAlignment.Center, 3), Color.White, Color.Black));
                             DialogueConsole.Print(5, 5 + i, new ColoredString("+", mousePos.Y == 5 + i && mousePos.X == 5 ? Color.Lime : Color.White, Color.Black));
-                            DialogueConsole.Print(6, 5 + i, new ColoredString("|" + name.Align(HorizontalAlignment.Center, 23) + "|" + item.ShortDesc.Align(HorizontalAlignment.Center, 27) + "|", mousePos.Y == 5 + i ? Color.Yellow : Color.White, Color.Black));
-                            DialogueConsole.Print(DialogueConsole.Width - 10, 5 + i, ConvertCoppers(price));
+                            DialogueConsole.Print(6, 5 + i, Helper.HoverColoredString("|" + name.Align(HorizontalAlignment.Center, 23) + "|" + item.ShortDesc.Align(HorizontalAlignment.Center, 27) + "|", mousePos.Y == 5 + i));
+                            DialogueConsole.Print(DialogueConsole.Width - 10, 5 + i, Helper.ConvertCoppers(price));
                         }
 
                         DialogueConsole.DrawLine(new Point(0, DialogueConsole.Height - 7), new Point(DialogueConsole.Width - 1, DialogueConsole.Height - 7), 196);
-                        DialogueConsole.Print(1, DialogueConsole.Height - 6, new ColoredString("[View Shop]", (mousePos.Y == DialogueConsole.Height - 6 && mousePos.X >= 1 && mousePos.X <= 11) ? Color.Yellow : Color.White, Color.Black));
+                        DialogueConsole.Print(1, DialogueConsole.Height - 6, Helper.HoverColoredString("[View Shop]", (mousePos.Y == DialogueConsole.Height - 6 && mousePos.X >= 1 && mousePos.X <= 11)));
                     }
 
                     int buyValue = 0;
@@ -278,17 +317,17 @@ namespace LofiHollow.UI {
 
                     DialogueConsole.Print(27, DialogueConsole.Height - 1, "[EXACT]");
 
-                    DialogueConsole.Print(1, DialogueConsole.Height - 4, new ColoredString("Buy Value: ", Color.White, Color.Black) + ConvertCoppers(buyValue));
-                    DialogueConsole.Print(1, DialogueConsole.Height - 3, new ColoredString("Sell Value: ", Color.White, Color.Black) + ConvertCoppers(sellValue));
+                    DialogueConsole.Print(1, DialogueConsole.Height - 4, new ColoredString("Buy Value: ", Color.White, Color.Black) + Helper.ConvertCoppers(buyValue));
+                    DialogueConsole.Print(1, DialogueConsole.Height - 3, new ColoredString("Sell Value: ", Color.White, Color.Black) + Helper.ConvertCoppers(sellValue));
 
                     int diff = buyValue - sellValue;
 
                     string total = diff > 0 ? "You owe " : diff == 0 ? "Trade is equal" : "You are owed ";
 
                     if (diff < 0)
-                        DialogueConsole.Print(1, DialogueConsole.Height - 2, new ColoredString(total, Color.White, Color.Black) + ConvertCoppers(-diff));
+                        DialogueConsole.Print(1, DialogueConsole.Height - 2, new ColoredString(total, Color.White, Color.Black) + Helper.ConvertCoppers(-diff));
                     else if (diff > 0)
-                        DialogueConsole.Print(1, DialogueConsole.Height - 2, new ColoredString(total, Color.White, Color.Black) + ConvertCoppers(diff));
+                        DialogueConsole.Print(1, DialogueConsole.Height - 2, new ColoredString(total, Color.White, Color.Black) + Helper.ConvertCoppers(diff));
                     else
                         DialogueConsole.Print(1, DialogueConsole.Height - 2, new ColoredString(total, Color.White, Color.Black));
 
@@ -303,14 +342,60 @@ namespace LofiHollow.UI {
                     else
                         DialogueConsole.Print(DialogueConsole.Width - 8, DialogueConsole.Height - 3, new ColoredString("[Accept]", Color.Red, Color.Black));
 
-                    DialogueConsole.Print(DialogueConsole.Width - 12, DialogueConsole.Height - 1, new ColoredString("[Close Shop]", (mousePos.Y == DialogueConsole.Height - 1 && mousePos.X >= DialogueConsole.Width - 12 && mousePos.X <= DialogueConsole.Width - 1) ? Color.Yellow : Color.White, Color.Black));
+                    DialogueConsole.Print(DialogueConsole.Width - 12, DialogueConsole.Height - 1, Helper.HoverColoredString("[Close Shop]", (mousePos.Y == DialogueConsole.Height - 1 && mousePos.X >= DialogueConsole.Width - 12 && mousePos.X <= DialogueConsole.Width - 1)));
 
-                }
+                } else if (dialogueOption == "Mission") {
+                    if (CurrentMission != null) {
+                        if (CurrentMission.Stages.Count > CurrentMission.CurrentStage) {
+                            if (CurrentMission.Stages[CurrentMission.CurrentStage].Dialogue.ContainsKey(CurrentMission.Stages[CurrentMission.CurrentStage].CurrentDialogue)) {
+                                MissionDialogue dialogue = CurrentMission.Stages[CurrentMission.CurrentStage].Dialogue[CurrentMission.Stages[CurrentMission.CurrentStage].CurrentDialogue];
+                                dialogueLatest = dialogue.Text;
+
+                                if (dialogueLatest.Contains('@') && !GameLoop.World.Player.Name.Contains('@')) {
+                                    int index = dialogueLatest.IndexOf('@');
+                                    dialogueLatest = dialogueLatest.Remove(index, 1);
+                                    dialogueLatest = dialogueLatest.Insert(index, GameLoop.World.Player.Name);
+                                }
+                                string[] allLines = dialogueLatest.Split("|");
+
+                                for (int i = 0; i < allLines.Length; i++)
+                                    DialogueConsole.Print(1, 1 + i, new ColoredString(allLines[i], Color.White, Color.Black));
+
+                                DialogueConsole.DrawLine(new Point(0, DialogueConsole.Height - 20), new Point(DialogueConsole.Width - 1, DialogueConsole.Height - 20), 196, Color.White, Color.Black);
+                                
+                                for (int i = 0; i < dialogue.Responses.Count; i++) {
+                                    DialogueConsole.Print(1, (DialogueConsole.Height - 18) + (i * 2), Helper.RequirementString(dialogue.Responses[i].Text, mousePos.Y == (DialogueConsole.Height - 18) + (i * 2), dialogue.Responses[i].MeetsAllRequirements(GameLoop.World.Player)));
+                                } 
+                            }
+                        } 
+                    } 
+                } 
             }
         } 
 
         public void CaptureDialogueClicks() {
             Point mousePos = new MouseScreenObjectState(DialogueConsole, GameHost.Instance.Mouse).CellPosition;
+
+            if (DialogueNPC.Shop != null) {
+                if (BuyingFromShop) {
+                    if (GameHost.Instance.Mouse.ScrollWheelValueChange > 0) {
+                        if (shopTopIndex + 1 < DialogueNPC.Shop.SoldItems.Count - 14)
+                            shopTopIndex++;
+                    } else if (GameHost.Instance.Mouse.ScrollWheelValueChange < 0) {
+                        if (shopTopIndex > 0)
+                            shopTopIndex--;
+                    }
+                } else {
+                    if (GameHost.Instance.Mouse.ScrollWheelValueChange > 0) {
+                        if (shopTopIndex + 1 < GameLoop.World.Player.Inventory.Length - 14)
+                            shopTopIndex++;
+                    } else if (GameHost.Instance.Mouse.ScrollWheelValueChange < 0) {
+                        if (shopTopIndex > 0)
+                            shopTopIndex--;
+                    }
+                }
+            }
+
             if (GameHost.Instance.Mouse.LeftClicked) {
                 if (dialogueOption == "Goodbye") {
                     dialogueOption = "None";
@@ -429,10 +514,10 @@ namespace LofiHollow.UI {
 
                             for (int i = 0; i < SellingItems.Count; i++) {
                                 for (int j = 0; j < GameLoop.World.Player.Inventory.Length; j++) {
-                                    if (GameLoop.World.Player.Inventory[j].ItemID == SellingItems[i].ItemID && GameLoop.World.Player.Inventory[j].SubID == SellingItems[i].SubID) {
+                                    if (GameLoop.World.Player.Inventory[j].StacksWith(SellingItems[i], true)) {
                                         GameLoop.World.Player.Inventory[j].ItemQuantity -= SellingItems[i].ItemQuantity;
                                         if (GameLoop.World.Player.Inventory[j].ItemQuantity <= 0) {
-                                            GameLoop.World.Player.Inventory[j] = new Item(0);
+                                            GameLoop.World.Player.Inventory[j] = new Item("lh:(EMPTY)");
                                         }
                                         break;
                                     }
@@ -459,13 +544,13 @@ namespace LofiHollow.UI {
                             diff *= -1;
 
                             if (diff >= 100) {
-                                string reaction = DialogueNPC.ReactGift(-2);
+                                string reaction = DialogueNPC.ReactGift("-2");
                                 if (DialogueNPC.GiftResponses.ContainsKey(reaction))
                                     dialogueLatest = DialogueNPC.GiftResponses[reaction];
                                 else
                                     dialogueLatest = "Error - No response for " + reaction + " gift.";
                             } else if (diff >= 10) {
-                                string reaction = DialogueNPC.ReactGift(-3);
+                                string reaction = DialogueNPC.ReactGift("-3");
                                 if (DialogueNPC.GiftResponses.ContainsKey(reaction))
                                     dialogueLatest = DialogueNPC.GiftResponses[reaction];
                                 else
@@ -476,10 +561,10 @@ namespace LofiHollow.UI {
 
                             for (int i = 0; i < SellingItems.Count; i++) {
                                 for (int j = 0; j < GameLoop.World.Player.Inventory.Length; j++) {
-                                    if (GameLoop.World.Player.Inventory[j].ItemID == SellingItems[i].ItemID && GameLoop.World.Player.Inventory[j].SubID == SellingItems[i].SubID) {
+                                    if (GameLoop.World.Player.Inventory[j].StacksWith(SellingItems[i], true)) {
                                         GameLoop.World.Player.Inventory[j].ItemQuantity -= SellingItems[i].ItemQuantity;
                                         if (GameLoop.World.Player.Inventory[j].ItemQuantity <= 0) {
-                                            GameLoop.World.Player.Inventory[j] = new Item(0);
+                                            GameLoop.World.Player.Inventory[j] = new Item("lh:(EMPTY)");
                                         }
                                         break;
                                     }
@@ -507,11 +592,18 @@ namespace LofiHollow.UI {
                         if (mousePos.Y == DialogueConsole.Height - 6 && mousePos.X >= 1 && mousePos.X <= 16) {
                             BuyingFromShop = false;
                         } else {
-                            int itemSlot = mousePos.Y - 5;
+                            int itemSlot = -1;
+                            if ((float)((mousePos.Y - 5) / 2f) == (mousePos.Y - 5) / 2) {
+                                itemSlot = (mousePos.Y - 5) / 2;
+                            }
+
+                            if (itemSlot >= 0)
+                                itemSlot += shopTopIndex;
+
                             if (itemSlot >= 0 && itemSlot <= DialogueNPC.Shop.SoldItems.Count) {
                                 if (mousePos.X == 0) {
-                                    for (int i = 0; i < BuyingItems.Count; i++) { 
-                                        if ((DialogueNPC.Shop.ShopName != "Town Hall Permits" && BuyingItems[i].ItemID == DialogueNPC.Shop.SoldItems[itemSlot]) || (DialogueNPC.Shop.ShopName == "Town Hall Permits" && BuyingItems[i].ItemID == TownHallPermits[itemSlot].ItemID)) {
+                                    for (int i = 0; i < BuyingItems.Count; i++) {
+                                        if (BuyingItems[i].FullName() == DialogueNPC.Shop.SoldItems[itemSlot]) {
                                             if (BuyingItems[i].IsStackable && BuyingItems[i].ItemQuantity > 1) {
                                                 if (GameHost.Instance.Keyboard.IsKeyDown(SadConsole.Input.Keys.LeftShift) || GameHost.Instance.Keyboard.IsKeyDown(SadConsole.Input.Keys.RightShift)) {
                                                     if (BuyingItems[i].ItemQuantity >= 10) {
@@ -532,7 +624,7 @@ namespace LofiHollow.UI {
                                 } else if (mousePos.X == 5) {
                                     bool alreadyInList = false;
                                     for (int i = 0; i < BuyingItems.Count; i++) {
-                                        if ((DialogueNPC.Shop.ShopName != "Town Hall Permits" && BuyingItems[i].ItemID == DialogueNPC.Shop.SoldItems[itemSlot]) || (DialogueNPC.Shop.ShopName == "Town Hall Permits" && BuyingItems[i].ItemID == TownHallPermits[itemSlot].ItemID)) {
+                                        if (BuyingItems[i].FullName() == DialogueNPC.Shop.SoldItems[itemSlot]) {
                                             if (BuyingItems[i].IsStackable) {
                                                 alreadyInList = true;
                                                 if (GameHost.Instance.Keyboard.IsKeyDown(SadConsole.Input.Keys.LeftShift) || GameHost.Instance.Keyboard.IsKeyDown(SadConsole.Input.Keys.RightShift)) {
@@ -550,11 +642,7 @@ namespace LofiHollow.UI {
                                     }
 
                                     if (!alreadyInList) {
-                                        if (DialogueNPC.Shop.ShopName != "Town Hall Permits") {
-                                            BuyingItems.Add(new Item(DialogueNPC.Shop.SoldItems[itemSlot]));
-                                        } else {
-                                            BuyingItems.Add(new Item(TownHallPermits[itemSlot]));
-                                        }
+                                        BuyingItems.Add(new Item(DialogueNPC.Shop.SoldItems[itemSlot]));
 
                                         if (GameHost.Instance.Keyboard.IsKeyDown(SadConsole.Input.Keys.LeftShift) || GameHost.Instance.Keyboard.IsKeyDown(SadConsole.Input.Keys.RightShift)) {
                                             if (BuyingItems[^1].IsStackable)
@@ -572,7 +660,7 @@ namespace LofiHollow.UI {
                             if (itemSlot >= 0 && itemSlot <= GameLoop.World.Player.Inventory.Length) {
                                 if (mousePos.X == 0) {
                                     for (int i = 0; i < SellingItems.Count; i++) {
-                                        if (SellingItems[i].ItemID == GameLoop.World.Player.Inventory[itemSlot].ItemID && SellingItems[i].SubID == GameLoop.World.Player.Inventory[itemSlot].SubID) {
+                                        if (SellingItems[i].StacksWith(GameLoop.World.Player.Inventory[itemSlot], true)) {
                                             if (SellingItems[i].IsStackable && SellingItems[i].ItemQuantity > 1) {
                                                 SellingItems[i].ItemQuantity--;
                                                 break;
@@ -588,7 +676,7 @@ namespace LofiHollow.UI {
                                     for (int i = 0; i < SellingItems.Count; i++) {
                                         int thisItemCount = 0;
                                         int alreadyInListCount = 0;
-                                        if (SellingItems[i].ItemID == GameLoop.World.Player.Inventory[itemSlot].ItemID && SellingItems[i].SubID == GameLoop.World.Player.Inventory[itemSlot].SubID) {
+                                        if (SellingItems[i].StacksWith(GameLoop.World.Player.Inventory[itemSlot], true)) {
                                             if (SellingItems[i].IsStackable) {
                                                 alreadyInList = true;
                                                 if (SellingItems[i].ItemQuantity < GameLoop.World.Player.Inventory[itemSlot].ItemQuantity) {
@@ -597,13 +685,13 @@ namespace LofiHollow.UI {
                                                 }
                                             } else if (!SellingItems[i].IsStackable) {
                                                 for (int j = 0; j < GameLoop.World.Player.Inventory.Length; j++) {
-                                                    if (GameLoop.World.Player.Inventory[j].ItemID == SellingItems[i].ItemID && GameLoop.World.Player.Inventory[j].SubID == SellingItems[i].SubID) {
+                                                    if (SellingItems[i].StacksWith(GameLoop.World.Player.Inventory[itemSlot], true)) {
                                                         thisItemCount++;
                                                     }
                                                 }
 
                                                 for (int j = 0; j < SellingItems.Count; j++) {
-                                                    if (GameLoop.World.Player.Inventory[itemSlot].ItemID == SellingItems[j].ItemID && GameLoop.World.Player.Inventory[itemSlot].SubID == SellingItems[j].SubID) {
+                                                    if (SellingItems[i].StacksWith(GameLoop.World.Player.Inventory[itemSlot], true)) {
                                                         alreadyInListCount++;
                                                     }
                                                 }
@@ -632,9 +720,9 @@ namespace LofiHollow.UI {
                         dialogueOption = "None";
                     } else if (mousePos.Y >= 2 && mousePos.Y <= 2 + GameLoop.World.Player.Inventory.Length) {
                         int slot = mousePos.Y - 2;
-                        int itemID = CommandManager.RemoveOneItem(GameLoop.World.Player, slot);
+                        string itemID = CommandManager.RemoveOneItem(GameLoop.World.Player, slot);
 
-                        if (itemID != -1 && itemID != 0) {
+                        if (itemID != "" && itemID != "(EMPTY)") {
                             string reaction = DialogueNPC.ReactGift(itemID);
                             dialogueOption = "None";
                             if (DialogueNPC.GiftResponses.ContainsKey(reaction))
@@ -679,41 +767,53 @@ namespace LofiHollow.UI {
                     } else if (mousePos.Y == DialogueConsole.Height - 17) { // Open shop dialogue
                         if (DialogueNPC.Shop != null && DialogueNPC.Shop.ShopOpen(DialogueNPC))
                             dialogueOption = "Shop";
+                    } else if (mousePos.Y == DialogueConsole.Height - 19) { // Open mission dialogue
+                        if (CurrentMission != null)
+                            dialogueOption = "Mission";
+                    }
+                } else if (dialogueOption == "Mission") {
+                    int topOption = DialogueConsole.Height - 18;
+
+                    if ((float)((mousePos.Y - topOption) / 2f) == (mousePos.Y - topOption) / 2) {
+                        int clickedResponse = (mousePos.Y - topOption) / 2;
+
+                        if (CurrentMission != null) {
+                            if (CurrentMission.Stages.Count > CurrentMission.CurrentStage) {
+                                if (CurrentMission.Stages[CurrentMission.CurrentStage].Dialogue.ContainsKey(CurrentMission.Stages[CurrentMission.CurrentStage].CurrentDialogue)) {
+                                    MissionDialogue dialogue = CurrentMission.Stages[CurrentMission.CurrentStage].Dialogue[CurrentMission.Stages[CurrentMission.CurrentStage].CurrentDialogue];
+
+                                    if (dialogue.Responses.Count > clickedResponse) {
+                                        if (dialogue.Responses[clickedResponse].MeetsAllRequirements(GameLoop.World.Player)) {
+                                            CurrentMission.SelectChoice(dialogue.Responses[clickedResponse]);
+
+                                            if (dialogue.Responses[clickedResponse].ItemGiven != "") {
+                                                CommandManager.AddItemToInv(GameLoop.World.Player, new(dialogue.Responses[clickedResponse].ItemGiven));
+                                            }
+
+                                            if (dialogue.Responses[clickedResponse].EndsDialogue) {
+                                                dialogueOption = "None";
+                                                CurrentMission = null;
+                                                if (GameLoop.World.Player.MetNPCs.ContainsKey(DialogueNPC.Name)) {
+                                                    if (DialogueNPC.Greetings.ContainsKey(DialogueNPC.RelationshipDescriptor())) {
+                                                        dialogueLatest = DialogueNPC.Greetings[DialogueNPC.RelationshipDescriptor()];
+                                                    } else {
+                                                        dialogueLatest = "Error: Greeting not found for relationship " + DialogueNPC.RelationshipDescriptor();
+                                                    }
+                                                } else {
+                                                    dialogueLatest = GameLoop.UIManager.DialogueWindow.DialogueNPC.Introduction;
+                                                    GameLoop.World.Player.MetNPCs.Add(DialogueNPC.Name, 0);
+                                                }
+
+                                                DialogueNPC.UpdateChitChats();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
-        }
-
-        public static ColoredString ConvertCoppers(int copperValue) {
-            int coinsLeft = copperValue;
-            int jade = copperValue / 1000;
-
-            coinsLeft -= jade * 1000;
-            int gold = coinsLeft / 100;
-
-            coinsLeft -= gold * 100;
-            int silver = coinsLeft / 10;
-
-            coinsLeft -= silver * 10;
-            int copper = coinsLeft;
-
-            ColoredString build = new("", Color.White, Color.Black);
-
-            ColoredString copperString = new(copper + "c", new Color(184, 115, 51), Color.Black);
-            ColoredString silverString = new(silver + "s ", Color.Silver, Color.Black);
-            ColoredString goldString = new(gold + "g ", Color.Yellow, Color.Black);
-            ColoredString JadeString = new(jade + "j ", new Color(0, 168, 107), Color.Black);
-
-            if (jade > 0)
-                build += JadeString;
-            if (gold > 0)
-                build += goldString;
-            if (silver > 0)
-                build += silverString;
-            if (copper > 0)
-                build += copperString;
-
-            return build;
-        }
+        } 
     }
 }

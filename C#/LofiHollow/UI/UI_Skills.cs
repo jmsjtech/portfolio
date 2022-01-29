@@ -52,7 +52,7 @@ namespace LofiHollow.UI {
                     int exp = kv.Value.TotalExp;
                     int next = (kv.Value.ExpToLevel() - kv.Value.Experience);
 
-                    SkillConsole.Print(16, 2 + (index * 2), new ColoredString(name.Align(HorizontalAlignment.Center, 20) + "|" + level.ToString().Align(HorizontalAlignment.Center, 7) + "|" + exp.ToString().Align(HorizontalAlignment.Center, 12) + "|" + next.ToString().Align(HorizontalAlignment.Center, 12), mousePos.Y == 2 + (index * 2) ? Color.Yellow : Color.White, Color.Black));
+                    SkillConsole.Print(16, 2 + (index * 2), Helper.HoverColoredString(name.Align(HorizontalAlignment.Center, 20) + "|" + level.ToString().Align(HorizontalAlignment.Center, 7) + "|" + exp.ToString().Align(HorizontalAlignment.Center, 12) + "|" + next.ToString().Align(HorizontalAlignment.Center, 12), mousePos.Y == 2 + (index * 2)));
                     SkillConsole.Print(16, 3 + (index * 2), new ColoredString(" ".Align(HorizontalAlignment.Center, 20) + "|" + " ".Align(HorizontalAlignment.Center, 7) + "|" + " ".Align(HorizontalAlignment.Center, 12) + "|" + " ".Align(HorizontalAlignment.Center, 12), Color.White, Color.Black));
                     index++;
                 }

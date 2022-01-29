@@ -25,13 +25,7 @@ namespace LofiHollow.EntityData {
         public int HarvestRevert = -1;
 
         [JsonProperty]
-        public string ProduceName = "";
-
-        [JsonProperty]
-        public int ProduceValue = 0;
-
-        [JsonProperty]
-        public double ProduceWeight = 0;
+        public string ProduceName = ""; 
 
         [JsonProperty]
         public int RequiredLevel = 0;
@@ -46,18 +40,6 @@ namespace LofiHollow.EntityData {
         public int ProducePerHarvestMin = 0;
         [JsonProperty]
         public int ProducePerHarvestMax = 0;
-
-        [JsonProperty]
-        public int ProduceGlyph = 0;
-
-        [JsonProperty]
-        public int ProduceR = 0;
-        [JsonProperty]
-        public int ProduceG = 0;
-        [JsonProperty]
-        public int ProduceB = 0;
-        [JsonProperty]
-        public Decorator ProduceDec;
 
         [JsonProperty]
         public bool ProduceIsSeed = false;
@@ -82,18 +64,11 @@ namespace LofiHollow.EntityData {
             GrowthSeason = other.GrowthSeason;
             HarvestRevert = other.HarvestRevert;
             ProduceName = other.ProduceName;
-            ProduceValue = other.ProduceValue;
-            ProduceWeight = other.ProduceWeight;
             ProducePerHarvestMin = other.ProducePerHarvestMin;
             ProducePerHarvestMax = other.ProducePerHarvestMax;
             ProduceIsSeed = other.ProduceIsSeed;
-            ProduceGlyph = other.ProduceGlyph;
-            ProduceR = other.ProduceR;
-            ProduceG = other.ProduceG;
-            ProduceB = other.ProduceB;
             WateredToday = false;
             Stages = other.Stages;
-            ProduceDec = other.ProduceDec;
         }
 
         public void DayUpdate() {
@@ -112,16 +87,11 @@ namespace LofiHollow.EntityData {
         }
 
         public void Harvest(Actor harvester) {
-            if (CurrentStage != -1 && Stages[CurrentStage].HarvestItem != -1) {
+            if (CurrentStage != -1 && Stages[CurrentStage].HarvestItem != "") {
                 Item produce = new(Stages[CurrentStage].HarvestItem);
-                produce.Name = ProduceName;
-                produce.Weight = (float) ProduceWeight;
-                produce.AverageValue = ProduceValue;
                 produce.ItemQuantity = ProducePerHarvestMin;
                 if (ProducePerHarvestMax > ProducePerHarvestMin)
                     produce.ItemQuantity += GameLoop.rand.Next(ProducePerHarvestMax - ProducePerHarvestMin);
-                produce.Position = harvester.Position;
-                produce.MapPos = harvester.MapPos;
 
                 if (ProduceIsSeed) {
                     produce.Plant = new(this);
@@ -129,13 +99,6 @@ namespace LofiHollow.EntityData {
                     produce.Plant.DayCounter = 0;
                 }
 
-                produce.ItemGlyph = ProduceGlyph;
-                produce.ForegroundR = ProduceR;
-                produce.ForegroundG = ProduceG;
-                produce.ForegroundB = ProduceB;
-                produce.Dec = ProduceDec;
-                produce.UpdateAppearance();
-                
 
                 CommandManager.AddItemToInv(harvester, produce);
 

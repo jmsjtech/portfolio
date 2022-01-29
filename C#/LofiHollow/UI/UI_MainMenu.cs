@@ -76,6 +76,8 @@ namespace LofiHollow.UI {
          
 
         public void RemakeMenu() {
+            MenuConsole.Clear();
+
             for (int i = 0; i < MenuImage.Layers[0].Cells.Count; i++) {
                 var cell = MenuImage.Layers[0].Cells[i];
                 Color convertedFG = new(cell.Foreground.R, cell.Foreground.G, cell.Foreground.B);
@@ -159,8 +161,8 @@ namespace LofiHollow.UI {
 
 
                 MenuConsole.DrawBox(new Rectangle(0, 0, 20, 20), ShapeParameters.CreateStyledBoxFilled(ICellSurface.ConnectedLineThin, new ColoredGlyph(Color.White, Color.Black), new ColoredGlyph(Color.Black, Color.Black)));
-                MenuConsole.Print(6, 2, new ColoredString("New Game", mousePos.Y == 2 ? Color.Yellow : Color.White, Color.Black));
-                MenuConsole.Print(5, 3, new ColoredString("Load Game", mousePos.Y == 3 ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(6, 2, Helper.HoverColoredString("New Game", mousePos.Y == 2));
+                MenuConsole.Print(5, 3, Helper.HoverColoredString("Load Game", mousePos.Y == 3));
             } else if (GameLoop.UIManager.selectedMenu == "CharCreation") {
                 MenuConsole.DrawBox(new Rectangle(0, 0, 50, 50), ShapeParameters.CreateStyledBoxFilled(ICellSurface.ConnectedLineThin, new ColoredGlyph(Color.White, Color.Black), new ColoredGlyph(Color.Black, Color.Black)));
 
@@ -175,35 +177,41 @@ namespace LofiHollow.UI {
                 string forB = GameLoop.World.Player.ForegroundB.ToString();
 
                 MenuConsole.Print(CreateX + 1, CreateY + 1, new ColoredString("R: ", Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 6, CreateY + 1, new ColoredString("-", mousePos == new Point(CreateX + 6, CreateY + 1) ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 6, CreateY + 1, Helper.HoverColoredString("-", mousePos == new Point(CreateX + 6, CreateY + 1)));
                 MenuConsole.Print(CreateX + 8, CreateY + 1, new ColoredString(forR, Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 12, CreateY + 1, new ColoredString("+", mousePos == new Point(CreateX + 11, CreateY + 1) ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 12, CreateY + 1, Helper.HoverColoredString("+", mousePos == new Point(CreateX + 11, CreateY + 1)));
 
                 MenuConsole.Print(CreateX + 1, CreateY + 2, new ColoredString("G: ", Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 6, CreateY + 2, new ColoredString("-", mousePos == new Point(CreateX + 6, CreateY + 2) ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 6, CreateY + 2, Helper.HoverColoredString("-", mousePos == new Point(CreateX + 6, CreateY + 2)));
                 MenuConsole.Print(CreateX + 8, CreateY + 2, new ColoredString(forG, Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 12, CreateY + 2, new ColoredString("+", mousePos == new Point(CreateX + 11, CreateY + 2) ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 12, CreateY + 2, Helper.HoverColoredString("+", mousePos == new Point(CreateX + 11, CreateY + 2)));
 
                 MenuConsole.Print(CreateX + 1, CreateY + 3, new ColoredString("B: ", Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 6, CreateY + 3, new ColoredString("-", mousePos == new Point(CreateX + 6, CreateY + 3) ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 6, CreateY + 3, Helper.HoverColoredString("-", mousePos == new Point(CreateX + 6, CreateY + 3)));
                 MenuConsole.Print(CreateX + 8, CreateY + 3, new ColoredString(forB, Color.White, Color.Black));
-                MenuConsole.Print(CreateX + 12, CreateY + 3, new ColoredString("+", mousePos == new Point(CreateX + 11, CreateY + 3) ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 12, CreateY + 3, Helper.HoverColoredString("+", mousePos == new Point(CreateX + 11, CreateY + 3)));
 
                 GameLoop.World.Player.UpdateAppearance();
                 MenuConsole.Print(CreateX + 1, CreateY + 5, new ColoredString("Current: ", Color.White, Color.Black) + GameLoop.World.Player.GetAppearance());
-                
+                MenuConsole.SetBackground(CreateX + 10, CreateY + 5, Color.Black);
 
-                
+
+                MenuConsole.Print(CreateX + 15, CreateY, new ColoredString("Deaths", Color.White, Color.Black));
+
+                MenuConsole.Print(CreateX + 15, CreateY + 1, new ColoredString(((char)236).ToString(), GameLoop.World.Player.LivesRemaining == -1 ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 17, CreateY + 1, new ColoredString("3", GameLoop.World.Player.LivesRemaining == 3 ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 19, CreateY + 1, new ColoredString("1".ToString(), GameLoop.World.Player.LivesRemaining == 1 ? Color.Yellow : Color.White, Color.Black));
+
+                MenuConsole.Print(CreateX + 25, CreateY, new ColoredString("Item Drops On Death", Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 25, CreateY + 1, new ColoredString("Nothing", GameLoop.World.Player.DropsOnDeath == -1 ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 25, CreateY + 2, new ColoredString("Only Gold", GameLoop.World.Player.DropsOnDeath == 0 ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(CreateX + 25, CreateY + 3, new ColoredString("Gold and Items".ToString(), GameLoop.World.Player.DropsOnDeath == 1 ? Color.Yellow : Color.White, Color.Black));
+
 
                 MenuConsole.Print(CreateX + 1, CreateY + 11, new ColoredString("Name:", Color.White, Color.Black));
 
 
-
-
-                MenuConsole.DrawLine(new Point(CreateX + 23, CreateY + 14), new Point(CreateX + 23, CreateY + 26), (char)124, Color.White, Color.Black);
-
-
-                MenuConsole.Print(2, MenuConsole.Height - 2, new ColoredString("DONE", (mousePos.Y == MenuConsole.Height - 2 && mousePos.X <= 6 && mousePos.X >= 2) ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(2, MenuConsole.Height - 2, Helper.HoverColoredString("DONE", (mousePos.Y == MenuConsole.Height - 2 && mousePos.X <= 6 && mousePos.X >= 2)));
             } else if (GameLoop.UIManager.selectedMenu == "LoadFile") {
                 int fileSize = 5;
                 if (Names != null && Names.Length > 0) {
@@ -216,15 +224,15 @@ namespace LofiHollow.UI {
                     MenuConsole.DrawLine(new Point(1, 2), new Point(18, 2), (char)196, Color.White, Color.Black);
 
                     for (int i = 0; i < Names.Length; i++) {
-                        MenuConsole.Print(1, 3 + i, new ColoredString(Names[i].Align(HorizontalAlignment.Center, 18), mousePos.Y == 3 + i ? Color.Yellow : Color.White, Color.Black));
+                        MenuConsole.Print(1, 3 + i, Helper.HoverColoredString(Names[i].Align(HorizontalAlignment.Center, 18), mousePos.Y == 3 + i));
                     }
                 }
 
-                MenuConsole.Print(1, 1 + fileSize - 3, new ColoredString("[BACK]".Align(HorizontalAlignment.Center, 18), mousePos.Y == (1 + fileSize - 3) ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(1, 1 + fileSize - 3, Helper.HoverColoredString("[BACK]".Align(HorizontalAlignment.Center, 18), mousePos.Y == (1 + fileSize - 3)));
             } else if (GameLoop.UIManager.selectedMenu == "ConnectOrHost") {
                 MenuConsole.DrawBox(new Rectangle(0, 0, 20, 10), ShapeParameters.CreateStyledBoxFilled(ICellSurface.ConnectedLineThin, new ColoredGlyph(Color.White, Color.Black), new ColoredGlyph(Color.Black, Color.Black)));
-                MenuConsole.Print(1, 1, new ColoredString("Singleplayer", mousePos.Y == 1 ? Color.Yellow : Color.White, Color.Black));
-                MenuConsole.Print(1, 2, new ColoredString("Host and Play", mousePos.Y == 2 ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(1, 1, Helper.HoverColoredString("Singleplayer", mousePos.Y == 1));
+                MenuConsole.Print(1, 2, Helper.HoverColoredString("Host and Play", mousePos.Y == 2));
 
                 string buff = LobbyCode;
 
@@ -233,7 +241,7 @@ namespace LofiHollow.UI {
                 }
 
                 MenuConsole.Print(1, 4, new ColoredString(buff, Color.White, Color.Black));
-                MenuConsole.Print(8, 4, new ColoredString("[JOIN]", mousePos.Y == 4 ? Color.Yellow : Color.White, Color.Black));
+                MenuConsole.Print(8, 4, Helper.HoverColoredString("[JOIN]", mousePos.Y == 4));
 
 
                 MenuConsole.Print(1, 7, new ColoredString(joinError, Color.White, Color.Black));
@@ -252,7 +260,7 @@ namespace LofiHollow.UI {
 
                     if (GameHost.Instance.Keyboard.IsKeyReleased(Key.Space)) {
                         LobbyCode += " ";
-                    }
+                    } 
                 }
 
                 if (LobbyCode.Length > 0) {
@@ -317,11 +325,12 @@ namespace LofiHollow.UI {
                     if (mousePos.Y == MenuConsole.Height - 2 && mousePos.X <= 6 && mousePos.X >= 2 && NameBox.EditingText != "") {
                         GameLoop.UIManager.selectedMenu = "ConnectOrHost";
 
+                        RemakeMenu();
                         MenuConsole = new SadConsole.Console(20, 20);
                         MainMenuWindow.Children.Add(MenuConsole); 
                         MenuConsole.Position = new Point(40, 20);
                         NameConsole.IsVisible = false; 
-                        RemakeMenu();
+                       
                         
 
                         if (GameLoop.World.Player.Name != NameBox.EditingText)
@@ -331,9 +340,25 @@ namespace LofiHollow.UI {
                          
                         GameLoop.World.FreshStart();
                         GameLoop.UIManager.Map.UpdateVision();
-                    } 
-                } 
-                else if (GameLoop.UIManager.selectedMenu == "LoadFile") {
+                    }
+
+                    int CreateX = 1;
+                    int CreateY = 1;
+
+                    if (mousePos == new Point(CreateX + 15, CreateY + 1))
+                        GameLoop.World.Player.LivesRemaining = -1;
+                    if (mousePos == new Point(CreateX + 17, CreateY + 1))
+                        GameLoop.World.Player.LivesRemaining = 3;
+                    if (mousePos == new Point(CreateX + 19, CreateY + 1))
+                        GameLoop.World.Player.LivesRemaining = 1;
+
+                    if (mousePos.X >= CreateX + 25 && mousePos.Y == CreateY + 1)
+                        GameLoop.World.Player.DropsOnDeath = -1;
+                    if (mousePos.X >= CreateX + 25 && mousePos.Y == CreateY + 2)
+                        GameLoop.World.Player.DropsOnDeath = 0;
+                    if (mousePos.X >= CreateX + 25 && mousePos.Y == CreateY + 3)
+                        GameLoop.World.Player.DropsOnDeath = 1; 
+                } else if (GameLoop.UIManager.selectedMenu == "LoadFile") {
                     int fileSize = 5;
                     if (Names != null && Names.Length > 0) {
                         fileSize = Names.Length + 2;
@@ -364,14 +389,8 @@ namespace LofiHollow.UI {
 
                         // Singleplayer
                     } else if (mousePos.Y == 2) {
-                        MainMenuWindow.IsVisible = false;
-                        GameLoop.UIManager.Map.MapWindow.IsVisible = true;
-                        GameLoop.UIManager.Map.MessageLog.IsVisible = true;
-                        GameLoop.UIManager.Sidebar.BattleLog.IsVisible = true;
-                        GameLoop.UIManager.Sidebar.SidebarWindow.IsVisible = true;
-                        GameLoop.UIManager.selectedMenu = "None";
-                        GameLoop.NetworkManager = new NetworkManager(true);
-                        // Host immediately
+                        // Host Immediately
+                        GameLoop.NetworkManager = new NetworkManager(true); 
                         GameLoop.NetworkManager.CreateLobby();
                     } else if (mousePos.Y == 4 && mousePos.X >= 8 && mousePos.X <= 13) {
                         // Join game

@@ -14,9 +14,15 @@ namespace LofiHollow.Managers {
         public static bool MoveActorBy(Actor actor, Point position) {
             bool moved = actor.MoveBy(position);
             if (moved) {
-                if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
-                    GameLoop.NetworkManager.BroadcastMsg("movePlayer;" + GameLoop.NetworkManager.ownID + ";" + actor.Position.X + ";" + actor.Position.Y + ";" 
-                        + actor.MapPos.X + ";" + actor.MapPos.Y + ";" + actor.MapPos.Z);
+                GameLoop.SendMessageIfNeeded(new string[] { "movePlayer", actor.Position.X.ToString(), actor.Position.Y.ToString(), actor.MapPos.ToString()}, false, true);
+                
+
+                if (actor is Player player) {
+                    if (player.Sleeping) {
+                        GameLoop.UIManager.AddMsg(new ColoredString("You decide not to sleep yet.", Color.Green, Color.Black));
+                        GameLoop.World.Player.Sleeping = false;
+                        GameLoop.SendMessageIfNeeded(new string[] { "sleep", "false" }, false, true); 
+                    }
                 }
 
                 if (actor.ScreenAppearance == null) {
@@ -45,29 +51,26 @@ namespace LofiHollow.Managers {
         } 
 
         public static void DropItem(Actor actor, int slot) {
-            if (actor.Inventory.Length > slot && actor.Inventory[slot].ItemID != 0) {
-                if (GameLoop.World.itemLibrary.ContainsKey(actor.Inventory[slot].ItemID)) {
-                    Item item = actor.Inventory[slot]; 
-                    item.Position = actor.Position;
-                    item.MapPos = actor.MapPos;
+            if (actor.Inventory.Length > slot && actor.Inventory[slot].Name != "(EMPTY)") {
+                ItemWrapper item = new(actor.Inventory[slot]); 
+                item.Position = actor.Position;
+                item.MapPos = actor.MapPos;
 
+                item.UpdateAppearance();
                     
-                    actor.Inventory[slot] = new Item(0);
+                actor.Inventory[slot] = new Item("lh:(EMPTY)");
 
-                    SendItem(item);
-                    SpawnItem(item);
-                }
+                SendItem(item);
+                SpawnItem(item);
             }
         }
 
-        public static void SendItem(Item item) {
-            string json = JsonConvert.SerializeObject(item, Formatting.Indented);
-            string msg = "spawnItem;" + json;
-            if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null)
-                GameLoop.NetworkManager.BroadcastMsg(msg);
+        public static void SendItem(ItemWrapper wrap) {
+            string json = JsonConvert.SerializeObject(wrap, Formatting.Indented);
+            GameLoop.SendMessageIfNeeded(new string[] { "spawnItem", json }, false, false);
         }
 
-        public static void SpawnItem(Item item) {
+        public static void SpawnItem(ItemWrapper item) {
             if (!GameLoop.World.maps.ContainsKey(item.MapPos))
                 GameLoop.World.LoadMapAt(item.MapPos);
 
@@ -76,18 +79,16 @@ namespace LofiHollow.Managers {
             GameLoop.UIManager.Map.SyncMapEntities(GameLoop.World.maps[GameLoop.World.Player.MapPos]);
         }
 
-        public static void SendPickup(Item item) {
+        public static void SendPickup(ItemWrapper item) {
             string json = JsonConvert.SerializeObject(item, Formatting.Indented);
-            string msg = "destroyItem;" + json;
-            if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null)
-                GameLoop.NetworkManager.BroadcastMsg(msg);
+            GameLoop.SendMessageIfNeeded(new string[] { "destroyItem", json }, false, false);
         }
 
-        public static void DestroyItem(Item item) {
+        public static void DestroyItem(ItemWrapper item) {
             if (!GameLoop.World.maps.ContainsKey(item.MapPos))
                 GameLoop.World.LoadMapAt(item.MapPos);
 
-            Item localCopy = GameLoop.World.maps[item.MapPos].GetEntityAt<Item>(item.Position, item.Name);
+            ItemWrapper localCopy = GameLoop.World.maps[item.MapPos].GetEntityAt<ItemWrapper>(item.Position, item.Name);
             if (localCopy != null) {
                 GameLoop.UIManager.Map.EntityRenderer.Remove(localCopy);
                 GameLoop.World.maps[item.MapPos].Entities.Remove(localCopy); 
@@ -97,50 +98,54 @@ namespace LofiHollow.Managers {
         }
 
         public static void PickupItem(Actor actor) {
-            Item item = GameLoop.World.maps[actor.MapPos].GetEntityAt<Item>(actor.Position);
-            if (item != null) {
+            ItemWrapper wrap = GameLoop.World.maps[actor.MapPos].GetEntityAt<ItemWrapper>(actor.Position);
+            if (wrap != null) {
                 for (int i = 0; i < actor.Inventory.Length; i++) {
-                    if (actor.Inventory[i].ItemID == item.ItemID && actor.Inventory[i].SubID == item.SubID && item.IsStackable) {
+                    if (actor.Inventory[i].StacksWith(wrap.item)) {
                         actor.Inventory[i].ItemQuantity++;
 
-                        DestroyItem(item);
-                        SendPickup(item);
-
+                        DestroyItem(wrap);
+                        SendPickup(wrap);
+                        MissionManager.CheckHasItems();
                         return;
                     }
                 }
 
                 for (int i = 0; i < actor.Inventory.Length; i++) {
-                    if (actor.Inventory[i].ItemID == 0) {
-                        actor.Inventory[i] = item;
-                        DestroyItem(item);
-                        SendPickup(item);
+                    if (actor.Inventory[i].Name == "(EMPTY)") {
+                        actor.Inventory[i] = wrap.item;
+                        DestroyItem(wrap);
+                        SendPickup(wrap);
+                        MissionManager.CheckHasItems();
                         break;
                     }
                 }
-            }
+            } 
         }
 
         public static void AddItemToInv(Actor actor, Item item) { 
             if (item != null) {
                 for (int i = 0; i < actor.Inventory.Length; i++) {
-                    if (actor.Inventory[i].ItemID == item.ItemID && actor.Inventory[i].SubID == item.SubID && item.IsStackable) {
-                        actor.Inventory[i].ItemQuantity += item.ItemQuantity; 
+                    if (actor.Inventory[i].StacksWith(item)) {
+                        actor.Inventory[i].ItemQuantity += item.ItemQuantity;
+                        MissionManager.CheckHasItems();
                         return;
                     }
                 }
 
                 for (int i = 0; i < actor.Inventory.Length; i++) {
-                    if (actor.Inventory[i].ItemID == 0) {
-                        actor.Inventory[i] = item; 
+                    if (actor.Inventory[i].Name == "(EMPTY)") {
+                        actor.Inventory[i] = item;  
+                        MissionManager.CheckHasItems();
                         return;
                     }
                 }
-            } 
+            }
 
-            item.Position = actor.Position;
-            item.MapPos = actor.MapPos;
-            SpawnItem(item);
+            ItemWrapper wrap = new(item);
+            wrap.Position = actor.Position;
+            wrap.MapPos = actor.MapPos;
+            SpawnItem(wrap);
         }
 
         public static string UseItem(Actor actor, Item item) {
@@ -176,27 +181,27 @@ namespace LofiHollow.Managers {
 
         public static void UnequipItem(Actor actor, int slot) {
             if (slot >= 0 && slot <= 15) {
-                if (actor.Equipment[slot].ItemID != 0) {
+                if (actor.Equipment[slot].Name != "(EMPTY)") {
                     for (int i = 0; i < actor.Inventory.Length; i++) {
-                        if (actor.Inventory[i].ItemID == 0) {
+                        if (actor.Inventory[i].Name == "(EMPTY)") {
                             actor.Inventory[i] = actor.Equipment[slot];
-                            actor.Equipment[slot] = new Item(0);
+                            actor.Equipment[slot] = new Item("lh:(EMPTY)");
                         }
                     }
                 }
             }
         }
 
-        public static int RemoveOneItem(Actor actor, int slot) {
-            int returnID = -1;
+        public static string RemoveOneItem(Actor actor, int slot) {
+            string returnID = "";
             if (slot >= 0 && slot <= actor.Inventory.Length) {
-                if (actor.Inventory[slot].ItemID != 0) {
+                if (actor.Inventory[slot].Name != "(EMPTY)") {
                     if (!actor.Inventory[slot].IsStackable || (actor.Inventory[slot].IsStackable && actor.Inventory[slot].ItemQuantity == 1)) {
-                        returnID = actor.Inventory[slot].ItemID;
-                        actor.Inventory[slot] = new Item(0);
+                        returnID = actor.Inventory[slot].FullName();
+                        actor.Inventory[slot] = new Item("lh:(EMPTY)");
                     } else if (actor.Inventory[slot].IsStackable && actor.Inventory[slot].ItemQuantity > 1) {
                         actor.Inventory[slot].ItemQuantity--;
-                        returnID = actor.Inventory[slot].ItemID;
+                        returnID = actor.Inventory[slot].FullName();
                     }
                 }
             }
@@ -206,9 +211,7 @@ namespace LofiHollow.Managers {
 
         public static void SendMonster(Monster monster) {
             string json = JsonConvert.SerializeObject(monster, Formatting.Indented);
-            string msg = "spawnMonster;" + json;
-            if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null)
-                GameLoop.NetworkManager.BroadcastMsg(msg);
+            GameLoop.SendMessageIfNeeded(new string[] { "spawnMonster", json }, false, false); 
         }
 
 
@@ -240,16 +243,12 @@ namespace LofiHollow.Managers {
                 if (ent is Monster mon) {
                     if (mon.UniqueID == id) {
                         Color stringColor = color == "Green" ? Color.Green : color == "Red" ? Color.Red : Color.White;
-
-                        mon.CurrentHP -= damage;
+                         
                         if (MapPos == GameLoop.World.Player.MapPos) {
                             GameLoop.UIManager.AddMsg(new ColoredString(battleString, stringColor, Color.Black));
                         }
 
-
-                        if (mon.CurrentHP <= 0) {
-                            mon.Death(false);
-                        }
+                        mon.TakeDamage(damage);
                     }
                 }
             }
@@ -258,23 +257,17 @@ namespace LofiHollow.Managers {
         public static void DamagePlayer(long id, int damage, string battleString, string color) {
             Color hitColor = color == "Green" ? Color.Green : color == "Red" ? Color.Red : Color.White;
             if (!GameLoop.World.otherPlayers.ContainsKey(id)) {
-                if (GameLoop.NetworkManager.ownID == id) {
-                    GameLoop.World.Player.CurrentHP -= damage;
-                   
-                    
+                if (GameLoop.NetworkManager.ownID == id) { 
                     GameLoop.UIManager.AddMsg(new ColoredString(battleString, hitColor, Color.Black));
+                    GameLoop.World.Player.TakeDamage(damage);
                 } else {
                     return;
                 }
-            } else { 
-                GameLoop.World.otherPlayers[id].CurrentHP -= damage;
-
-                if (GameLoop.World.otherPlayers[id].CurrentHP <= 0) {
-                    GameLoop.World.otherPlayers[id].PlayerDied(); 
-                }
-
+            } else {
                 if (GameLoop.World.otherPlayers[id].MapPos == GameLoop.World.Player.MapPos)
                     GameLoop.UIManager.AddMsg(new ColoredString(battleString, hitColor, Color.Black));
+
+                GameLoop.World.otherPlayers[id].TakeDamage(damage);
             }
         }
 
@@ -293,10 +286,12 @@ namespace LofiHollow.Managers {
                 float hitChance;
 
                 if (attackRoll > defRoll) {
-                    hitChance = 1 - ((defRoll + 2) / 2 * (attackRoll + 1));
+                    hitChance = 1 - ((defRoll + 2f) / (2f * (attackRoll + 1f)));
                 } else {
-                    hitChance = attackRoll / 2 * (defRoll + 1);
+                    hitChance = attackRoll / (2f * (defRoll + 1f));
                 }
+
+                GameLoop.UIManager.AddMsg(attackRoll + " vs " + defRoll + " (" + hitChance + ")");
 
                 hitChance *= 100;
 
@@ -317,7 +312,6 @@ namespace LofiHollow.Managers {
                         battleString = attacker.GetAppearance() + new ColoredString(" 0 " + ((char) 20) + " ", Color.White, Color.Black) + defender.GetAppearance();
                     }
 
-                    defender.CurrentHP -= newDamage;
 
                     if (attacker is Player && newDamage > 0) {
                         attacker.CombatExp(newDamage);
@@ -329,21 +323,16 @@ namespace LofiHollow.Managers {
                     battleString = attacker.GetAppearance() + new ColoredString(" 0 " + ((char)20) + " ", Color.White, Color.Black) + defender.GetAppearance();
                 }
 
-                if (GameLoop.NetworkManager != null && GameLoop.NetworkManager.lobbyManager != null) {
-                    if (defender is Monster mon) {
-                        string netmsg = "damageMonster;" + mon.UniqueID + ";" + mon.MapPos.X + ";" + mon.MapPos.Y + ";" + mon.MapPos.Z + ";" + newDamage + ";" + battleString.String + ";" + battleColor;
-                        GameLoop.NetworkManager.BroadcastMsg(netmsg);
-                    } else if (defender is Player player) {
-                        if (player == GameLoop.World.Player) {
-                            string netmsg = "damagePlayer;" + GameLoop.NetworkManager.ownID + ";" + newDamage + ";" + battleString.String + ";" + battleColor;
-                            GameLoop.NetworkManager.BroadcastMsg(netmsg);
-                        } else {
-                            foreach (KeyValuePair<long, Player> kv in GameLoop.World.otherPlayers) {
-                                if (player == kv.Value) {
-                                    string netmsg = "damagePlayer;" + kv.Key + ";" + newDamage + ";" + battleString.String + ";" + battleColor;
-                                    GameLoop.NetworkManager.BroadcastMsg(netmsg);
-                                    break;
-                                }
+                if (defender is Monster mon) {
+                    GameLoop.SendMessageIfNeeded(new string[] { "damageMonster", mon.MapPos.ToString(), newDamage.ToString(), battleString.String, battleColor }, false, false);
+                } else if (defender is Player player) {
+                    if (player == GameLoop.World.Player) {
+                        GameLoop.SendMessageIfNeeded(new string[] { "damagePlayer", newDamage.ToString(), battleString.String, battleColor }, false, true);
+                    } else {
+                        foreach (KeyValuePair<long, Player> kv in GameLoop.World.otherPlayers) {
+                            if (player == kv.Value) {
+                                GameLoop.SendMessageIfNeeded(new string[] { "damagePlayer", kv.Key.ToString(), newDamage.ToString(), battleString.String, battleColor }, false, false);
+                                break;
                             }
                         }
                     }
@@ -352,12 +341,12 @@ namespace LofiHollow.Managers {
                 if (attacker.MapPos == GameLoop.World.Player.MapPos)
                     GameLoop.UIManager.BattleMsg(battleString);
 
+                defender.TakeDamage(newDamage);
+
                 if (defender.CurrentHP <= 0) {
-                    if (defender is Monster) {
-                        defender.Death();
+                    if (defender is Monster) { 
                         ((Player)attacker).killList.Push(defender.GetAppearance());
-                    } else if (defender is Player player) {
-                        player.PlayerDied();
+                        MissionManager.Increment("Kill", defender.Name, 1);
                     }
                 }
             }

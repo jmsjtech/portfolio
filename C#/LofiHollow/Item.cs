@@ -5,12 +5,15 @@ using Newtonsoft.Json;
 using System.Runtime.Serialization;
 using LofiHollow.EntityData;
 using System.Collections.Generic;
+using LofiHollow.Minigames;
 
-namespace LofiHollow.Entities {
+namespace LofiHollow {
     [JsonObject(MemberSerialization.OptIn)]
-    public class Item : Entity {
+    public class Item {
         [JsonProperty]
-        public int ItemID = 0;
+        public string Name = "";
+        [JsonProperty]
+        public string Package = "";
         [JsonProperty]
         public int SubID = 0;
         [JsonProperty]
@@ -30,9 +33,11 @@ namespace LofiHollow.Entities {
         [JsonProperty]
         public int MaxDurability = -1;
         [JsonProperty]
-        public int ItemCategory = -1;
+        public int Quality = 0;
         [JsonProperty]
         public int ItemTier = -1;
+        [JsonProperty]
+        public int ItemCategory = -1;
         // -1: Debug / Empty
         // 0: Weapon
         // 1: Watering Can
@@ -47,6 +52,8 @@ namespace LofiHollow.Entities {
         // 10: Vegetable
         // 11: Consumable
         // 12: Deed
+        // 13: Currency
+        // 14: Key
         [JsonProperty]
         public int EquipSlot = -1;
         // -1: Not equippable
@@ -72,6 +79,9 @@ namespace LofiHollow.Entities {
         public Heal Heal;
 
         [JsonProperty]
+        public MonsterPenFood MonsterFood;
+
+        [JsonProperty]
         public Decorator Dec;
 
         [JsonProperty]
@@ -87,30 +97,18 @@ namespace LofiHollow.Entities {
         public int ForegroundB = 0;
         [JsonProperty]
         public int ItemGlyph = 0;
-         
+
 
         [JsonConstructor]
-        public Item(Color foreground, int glyph) : base(foreground, Color.Transparent, glyph) { 
-        }
-
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context) {
-            Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
-            Appearance.Glyph = ItemGlyph;
-        }
-
-        public void UpdateAppearance() {
-            Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
-            Appearance.Glyph = ItemGlyph;
-        }
+        public Item() { }
 
 
-        public Item(int ID) : base(Color.Black, Color.Transparent, 32) {
-            if (GameLoop.World != null && GameLoop.World.itemLibrary != null && GameLoop.World.itemLibrary.ContainsKey(ID)) {
-                Item temp = GameLoop.World.itemLibrary[ID];
+        public Item(string name, int quantity = 1) {
+            if (GameLoop.World != null && GameLoop.World.itemLibrary != null && GameLoop.World.itemLibrary.ContainsKey(name)) {
+                Item temp = GameLoop.World.itemLibrary[name];
 
                 Name = temp.Name;
-                ItemID = temp.ItemID;
+                Package = temp.Package;
                 SubID = temp.SubID;
                 ItemCategory = temp.ItemCategory;
                 EquipSlot = temp.EquipSlot;
@@ -123,15 +121,13 @@ namespace LofiHollow.Entities {
 
                 Durability = temp.Durability;
                 MaxDurability = temp.MaxDurability;
+                ItemTier = temp.ItemTier;
+                Quality = temp.Quality;
 
                 ForegroundR = temp.ForegroundR; 
                 ForegroundG = temp.ForegroundG; 
                 ForegroundB = temp.ForegroundB;
-                ItemGlyph = temp.ItemGlyph;
-                ItemTier = temp.ItemTier;
-
-                Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
-                Appearance.Glyph = ItemGlyph;
+                ItemGlyph = temp.ItemGlyph;  
 
                 Stats = temp.Stats;
                 Heal = temp.Heal;
@@ -139,17 +135,18 @@ namespace LofiHollow.Entities {
                 Plant = temp.Plant;
                 Tool = temp.Tool;
                 Craft = temp.Craft;
+                MonsterFood = temp.MonsterFood;
 
-                if (ID == 0)
+                if (name == "lh:(EMPTY)")
                     ItemQuantity = 0;
                 else
-                    ItemQuantity = 1;
+                    ItemQuantity = quantity;
             }
         }
 
-        public Item(Item temp) : base(Color.Black, Color.Transparent, 32) { 
+        public Item(Item temp) { 
             Name = temp.Name;
-            ItemID = temp.ItemID;
+            Package = temp.Package;
             SubID = temp.SubID;
             ItemCategory = temp.ItemCategory;
             EquipSlot = temp.EquipSlot;
@@ -167,28 +164,99 @@ namespace LofiHollow.Entities {
             ForegroundB = temp.ForegroundB;
             ItemGlyph = temp.ItemGlyph;
             ItemTier = temp.ItemTier;
+            Quality = temp.Quality;
 
             Dec = temp.Dec;
             Tool = temp.Tool;
             Craft = temp.Craft;
-
-            Appearance.Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
-            Appearance.Glyph = ItemGlyph;
+            MonsterFood = temp.MonsterFood;
 
             Stats = temp.Stats;
             Heal = temp.Heal;
             Plant = temp.Plant;
 
-            if (ID == 0)
+            if (Name == "(EMPTY)")
                 ItemQuantity = 0;
             else
                 ItemQuantity = 1; 
         }
 
-
         public ColoredString AsColoredGlyph() {
-            ColoredString output = new(Appearance.GlyphCharacter.ToString(), Appearance.Foreground, Color.Transparent);
+            ColoredString output = new(((char)ItemGlyph).ToString(), new Color(ForegroundR, ForegroundG, ForegroundB), Color.Transparent);
             return output;
+        }
+
+        public CellDecorator GetDecorator() {
+            CellDecorator dec = new(new Color(Dec.R, Dec.G, Dec.B, Dec.A), Dec.Glyph, Mirror.None);
+            return dec;
+        }
+
+        public bool StacksWith(Item other, bool JustIdentical = false) {
+            if (FullName() == other.FullName() && SubID == other.SubID && Quality == other.Quality && IsStackable)
+                return true;
+            if (Name == other.Name && Package == other.Package && SubID == other.SubID && Quality == other.Quality && JustIdentical)
+                return true;
+            return false;
+        }
+
+        public string FullName() {
+            return Package + ":" + Name;
+        }
+
+        public ColoredString LetterGrade() {
+            string qual = "";
+            Color col = Color.Black;
+             
+            switch(Quality) {
+                case 1:
+                    qual = "F";
+                    col = Color.Red;
+                    break;
+                case 2:
+                    qual = "E";
+                    col = Color.OrangeRed;
+                    break;
+                case 3:
+                    qual = "D";
+                    col = Color.Orange;
+                    break;
+                case 4:
+                    qual = "C";
+                    col = Color.Yellow;
+                    break;
+                case 5:
+                    qual = "B";
+                    col = Color.LimeGreen;
+                    break;
+                case 6:
+                    qual = "A";
+                    col = Color.DodgerBlue;
+                    break;
+                case 7:
+                    qual = "A+";
+                    col = Color.Cyan;
+                    break;
+                case 8:
+                    qual = "S";
+                    col = Color.HotPink;
+                    break;
+                case 9:
+                    qual = "S+";
+                    col = Color.MediumPurple;
+                    break;
+                case 10:
+                    qual = "S++";
+                    col = Color.BlueViolet;
+                    break;
+                case 11:
+                    qual = ((char) 172).ToString();
+                    col = Color.White;
+                    break;
+                default:
+                    return new ColoredString(""); 
+            }
+
+            return new ColoredString(qual, col, Color.Black);
         }
     }
 }

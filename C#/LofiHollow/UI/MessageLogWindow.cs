@@ -51,7 +51,7 @@ namespace LofiHollow.UI {
                 _lines.Dequeue();
             }
 
-            _messageConsole.Cursor.Position = new Point(1, _lines.Count - 1);
+            _messageConsole.Cursor.Position = new Point(0, _lines.Count - 1);
             _messageConsole.Cursor.Print(message + "\n");
         }
 
@@ -62,7 +62,7 @@ namespace LofiHollow.UI {
                 _lines.Dequeue();
             }
 
-            _messageConsole.Cursor.Position = new Point(1, _lines.Count - 1);
+            _messageConsole.Cursor.Position = new Point(0, _lines.Count - 1);
             _messageConsole.Cursor.Print(message + "\n");
         }
 

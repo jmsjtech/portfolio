@@ -7,6 +7,7 @@ using Color = SadRogue.Primitives.Color;
 using LofiHollow.Entities;
 using SadConsole.Input;
 using LofiHollow.Managers;
+using System.Collections.Generic;
 
 namespace LofiHollow.UI {
     public class UIManager : ScreenObject {
@@ -21,6 +22,9 @@ namespace LofiHollow.UI {
         public UI_Minigame Minigames;
         public UI_Construction Construction;
         public UI_Crafting Crafting;
+        public UI_Container Container;
+        public UI_Help Help;
+        public UI_MissionLog MissionLog;
           
         public SadConsole.Console SignConsole;
         public Window SignWindow; 
@@ -73,6 +77,15 @@ namespace LofiHollow.UI {
                     } else if (selectedMenu == "Crafting") {
                         Crafting.RenderCrafting();
                         Crafting.CraftingInput();
+                    } else if (selectedMenu == "Container") {
+                        Container.RenderContainer();
+                        Container.ContainerInput();
+                    } else if (selectedMenu == "Help") {
+                        Help.RenderHelp();
+                        Help.HelpInput();
+                    } else if (selectedMenu == "MissionLog") {
+                        MissionLog.RenderMissions();
+                        MissionLog.MissionInput();
                     } else {
                         if (selectedMenu != "Dialogue") {
                             if (selectedMenu == "Sign")
@@ -81,7 +94,7 @@ namespace LofiHollow.UI {
                             CheckKeyboard();
                             Sidebar.SidebarInput();
                             Map.UpdateNPCs();
-                            
+
                         } else {
                             DialogueWindow.RenderDialogue();
                             DialogueWindow.CaptureDialogueClicks();
@@ -112,13 +125,16 @@ namespace LofiHollow.UI {
             Minigames = new UI_Minigame(72, 42, "");
             Construction = new UI_Construction(72, 42, "");
             Crafting = new UI_Crafting(72, 42, "");
+            Container = new UI_Container(75, 29, "");
+            Help = new UI_Help(72, 42, "");
+            MissionLog = new UI_MissionLog(72, 42, "");
              
             UseMouse = true;
             selectedMenu = "MainMenu";
         } 
 
         private void CheckKeyboard() {
-            if (selectedMenu != "Sign" && selectedMenu != "Targeting") { 
+            if (selectedMenu != "Sign") { 
                 if (GameHost.Instance.Keyboard.IsKeyDown(Key.LeftControl)) {
                     if (GameHost.Instance.Keyboard.IsKeyPressed(Key.W)) { 
                         CommandManager.MoveActorTo(GameLoop.World.Player, GameLoop.World.Player.Position, GameLoop.World.Player.MapPos + new Point3D(0, -1, 0)); 
@@ -157,11 +173,16 @@ namespace LofiHollow.UI {
                             Minigames.CurrentGame = "Mining";
                             selectedMenu = "Minigame";
                             GameLoop.World.Player.MineEnteredAt = GameLoop.World.Player.Position;
-                            Minigames.MiningSetup(GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(GameLoop.World.Player.Position).MiscString); 
-                            if (GameLoop.NetworkManager == null || (GameLoop.NetworkManager != null && GameLoop.NetworkManager.isHost))
+                            Minigames.MineManager.MiningSetup(GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(GameLoop.World.Player.Position).MiscString);
+                            if (GameLoop.SingleOrHosting())
                                 Minigames.ToggleMinigame();
                             else
                                 AddMsg("Receiving mine data from host, please wait.");
+                        } else if (GameLoop.World.maps[GameLoop.World.Player.MapPos].GetTile(GameLoop.World.Player.Position).Name == "Bed") {
+                            GameLoop.UIManager.AddMsg(new ColoredString("You lie down to sleep...", Color.Green, Color.Black));
+                            GameLoop.World.Player.Sleeping = true;
+
+                            GameLoop.SendMessageIfNeeded(new string[] { "sleep", "true" }, false, true); 
                         }
                     }
 
@@ -172,18 +193,30 @@ namespace LofiHollow.UI {
                         }
                     }
 
-                    
+                    if ((GameHost.Instance.Keyboard.IsKeyDown(Key.LeftShift) || (GameHost.Instance.Keyboard.IsKeyDown(Key.RightShift))) && GameHost.Instance.Keyboard.IsKeyPressed(Key.OemQuestion)) {
+                        Help.ToggleHelp("Hotkeys");
+                    }
+
+
 
                     if (GameHost.Instance.Keyboard.IsKeyReleased(Key.I)) {
-                        Inventory.ToggleInventory(); 
+                        Inventory.Toggle(); 
                     }
 
                     if (GameHost.Instance.Keyboard.IsKeyReleased(Key.K)) {
                         Skills.Toggle();
                     }
 
+                    if (GameHost.Instance.Keyboard.IsKeyReleased(Key.Q)) {
+                        MissionLog.Toggle();
+                    }
+
                     if (GameHost.Instance.Keyboard.IsKeyReleased(Key.G)) {
                         CommandManager.PickupItem(GameLoop.World.Player);
+                    }
+
+                    if (GameHost.Instance.Keyboard.IsKeyReleased(Key.C)) {
+                        Crafting.SetupCrafting("Crafting", "None", 1);
                     }
                 }
 
@@ -191,7 +224,18 @@ namespace LofiHollow.UI {
                     World.SaveMapToFile(GameLoop.World.maps[GameLoop.World.Player.MapPos], GameLoop.World.Player.MapPos);
                 }
 
+                if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F2)) {
+                    AddMsg(GameLoop.World.Player.MapPos.ToString() + " | " + GameLoop.World.Player.Position.X + "," + GameLoop.World.Player.Position.Y);
+                }
 
+                if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F3)) {
+                    GameLoop.World.SavePlayer();
+                }
+
+                if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F1)) {
+                    Help.ToggleHelp("Guide");
+                }
+                
                 if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F5)) {
                     Map.LimitedVision = !Map.LimitedVision;
 
@@ -203,20 +247,12 @@ namespace LofiHollow.UI {
                     } else {
                         Map.UpdateVision();
                     }
-                } 
-
-                if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F3)) {
-                    GameLoop.World.SavePlayer(); 
                 }
 
                 if (GameHost.Instance.Keyboard.IsKeyReleased(Key.Tab)) {
                     GameLoop.World.Player.SwitchMeleeMode();
                     AddMsg(new ColoredString("Switched melee to " + GameLoop.World.Player.CombatMode + ". (" + GameLoop.World.Player.GetDamageType() + ")", Color.Yellow, Color.Black));
-                } 
-
-                if (GameHost.Instance.Keyboard.IsKeyReleased(Key.F2)) { 
-
-                } 
+                }
             } else if (selectedMenu == "Sign") {
                 if (GameHost.Instance.Keyboard.HasKeysPressed) {
                     selectedMenu = "None";
@@ -229,29 +265,7 @@ namespace LofiHollow.UI {
                 flying = !flying;
             }
 
-            if (selectedMenu != "Map Editor" && selectedMenu != "Targeting") {
-                
-                if (GameHost.Instance.Keyboard.IsKeyReleased(Key.C)) {
-                    selectedMenu = "Targeting";
-                    targetType = "Door";
-                    AddMsg("Close door where?");
-                }
-            } else if (selectedMenu == "Targeting") { 
-                if (GameHost.Instance.Keyboard.IsKeyReleased(Key.S)) { targetDir = new Point(0, 1); } 
-                if (GameHost.Instance.Keyboard.IsKeyReleased(Key.A)) { targetDir = new Point(-1, 0); } 
-                if (GameHost.Instance.Keyboard.IsKeyReleased(Key.D)) { targetDir = new Point(1, 0); } 
-                if (GameHost.Instance.Keyboard.IsKeyReleased(Key.W)) { targetDir = new Point(0, -1); } 
-
-                if (targetType == "Door" && targetDir != new Point(0, 0)) { 
-                    GameLoop.World.maps[GameLoop.World.Player.MapPos].ToggleDoor(GameLoop.World.Player.Position + targetDir, GameLoop.World.Player.MapPos);
-                    Map.UpdateVision();
-                    targetType = "Done";
-                } else if (targetType != "Door") {
-                    targetType = "None";
-                    targetDir = new Point(0, 0);
-                    selectedMenu = "None";
-                }
-            } else if (selectedMenu == "Map Editor") {
+            if (selectedMenu == "Map Editor") {
                 Sidebar.MapEditorInput();
             }
         }

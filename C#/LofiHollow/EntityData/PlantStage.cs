@@ -12,7 +12,7 @@ namespace LofiHollow.EntityData {
         [JsonProperty]
         public int DaysToNext = 1;
         [JsonProperty]
-        public int HarvestItem = -1;
+        public string HarvestItem = "";
         [JsonProperty]
         public int ColorR = 0;
         [JsonProperty]

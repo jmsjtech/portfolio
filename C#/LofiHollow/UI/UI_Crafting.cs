@@ -4,6 +4,7 @@ using SadConsole;
 using SadConsole.Input;
 using SadConsole.UI;
 using SadRogue.Primitives;
+using System;
 using System.Collections.Generic;
 using Key = SadConsole.Input.Keys;
 
@@ -14,7 +15,10 @@ namespace LofiHollow.UI {
         public int craftTopIndex = 0;
         public int selectedIndex = 0;
         public int craftingQuantity = 1;
+        public int MinimumQuality = 0;
         public string CurrentSkill = "Crafting";
+        public string StationTool = "None";
+        public int StationTier = 0;
         public List<CraftingRecipe> CurrentSkillRecipes = new();
         public List<CraftingRecipe> CurrentCraftable = new();
 
@@ -44,7 +48,7 @@ namespace LofiHollow.UI {
 
             CraftingConsole.Clear();
 
-            CraftingConsole.Print(69, 0, new ColoredString("X", mousePos == new Point(69, 0) ? Color.Yellow : Color.White, Color.Black));
+            CraftingConsole.Print(69, 0, Helper.HoverColoredString("X", mousePos == new Point(69, 0)));
 
             string Header = "Name".Align(HorizontalAlignment.Center, 44) + "|";
             Header += "Lv".Align(HorizontalAlignment.Center, 4) + "|";
@@ -72,7 +76,7 @@ namespace LofiHollow.UI {
                     check = new ColoredString("x", Color.Red, Color.Black);
 
 
-                CraftingConsole.Print(0, 3 + (2 * i), new ColoredString(Entry, mousePos.Y - 3 == 2 * i ? Color.Yellow : Color.White, Color.Black));
+                CraftingConsole.Print(0, 3 + (2 * i), Helper.HoverColoredString(Entry, mousePos.Y - 3 == 2 * i));
                 CraftingConsole.Print(64, 3 + (2 * i), check);
                 CraftingConsole.Print(0, 4 + (2 * i), "".Align(HorizontalAlignment.Center, 70, '-'));
             }
@@ -83,13 +87,22 @@ namespace LofiHollow.UI {
             if (CurrentSkillRecipes.Count > selectedIndex) {
                 CraftingRecipe current = CurrentSkillRecipes[selectedIndex];
                 Item finished = new(current.FinishedID);
+                int QualityCap = (int)Math.Floor((GameLoop.World.Player.Skills[CurrentSkill].Level + 1f) / 10f) + 1;
+
+                int canCraft = current.ActorCanCraft(GameLoop.World.Player, CurrentSkill, craftingQuantity, MinimumQuality);
+
 
                 CraftingConsole.Print(0, 26, finished.AsColoredGlyph());
                 CraftingConsole.Print(2, 26, (current.FinishedQty * craftingQuantity) + "x " + finished.Name);
-                CraftingConsole.Print(0, 27, new ColoredString("Value: ", Color.White, Color.Black) + UI_DialogueWindow.ConvertCoppers(finished.AverageValue * current.FinishedQty));
+                CraftingConsole.Print(0, 27, new ColoredString("Value: ", Color.White, Color.Black) + Helper.ConvertCoppers(finished.AverageValue * current.FinishedQty));
                 CraftingConsole.Print(0, 28, "Desc: " + finished.Description);
+                CraftingConsole.Print(20, 26, new ColoredString("Max. " + CurrentSkill + " Quality: ") + Helper.LetterGrade(QualityCap));
+                CraftingConsole.Print(20, 27, new ColoredString("Best Ingredient Quality: ") + Helper.LetterGrade(canCraft));
+                CraftingConsole.Print(20, 28, new ColoredString("Min. Ingredient Quality: -"));
+                CraftingConsole.Print(47, 28, MinimumQuality == 0 ? new ColoredString("Any") : Helper.LetterGrade(MinimumQuality, 3));
+                CraftingConsole.Print(51, 28, "+");
                 CraftingConsole.DrawLine(new Point(0, 29), new Point(70, 29), '-', Color.White, Color.Black);
-                CraftingConsole.Print(62, 26, new ColoredString("CRAFT", current.ActorCanCraft(GameLoop.World.Player, CurrentSkill, craftingQuantity) ? Color.Lime : Color.Red, Color.Black));
+                CraftingConsole.Print(62, 26, new ColoredString("CRAFT", canCraft > -1 ? Color.Lime : Color.Red, Color.Black));
                 CraftingConsole.Print(62, 27, "-");
                 CraftingConsole.Print(63, 27, craftingQuantity.ToString().Align(HorizontalAlignment.Center, 3));
                 CraftingConsole.Print(66, 27, "+");
@@ -108,13 +121,13 @@ namespace LofiHollow.UI {
                 CraftingConsole.DrawLine(new Point(24, 30), new Point(24, 40), '|', Color.White, Color.Black);
                 CraftingConsole.Print(25, 30, "Specific Materials: ");
                 for (int i = 0; i < current.SpecificMaterials.Count; i++) {
-                    bool hasTool = current.SpecificMaterials[i].ActorHasComponent(GameLoop.World.Player, craftingQuantity);
+                    bool hasTool = current.SpecificMaterials[i].ActorHasComponent(GameLoop.World.Player, craftingQuantity, MinimumQuality) != -1;
                     ColoredString check = new ColoredString(((char)4).ToString(), Color.Lime, Color.Black);
 
                     if (!hasTool)
                         check = new ColoredString("x", Color.Red, Color.Black);
 
-                    Item specific = new Item(current.SpecificMaterials[i].ItemID);
+                    Item specific = new(current.SpecificMaterials[i].Name);
 
                     CraftingConsole.Print(26, 31 + i, new ColoredString((current.SpecificMaterials[i].ItemQuantity * craftingQuantity) + "x " + specific.Name + ": ") + check);
                 }
@@ -122,11 +135,13 @@ namespace LofiHollow.UI {
                 CraftingConsole.DrawLine(new Point(49, 30), new Point(49, 40), '|', Color.White, Color.Black);
                 CraftingConsole.Print(50, 30, "Flexible Materials: ");
                 for (int i = 0; i < current.GenericMaterials.Count; i++) {
-                    bool hasTool = current.GenericMaterials[i].ActorHasComponent(GameLoop.World.Player, craftingQuantity);
-                    ColoredString check = new ColoredString(((char)4).ToString(), Color.Lime, Color.Black);
+                    int Qual = current.GenericMaterials[i].ActorHasComponent(GameLoop.World.Player, craftingQuantity, MinimumQuality);
+                    ColoredString check = new ColoredString("x", Color.Red, Color.Black);
 
-                    if (!hasTool)
-                        check = new ColoredString("x", Color.Red, Color.Black);
+                    if (Qual == 0)
+                        check = new ColoredString(((char)4).ToString(), Color.Lime, Color.Black);
+                    else if (Qual > 0)
+                        check = Helper.LetterGrade(Qual);
 
 
                     CraftingConsole.Print(51, 31 + i, new ColoredString((current.GenericMaterials[i].Quantity * craftingQuantity) + "x " + current.GenericMaterials[i].Property + " [" + current.GenericMaterials[i].Tier + "]: ") + check);
@@ -151,16 +166,22 @@ namespace LofiHollow.UI {
                 }
 
                 if (mousePos.Y == 26 && (mousePos.X >= 62 && mousePos.X <= 66)) {
-                    CurrentSkillRecipes[selectedIndex].Craft(GameLoop.World.Player, craftingQuantity);
+                    CurrentSkillRecipes[selectedIndex].Craft(GameLoop.World.Player, craftingQuantity, MinimumQuality);
 
-                    CurrentSkillRecipes.Clear();
-                    CurrentCraftable.Clear();
+                    RefreshList();
+                }
 
-                    for (int i = 0; i < GameLoop.World.recipeLibrary.Count; i++) {
-                        if (GameLoop.World.recipeLibrary[i].Skill == CurrentSkill)
-                            CurrentSkillRecipes.Add(GameLoop.World.recipeLibrary[i]);
-                        if (GameLoop.World.recipeLibrary[i].ActorCanCraft(GameLoop.World.Player, CurrentSkill, 1))
-                            CurrentCraftable.Add(GameLoop.World.recipeLibrary[i]);
+                if (mousePos == new Point(51, 28)) {
+                    if (MinimumQuality < 11) {
+                        MinimumQuality++;
+                        RefreshList();
+                    }
+                }
+
+                if (mousePos == new Point(45, 28)) {
+                    if (MinimumQuality > 0) {
+                        MinimumQuality--;
+                        RefreshList();
                     }
                 }
             }
@@ -195,17 +216,23 @@ namespace LofiHollow.UI {
             }
         }
 
-        public void SetupCrafting(string skill) {
-            CurrentSkill = skill;
+        public void RefreshList() {
             CurrentSkillRecipes.Clear();
             CurrentCraftable.Clear();
 
             for (int i = 0; i < GameLoop.World.recipeLibrary.Count; i++) {
-                if (GameLoop.World.recipeLibrary[i].Skill == skill)
+                if (GameLoop.World.recipeLibrary[i].Skill == CurrentSkill)
                     CurrentSkillRecipes.Add(GameLoop.World.recipeLibrary[i]);
-                if (GameLoop.World.recipeLibrary[i].ActorCanCraft(GameLoop.World.Player, skill, 1))
+                if (GameLoop.World.recipeLibrary[i].ActorCanCraft(GameLoop.World.Player, CurrentSkill, 1, MinimumQuality) > -1)
                     CurrentCraftable.Add(GameLoop.World.recipeLibrary[i]);
             }
+        }
+
+        public void SetupCrafting(string skill, string tool, int tier) {
+            CurrentSkill = skill;
+            StationTool = tool;
+            StationTier = tier;
+            RefreshList();
 
             CraftingWindow.Title = skill.Align(HorizontalAlignment.Center, 70, (char) 196);
 

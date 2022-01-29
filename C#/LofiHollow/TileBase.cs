@@ -40,6 +40,9 @@ namespace LofiHollow {
         public LockOwner Lock;
 
         [JsonProperty]
+        public Container Container;
+
+        [JsonProperty]
         public Plant Plant = null;
 
         [JsonProperty]
@@ -78,6 +81,7 @@ namespace LofiHollow {
             Dec = other.Dec;
             Lock = other.Lock;
             Plant = other.Plant;
+            Container = other.Container;
 
             Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
             Glyph = TileGlyph;
@@ -103,6 +107,7 @@ namespace LofiHollow {
                 Dec = other.Dec;
                 Lock = other.Lock;
                 Plant = other.Plant;
+                Container = other.Container;
 
                 Foreground = new Color(ForegroundR, ForegroundG, ForegroundB);
                 Glyph = TileGlyph;
@@ -150,6 +155,11 @@ namespace LofiHollow {
 
         public ColoredString AsColoredGlyph() {
             return new ColoredString(((char) TileGlyph).ToString(), Foreground, Background);
+        }
+
+        public CellDecorator GetDecorator() {
+            CellDecorator dec = new(new Color(Dec.R, Dec.G, Dec.B, Dec.A), Dec.Glyph, Mirror.None);
+            return dec;
         }
     }
 }
